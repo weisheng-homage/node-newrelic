@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Interface: TransactionSpec</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Interface: TransactionSpec</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>TransactionSpec</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Describes the type of transaction to be created by the function being
+ wrapped by <a href="Shim.html#bindCreateTransaction"><code>Shim#bindCreateTransaction</code></a>.</p></div>
+        
+
+        
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The type of transaction to create. Must be one of the values from
+ <a href="Shim.html#TRANSACTION_TYPES"><code>Shim#TRANSACTION_TYPES</code></a>.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>nest</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last"><p>Indicates if the transaction being created is allowed to be nested within
+ another transaction of the same type. If <code>false</code>, the default, the transaction
+ will only be created if there is no existing transaction, or the current
+ transaction is of a different type. If <code>true</code>, the transaction will be
+ created regardless of the current transaction's type.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line470">line 470</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Shim.html#bindCreateTransaction">Shim#bindCreateTransaction</a></li>
+        
+            <li><a href="Shim.html#TRANSACTION_TYPES">Shim#TRANSACTION_TYPES</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="API.html">API</a></li><li><a href="DatastoreShim.html">DatastoreShim</a></li><li><a href="Shim.html">Shim</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li></ul><h3>Interfaces</h3><ul><li><a href="DatastoreExtras.html">DatastoreExtras</a></li><li><a href="OperationSpec.html">OperationSpec</a></li><li><a href="global.html#ParsedQueryData">ParsedQueryData</a></li><li><a href="QuerySpec.html">QuerySpec</a></li><li><a href="RecorderSpec.html">RecorderSpec</a></li><li><a href="SegmentSpec.html">SegmentSpec</a></li><li><a href="TransactionSpec.html">TransactionSpec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_bindAllCallbacks">_bindAllCallbacks</a></li><li><a href="global.html#_bindStream">_bindStream</a></li><li><a href="global.html#bindRowCallbackSegment">bindRowCallbackSegment</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Aug 04 2016 14:24:47 GMT-0700 (PDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
