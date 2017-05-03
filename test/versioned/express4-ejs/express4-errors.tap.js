@@ -1,11 +1,7 @@
 'use strict'
 
-var path = require('path')
 var helper = require('../../lib/agent_helper.js')
 var http = require('http')
-var skip = require('./skip')
-var skip = require('./skip')
-
 var test = require('tap').test
 
 var express
@@ -21,8 +17,7 @@ runTests({
 })
 
 function runTests(flags) {
-  test('reports error when thrown from a route',
-      { skip: skip() }, function(t) {
+  test('reports error when thrown from a route', function(t) {
     setup(t)
 
     app.get('/test', function(req, res) {
@@ -36,8 +31,7 @@ function runTests(flags) {
     })
   })
 
-  test('reports error when thrown from a middleware',
-      { skip: skip() }, function(t) {
+  test('reports error when thrown from a middleware', function(t) {
     setup(t)
 
     app.use(function(req, res, next) {
@@ -51,8 +45,7 @@ function runTests(flags) {
     })
   })
 
-  test('reports error when called in next from a middleware',
-      { skip: skip() }, function(t) {
+  test('reports error when called in next from a middleware', function(t) {
     setup(t)
 
     app.use(function(req, res, next) {
@@ -104,8 +97,7 @@ function runTests(flags) {
    })
   })
 
-  test('should report the error when error handler calls next with the error',
-      { skip: skip() }, function(t) {
+  test('should report the error when error handler calls next with the error', function(t) {
    setup(t)
 
    app.get('/test', function(req, res) {
@@ -188,6 +180,41 @@ function runTests(flags) {
       t.equals(errors.length, 0)
       t.equals(statuscode, 200)
       t.end()
+    })
+  })
+
+  test('does not error when request is aborted', function(t) {
+    t.plan(3)
+    setup(t)
+
+    app.get('/test', function(req, res, next) {
+      t.ok(agent.getTransaction(), 'transaction exists')
+      // generate error after client has aborted
+      setTimeout(function() {
+        t.ok(agent.getTransaction() == null, 'transaction has already ended')
+        next(new Error('some error'))
+      }, 20)
+    })
+
+    app.use(function(error, req, res, next) {
+      t.ok(agent.getTransaction() == null, 'no active transaction when responding')
+      res.end()
+    })
+
+    var server = app.listen(function() {
+      var port = server.address().port
+      var req = http.request({port: port, path: '/test'}, function() {})
+      req.end()
+      // add error handler, otherwise aborting will cause an exception
+      req.on('error', function() {})
+
+      setTimeout(function() {
+        req.abort()
+      }, 10)
+    })
+
+    t.tearDown(function cb_tearDown() {
+      server.close()
     })
   })
 

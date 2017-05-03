@@ -1,12 +1,15 @@
+'use strict'
+
 var assert = require('chai').assert
 var format = require('util').format
+var urltils = require('../../lib/util/urltils')
 
 exports.assertMetrics = assertMetrics
 exports.assertSegments = assertSegments
 exports.findSegment = findSegment
+exports.getMetricHostName = getMetricHostName
 
-function assertMetrics(metrics, expected, exclusive,
-    assertValues) {
+function assertMetrics(metrics, expected, exclusive, assertValues) {
   // Assertions about arguments because maybe something returned undefined
   // unexpectedly and is passed in, or a return type changed. This will
   // hopefully help catch that and make it obvious.
@@ -28,7 +31,7 @@ function assertMetrics(metrics, expected, exclusive,
       throw new Error(format('%j is missing from the metrics bucket', expectedMetric[0]))
     }
     if (assertValues) {
-      assert.sameMembers(
+      assert.deepEqual(
         metric.toJSON(),
         expectedMetric[1],
         format(
@@ -81,13 +84,12 @@ function assertSegments(parent, expected, options) {
     exact = false
   }
 
-  function getChildren(parent) {
-    return parent.children.filter(function(item) {
+  function getChildren(_parent) {
+    return _parent.children.filter(function(item) {
       if (exact && options && options.exclude) {
         return (options.exclude.indexOf(item.name) === -1)
-      } else {
-        return true
       }
+      return true
     })
   }
 
@@ -105,14 +107,13 @@ function assertSegments(parent, expected, options) {
             '" in position ' + childCount
         )
 
-        // if the next expected item is not array, then check that the current child has no
-        // children
-        if (!Array.isArray(expected[i+1])) {
+        // If the next expected item is not array, then check that the current
+        // child has no children
+        if (!Array.isArray(expected[i + 1])) {
           // var children = child.children
           assert(getChildren(child).length === 0, 'segment "' + child.name +
             '" should not have any children')
         }
-
       } else if (typeof sequenceItem === 'object') {
         assertSegments(child, sequenceItem, options)
       }
@@ -140,8 +141,8 @@ function assertSegments(parent, expected, options) {
         }
         assert.ok(child, 'segment "' + parent.name + '" should have child "' +
           sequenceItem + '"')
-        if (typeof expected[i+1] === 'object') {
-          assertSegments(child, expected[i+1], exact)
+        if (typeof expected[i + 1] === 'object') {
+          assertSegments(child, expected[i + 1], exact)
         }
       }
     }
@@ -160,4 +161,8 @@ function findSegment(root, name) {
       }
     }
   }
+}
+
+function getMetricHostName(agent, host) {
+  return urltils.isLocalhost(host) ? agent.config.getHostnameSafe() : host
 }

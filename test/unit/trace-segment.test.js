@@ -5,30 +5,32 @@ var should = chai.should()
 var expect = chai.expect
 var helper = require('../lib/agent_helper')
 var TraceSegment = require('../../lib/transaction/trace/segment')
-var Trace = require('../../lib/transaction/trace')
 var Transaction = require('../../lib/transaction')
 
 
-describe('TraceSegment', function () {
-  it('should be bound to a Trace', function () {
-    var segment
-    var trans = {}
+describe('TraceSegment', function() {
+  it('should be bound to a Trace', function() {
+    var segment = null
+    var agent = helper.loadMockedAgent()
+    var trans = new Transaction(agent)
     expect(function noTrace() {
       segment = new TraceSegment(null, 'UnitTest')
-    }).throws()
+    }).to.throw()
+    expect(segment).to.be.null()
 
     var success = new TraceSegment(trans, 'UnitTest')
     expect(success.transaction).equal(trans)
+    trans.end()
+    helper.unloadAgent(agent)
   })
 
-  it('should call an optional callback function', function (done) {
-    expect(function noCallback() {
-      new TraceSegment({}, 'UnitTest')
-    }).not.throws()
-
+  it('should call an optional callback function', function(done) {
     var agent = helper.loadMockedAgent()
     var trans = new Transaction(agent)
-    var trace = trans.trace
+    expect(function noCallback() {
+      new TraceSegment(trans, 'UnitTest') // eslint-disable-line no-new
+    }).not.throws()
+
     var working = new TraceSegment(trans, 'UnitTest', callback)
 
     function callback() {
@@ -41,26 +43,38 @@ describe('TraceSegment', function () {
   })
 
   it('has a name', function () {
+    var agent = helper.loadMockedAgent()
+    var trans = new Transaction(agent)
     expect(function noName() {
-      new TraceSegment({})
+      new TraceSegment(trans)
     }).throws()
-    var success = new TraceSegment({}, 'UnitTest')
+    var success = new TraceSegment(trans, 'UnitTest')
     expect(success.name).equal('UnitTest')
+    helper.unloadAgent(agent)
   })
 
   it('is created with no children', function () {
-    var segment = new TraceSegment({}, 'UnitTest')
+    var agent = helper.loadMockedAgent()
+    var trans = new Transaction(agent)
+    var segment = new TraceSegment(trans, 'UnitTest')
     expect(segment.children.length).equal(0)
+    helper.unloadAgent(agent)
   })
 
   it('has a timer', function () {
-    var segment = new TraceSegment({}, 'UnitTest')
+    var agent = helper.loadMockedAgent()
+    var trans = new Transaction(agent)
+    var segment = new TraceSegment(trans, 'UnitTest')
     should.exist(segment.timer)
+    helper.unloadAgent(agent)
   })
 
   it('does not start its timer on creation', function () {
-    var segment = new TraceSegment({}, 'UnitTest')
+    var agent = helper.loadMockedAgent()
+    var trans = new Transaction(agent)
+    var segment = new TraceSegment(trans, 'UnitTest')
     expect(segment.timer.isRunning()).equal(false)
+    helper.unloadAgent(agent)
   })
 
   it('allows the timer to be updated without ending it', function () {
@@ -101,11 +115,45 @@ describe('TraceSegment', function () {
     segment.setDurationInMillis(10, 0)
 
     setTimeout(function() {
-      expect(trace.root.timer.duration).equal(null)
+      expect(trace.root.timer.hrDuration).equal(null)
       segment.end()
-      expect(trace.root.timer.duration).equal(segment.timer.duration)
+      expect(trace.root.timer.getDurationInMillis())
+        .to.be.above(segment.timer.getDurationInMillis() - 1) // alow for slop
       helper.unloadAgent(agent)
       done()
+    }, 10)
+  })
+
+  it('properly tracks the number of segments that are active and harvested', function(done) {
+    var agent = helper.loadMockedAgent()
+    expect(agent.activeTransactions).to.equal(0)
+    expect(agent.totalActiveSegments).to.equal(0)
+    expect(agent.segmentsCreatedInHarvest).to.equal(0)
+
+    var tx = new Transaction(agent)
+    expect(agent.totalActiveSegments).to.equal(1)
+    expect(agent.segmentsCreatedInHarvest).to.equal(1)
+    expect(tx.numSegments).to.equal(1)
+    expect(agent.activeTransactions).to.equal(1)
+
+    var segment = new TraceSegment(tx, 'Test')
+    expect(agent.totalActiveSegments).to.equal(2)
+    expect(agent.segmentsCreatedInHarvest).to.equal(2)
+    expect(tx.numSegments).to.equal(2)
+    tx.end()
+
+    setTimeout(function () {
+      expect(agent.totalActiveSegments).to.equal(0)
+      expect(agent.segmentsClearedInHarvest).to.equal(2)
+      agent.harvest(function () {
+        helper.unloadAgent(agent)
+        agent.harvest(function () {
+          expect(agent.totalActiveSegments).to.equal(0)
+          expect(agent.segmentsClearedInHarvest).to.equal(0)
+          expect(agent.segmentsCreatedInHarvest).to.equal(0)
+          done()
+        })
+      })
     }, 10)
   })
 
@@ -384,6 +432,51 @@ describe('TraceSegment', function () {
        []
       ])
       helper.unloadAgent(agent)
+    })
+  })
+
+  describe('when serialized', function() {
+    var agent = null
+    var trans = null
+    var segment = null
+
+    beforeEach(function() {
+      agent = helper.loadMockedAgent()
+      trans = new Transaction(agent)
+      segment = new TraceSegment(trans, 'UnitTest')
+    })
+
+    afterEach(function() {
+      helper.unloadAgent(agent)
+      agent = null
+      trans = null
+      segment = null
+    })
+
+    it('should create a plain JS array', function() {
+      segment.end()
+      var js = segment.toJSON()
+
+      expect(js).to.be.an.instanceOf(Array)
+      expect(js[0]).to.be.a('number')
+      expect(js[1]).to.be.a('number')
+      expect(js[2]).to.be.a('string').and.equal('UnitTest')
+      expect(js[3]).to.be.an('object')
+      expect(js[4]).to.be.an.instanceOf(Array).and.have.lengthOf(0)
+    })
+
+    it('should not cause a stack overflow', function() {
+      this.timeout(30000)
+      var parent = segment
+      for (var i = 0; i < 9000; ++i) {
+        var child = new TraceSegment(trans, 'Child ' + i)
+        parent.children.push(child)
+        parent = child
+      }
+
+      expect(function() {
+        segment.toJSON()
+      }).to.not.throw()
     })
   })
 })

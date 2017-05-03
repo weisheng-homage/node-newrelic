@@ -11,63 +11,100 @@ var EventEmitter = require('events').EventEmitter
 
 describe('shimmer', function() {
   describe('custom instrumentation', function() {
-    var agent = null
-    var onRequireArgs = null
-    var onErrorArgs = null
-    var counter = 0
-    var moduleName = null
-    var instrumentationOpts = null
+    describe('of relative modules', makeModuleTests('../helpers/module'))
+    describe('of modules', makeModuleTests('chai'))
+    describe('of deep modules', makeModuleTests('chai/lib/chai'))
+  })
 
-    before(function() {
+  function makeModuleTests(moduleName) {
+    return function moduleTests() {
+      var agent = null
+      var onRequireArgs = null
+      var counter = 0
+      var instrumentationOpts = null
+      var instrumentedModule = null
+
+      beforeEach(function() {
+        agent = helper.instrumentMockedAgent()
+        instrumentationOpts = {
+          moduleName: moduleName,
+          onRequire: function(shim, module) {
+            instrumentedModule = module
+            ++counter
+            onRequireArgs = arguments
+          },
+          onError: function() {}
+        }
+        shimmer.registerInstrumentation(instrumentationOpts)
+      })
+
+      afterEach(function() {
+        counter = 0
+        onRequireArgs = null
+        helper.unloadAgent(agent)
+      })
+
+      it('should be sent a shim and the loaded module', function() {
+        var mod = require(moduleName)
+        expect(onRequireArgs.length).to.equal(3)
+        expect(onRequireArgs[0]).to.be.an.instanceof(shims.Shim)
+        expect(onRequireArgs[1]).to.equal(mod)
+        expect(onRequireArgs[2]).to.equal(moduleName)
+      })
+
+      it('should construct a DatastoreShim if the type is "datastore"', function() {
+        instrumentationOpts.type = 'datastore'
+        require(moduleName)
+        expect(onRequireArgs[0]).to.be.an.instanceof(shims.DatastoreShim)
+      })
+
+      it('should receive the correct module (' + moduleName + ')', function() {
+        var mod = require(moduleName)
+        expect(mod).to.equal(instrumentedModule)
+      })
+
+      it('should only run the instrumentation once', function() {
+        expect(counter).to.equal(0)
+        require(moduleName)
+        expect(counter).to.equal(1)
+        require(moduleName)
+        require(moduleName)
+        require(moduleName)
+        require(moduleName)
+        expect(counter).to.equal(1)
+      })
+    }
+  }
+
+  describe('wrapping exports', function() {
+    var agent = null
+    var original = null
+    var wrapper = null
+
+    beforeEach(function() {
       agent = helper.instrumentMockedAgent()
-      moduleName = require.resolve('../helpers/module')
-      instrumentationOpts = {
-        moduleName: 'module.js',
-        onRequire: function() {
-          ++counter
-          onRequireArgs = arguments
-        },
-        onError: function() { onErrorArgs = arguments }
-      }
-      shimmer.registerInstrumentation(instrumentationOpts)
+      shimmer.registerInstrumentation({
+        moduleName: '../helpers/module',
+        onRequire: function(shim, nodule) {
+          original = nodule
+          wrapper = {}
+
+          shim.wrapExport(original, function() {
+            return wrapper
+          })
+        }
+      })
     })
 
     afterEach(function() {
-      counter = 0
-      onRequireArgs = null
-      onErrorArgs = null
-
-      delete instrumentationOpts.instrumented
-      delete require.cache[moduleName]
-    })
-
-    after(function() {
       helper.unloadAgent(agent)
+      original = null
+      wrapper = null
     })
 
-    it('should be sent a shim and the loaded module', function() {
-      var mod = require(moduleName)
-      expect(onRequireArgs.length).to.equal(3)
-      expect(onRequireArgs[0]).to.be.an.instanceof(shims.Shim)
-      expect(onRequireArgs[1]).to.equal(mod)
-      expect(onRequireArgs[2]).to.equal('module.js')
-    })
-
-    it('should construct a DatastoreShim if the type is "datastore"', function() {
-      instrumentationOpts.type = 'datastore'
-      var mod = require(moduleName)
-      expect(onRequireArgs[0]).to.be.an.instanceof(shims.DatastoreShim)
-    })
-
-    it('should only run the instrumentation once', function() {
-      expect(counter).to.equal(0)
-      require(moduleName)
-      expect(counter).to.equal(1)
-      require(moduleName)
-      require(moduleName)
-      require(moduleName)
-      require(moduleName)
-      expect(counter).to.equal(1)
+    it('should replace the return value from require', function() {
+      var obj = require('../helpers/module')
+      expect(obj).to.equal(wrapper).and.not.equal(original)
     })
   })
 
@@ -75,13 +112,13 @@ describe('shimmer', function() {
     var nodule = {
       c: 2,
       ham: 'ham',
-      doubler: function (x, cb) {
+      doubler: function(x, cb) {
         cb(this.c + x * 2)
       },
-      tripler: function (y, cb) {
+      tripler: function(y, cb) {
         cb(this.c + y * 3)
       },
-      hammer: function (h, cb) {
+      hammer: function(h, cb) {
         cb(this.ham + h)
       }
     }

@@ -1,7 +1,12 @@
 'use strict'
 
 // hapi 10.x and higher works on Node 4 and higher
+var request = require('request')
 var semver = require('semver')
+var API = require('../../../api.js')
+var shims = require('../../../lib/shim')
+
+
 if (semver.satisfies(process.versions.node, '<4.0')) return
 
 var test = require('tap').test
@@ -9,9 +14,10 @@ var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var instrument = require('../../../lib/instrumentation/hapi')
 
-test("instrumentation of Hapi", function (t) {
+test("instrumentation of Hapi", function(t) {
+  t.autoend()
 
-  t.test("preserves Server.connection() return", function (t) {
+  t.test("preserves Server.connection() return", function(t) {
     var agent = helper.loadMockedAgent()
 
     // check if Hapi is returning from function call
@@ -21,7 +27,9 @@ test("instrumentation of Hapi", function (t) {
 
     t.ok(returned != null, 'Hapi returns from Server.connection()')
 
-    instrument(agent, hapi)
+    var shim = new shims.WebFrameworkShim(agent, 'hapi')
+    instrument(agent, hapi, 'hapi', shim)
+
     var server2 = new hapi.Server()
     var returned2 = server2.connection()
 
@@ -30,14 +38,3 @@ test("instrumentation of Hapi", function (t) {
     t.end()
   })
 })
-
-function clearCache(moduleName) {
-  var path = require('path')
-  var name = require.resolve(moduleName)
-  var base = path.dirname(name)
-  for (var key in require.cache) {
-    if (key.indexOf(base) === 0) {
-      delete require.cache[key]
-    }
-  }
-}

@@ -1,20 +1,22 @@
 'use strict'
 
-var path         = require('path')
-  , test         = require('tap').test
-  , nock         = require('nock')
-  , configurator = require('../../../lib/config.js')
-  , Agent        = require('../../../lib/agent.js')
-  , Transaction  = require('../../../lib/transaction')
-  , mockAWSInfo  = require('../../lib/nock/aws.js').mockAWSInfo
+var test = require('tap').test
+var nock = require('nock')
+var configurator = require('../../../lib/config.js')
+var Agent = require('../../../lib/agent.js')
+var Transaction = require('../../../lib/transaction')
+var mockAWSInfo = require('../../lib/nock/aws.js').mockAWSInfo
+var sampler = require('../../../lib/sampler')
+var semver = require('semver')
+
 
 nock.disableNetConnect()
 
 test("harvesting with a mocked collector that returns 503 after connect", function (t) {
-  var RUN_ID      = 1337
-    , url         = 'https://collector.newrelic.com'
-    , agent       = new Agent(configurator.initialize())
-    , transaction = new Transaction(agent)
+  var RUN_ID = 1337
+  var url = 'https://collector.newrelic.com'
+  var agent = new Agent(configurator.initialize())
+  var transaction = new Transaction(agent)
 
 
   function path(method, runID) {
@@ -40,8 +42,8 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
                    .reply(200, {return_value : []})
 
   var sendMetrics = nock(url).post(path('metric_data', RUN_ID)).reply(503, returned)
-    , sendErrors  = nock(url).post(path('error_data', RUN_ID)).reply(503, returned)
-    , sendTrace   = nock(url).post(path('transaction_sample_data', RUN_ID))
+  var sendErrors = nock(url).post(path('error_data', RUN_ID)).reply(503, returned)
+  var sendTrace = nock(url).post(path('transaction_sample_data', RUN_ID))
                       .reply(503, returned)
 
 
@@ -80,10 +82,17 @@ test("harvesting with a mocked collector that returns 503 after connect", functi
 test("merging metrics and errors after a 503", function (t) {
   t.plan(6)
 
-  var RUN_ID      = 1338
-    , url         = 'https://collector.newrelic.com'
-    , agent       = new Agent(configurator.initialize())
-    , transaction = new Transaction(agent)
+  var RUN_ID = 1338
+  var url = 'https://collector.newrelic.com'
+  var agentConfig = configurator.initialize()
+  agentConfig.utilization.detect_docker = false
+
+  // Disable native metrics for these tests so they don't generate unpredictable
+  // metrics.
+  agentConfig.feature_flag.native_metrics = false
+
+  var agent = new Agent(agentConfig)
+  var transaction = new Transaction(agent)
 
   transaction.name = 'trans1'
 
@@ -114,8 +123,8 @@ test("merging metrics and errors after a 503", function (t) {
   nock(url).post(path('shutdown', RUN_ID)).reply(200)
 
   agent.start(function cb_start() {
-    // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
+
     transaction.end(function() {
       agent.traces.trace = transaction.trace
 
@@ -127,9 +136,6 @@ test("merging metrics and errors after a 503", function (t) {
         t.deepEqual(merged[0], 0, "found timestamp in merged error")
         t.deepEqual(merged[1], 'trans1', "found scope in merged error")
         t.deepEqual(merged[2], 'test error', "found message in merged error")
-
-        console.log('asdfasdfasdfasfasd')
-        console.log(agent.metrics.toJSON())
 
         t.deepEqual(
           agent.metrics.toJSON(),
@@ -143,8 +149,7 @@ test("merging metrics and errors after a 503", function (t) {
               sumOfSquares   : 0,
               callCount      : 1
             }
-          ],
-          [
+          ],[
             {name : "Errors/all"},
             {
               total          : 0,
@@ -154,8 +159,7 @@ test("merging metrics and errors after a 503", function (t) {
               sumOfSquares   : 0,
               callCount      : 1
             }
-          ],
-          [
+          ],[
             {name : "Errors/allWeb"},
             {
               total          : 0,
@@ -165,8 +169,7 @@ test("merging metrics and errors after a 503", function (t) {
               sumOfSquares   : 0,
               callCount      : 0
             }
-          ],
-          [
+          ],[
             {name : "Errors/allOther"},
             {
               total          : 0,
@@ -176,8 +179,30 @@ test("merging metrics and errors after a 503", function (t) {
               sumOfSquares   : 0,
               callCount      : 1
             }
-          ],
-          [{
+          ],[
+            // Bluebird is a dependency of tap, and since tap is loaded before
+            // the agent, it will be caught in the "Uninstrumented" metrics.
+            {name: "Supportability/Uninstrumented"},
+            {
+              total          : 0,
+              totalExclusive : 0,
+              min            : 0,
+              max            : 0,
+              sumOfSquares   : 0,
+              callCount      : 1
+            }
+          ],[
+            {name: "Supportability/Uninstrumented/bluebird"},
+            {
+              total          : 0,
+              totalExclusive : 0,
+              min            : 0,
+              max            : 0,
+              sumOfSquares   : 0,
+              callCount      : 1
+            }
+          ],[
+            {
               "name" : "Supportability/Events/Customer/Dropped" // != undefined
             },{
               "total" : 0, // != undefined
@@ -186,8 +211,9 @@ test("merging metrics and errors after a 503", function (t) {
               "max" : 0, // != undefined
               "sumOfSquares" : 0, // != undefined
               "callCount" : 0 // != undefined
-            }], // != undefined
-          [{
+            }
+          ],[
+            {
               "name" : "Supportability/Events/Customer/Seen" // != undefined
             },{
               "total" : 0, // != undefined
@@ -196,8 +222,9 @@ test("merging metrics and errors after a 503", function (t) {
               "max" : 0, // != undefined
               "sumOfSquares" : 0, // != undefined
               "callCount" : 0 // != undefined
-            }], // != undefined
-          [{
+            }
+          ],[
+            {
               "name" : "Supportability/Events/Customer/Sent" // != undefined
             },{
               "total" : 0, // != undefined
@@ -206,8 +233,9 @@ test("merging metrics and errors after a 503", function (t) {
               "max" : 0, // != undefined
               "sumOfSquares" : 0, // != undefined
               "callCount" : 0 // != undefined
-            }],
-          [{
+            }
+          ],[
+            {
               "name" : "Supportability/Events/TransactionError/Seen" // != undefined
             },{
               "total" : 0, // != undefined
@@ -216,8 +244,9 @@ test("merging metrics and errors after a 503", function (t) {
               "max" : 0, // != undefined
               "sumOfSquares" : 0, // != undefined
               "callCount" : 1 // != undefined
-            }],
-          [{
+            }
+          ],[
+            {
               "name" : "Supportability/Events/TransactionError/Sent" // != undefined
             },{
               "total" : 0, // != undefined

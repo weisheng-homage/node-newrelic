@@ -1,10 +1,8 @@
 'use strict'
 
-var path = require('path')
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
 var params = require('../../lib/params')
-var semver = require('semver')
 
 
 // CONSTANTS
@@ -12,11 +10,8 @@ var DB_COLLECTION = 'test_express'
 var DB_URL = 'mongodb://' + params.mongodb_host + ':' + params.mongodb_port + '/integration'
 
 
-test("Express 3 using async in routes with MongoDB",
-    {timeout : Infinity,
-     skip: semver.satisfies(process.version, "0.8")},
-    function (t) {
-  t.plan(24)
+test("Express 3 using async in routes with MongoDB", {timeout : Infinity}, function(t) {
+  t.plan(26)
 
   var agent = helper.instrumentMockedAgent()
   var createServer = require('http').createServer
@@ -116,7 +111,6 @@ test("Express 3 using async in routes with MongoDB",
     var errorHandler = express.errorHandler()
 
 
-
     app.configure(function cb_configure() {
       app.use(function cb_use(req, res, next) {
         t.ok(agent.getTransaction(), "tracer state visible before body parsing")
@@ -181,7 +175,6 @@ test("Express 3 using async in routes with MongoDB",
    ** ACTUAL TEST
    **
    **/
-  var self = this
   helper.bootstrapMongoDB([DB_COLLECTION], function cb_bootstrapMongoDB(error, service) {
     if (error) {
       t.fail(error)
@@ -194,7 +187,7 @@ test("Express 3 using async in routes with MongoDB",
       app(req, res)
     }).listen(8765)
 
-    self.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close(function cb_close() {
         helper.unloadAgent(agent)
       })
@@ -218,9 +211,9 @@ test("Express 3 using async in routes with MongoDB",
                 "first segment is web transaction")
 
         children = web.children || []
-        t.equal(children.length, 1, "should have a MongoDB connection child")
+        t.equal(children.length, 5, "should have a MongoDB connection child")
 
-        var connect = children[0]
+        var connect = children[4].children[0].children[0] // Skip middleware segments
         children = connect.children[1].children
         t.equal(
           connect.name,

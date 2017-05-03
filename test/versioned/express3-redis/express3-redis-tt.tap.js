@@ -26,7 +26,7 @@ function restrict(req, res, next) {
 /* hits Redis
  */
 function getRoomInfo(req, res, client, next) {
-  client.hgetall('rooms:' + req.params.id + ':info', function (err, room) {
+  client.hgetall('rooms:' + req.params.id + ':info', function(err, room) {
     if (!err && room && Object.keys(room).length) return next(room)
 
     res.redirect('back')
@@ -36,14 +36,14 @@ function getRoomInfo(req, res, client, next) {
 /* hits Redis for a set
  */
 function getUsersInRoom(req, client, next) {
-  client.smembers('rooms:' + req.params.id + ':online', function (err, online) {
+  client.smembers('rooms:' + req.params.id + ':online', function(err, online) {
     var users = []
 
     online.forEach(function cb_forEach(userKey) {
-      client.get('users:' + userKey + ':status', function (err, status) {
+      client.get('users:' + userKey + ':status', function(err, status) {
         var msnData  = userKey.split(':')
-          , username = msnData.length > 1 ? msnData[1] : msnData[0]
-          , provider = msnData.length > 1 ? msnData[0] : 'twitter'
+        var username = msnData.length > 1 ? msnData[1] : msnData[0]
+        var provider = msnData.length > 1 ? msnData[0] : 'twitter'
 
 
         users.push({
@@ -63,7 +63,7 @@ function getUsersInRoom(req, client, next) {
 function getPublicRoomsInfo(client, next) {
   client.smembers('test:public:rooms', function (err, publicRooms) {
     var rooms = []
-      , len   = publicRooms.length
+    var len   = publicRooms.length
 
 
     if (!len) next([])
@@ -119,9 +119,9 @@ function enterRoom(req, res, room, users, rooms, status) {
  */
 function bootstrapExpress(client) {
   var express    = require('express')
-    , passport   = require('passport')
-    , RedisStore = require('connect-redis')(express)
-    , app        = express()
+  var passport   = require('passport')
+  var RedisStore = require('connect-redis')(express)
+  var app        = express()
 
 
   passport.deserializeUser(function cb_deserializeUser(id, done) {
@@ -198,7 +198,7 @@ function populate(client, next) {
  */
 function makeCookie() {
   var cookie = require('cookie')
-    , signer = require('cookie-signature')
+  var signer = require('cookie-signature')
 
 
   return cookie.serialize('test', 's:' + signer.sign(SESSION_ID, SESSION_SECRET))
@@ -214,15 +214,14 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
   t.plan(37)
 
   var agent        = helper.instrumentMockedAgent()
-    , redis        = require('redis')
-    , createServer = require('http').createServer
-    , request      = require('request')
+  var redis        = require('redis')
+  var createServer = require('http').createServer
+  var request      = require('request')
 
 
   // need to capture parameters
   agent.config.capture_params = true
 
-  var self = this
   helper.bootstrapRedis(DB_INDEX, function cb_bootstrapRedis(error, service) {
     if (error) {
       t.fail(error)
@@ -230,10 +229,10 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
     }
 
     var client = redis.createClient(params.redis_port, params.redis_host)
-      , server = createServer(bootstrapExpress(client)).listen(31337)
+    var server = createServer(bootstrapExpress(client)).listen(31337)
 
 
-    self.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close(function cb_close() {
         client.end()
         helper.unloadAgent(agent)
@@ -256,16 +255,16 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         children = web.children || []
         t.equal(web.name, 'WebTransaction/Expressjs/GET//:id',
                 "first segment is web transaction")
-        t.equal(web.children.length, 2, "web node has two children")
+        t.equal(web.children.length, 8, "web node has two children")
 
-        var get = children[0] || {}
+        var get = children[4].children[0] || {}
         key = (get.parameters || {}).key
         t.equal(get.name, 'Datastore/operation/Redis/get', "first child segment is get")
         t.equal(key, '"sess:' + SESSION_ID + '"',
                 "operation is session load")
         t.ok((get.children || {}).length >= 1, "get should have a callback segment")
 
-        var hgetall = children[1] || {}
+        var hgetall = children[7].children[1].children[0] || {}
         key = (hgetall.parameters || {}).key
 
         children = hgetall.children[0].children || []
@@ -332,16 +331,17 @@ test("Express 3 with Redis support", {timeout : Infinity}, function (t) {
         get = children[0].children[0] || {}
         key = (get.parameters || {}).key
         children = get.children[0].children || []
+
         t.equal(get.name, 'Datastore/operation/Redis/get', "first hgetall child is get")
         t.equal(key, '"users:twitter:othiym23:status"',
                 "fetched status of othiym23")
-        t.ok(children.length >= 2, "get has two children")
+        t.ok(children.length >= 1, "get has a callback")
 
         var view = children[0] || {}
         t.equal(view.name, 'View/room/Rendering', "get child is render of room view")
-        t.equal((view.children || {}).length, 0, "has no children")
+        t.equal((view.children).length, 1, "has a child")
 
-        var setex = children[1] || {}
+        var setex = view.children[0] || {}
         key = (setex.parameters || {}).key
         t.equal(setex.name, 'Datastore/operation/Redis/setex', "view child is setex")
         t.equal(key, '"sess:' + SESSION_ID + '"',

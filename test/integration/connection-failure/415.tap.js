@@ -1,12 +1,13 @@
 'use strict'
 
-var path         = require('path')
-  , test         = require('tap').test
-  , nock         = require('nock')
-  , configurator = require('../../../lib/config.js')
-  , Agent        = require('../../../lib/agent.js')
-  , Transaction  = require('../../../lib/transaction')
-  , mockAWSInfo  = require('../../lib/nock/aws.js').mockAWSInfo
+var test         = require('tap').test
+var nock         = require('nock')
+var configurator = require('../../../lib/config.js')
+var Agent        = require('../../../lib/agent.js')
+var sampler = require('../../../lib/sampler.js')
+var Transaction  = require('../../../lib/transaction')
+var mockAWSInfo  = require('../../lib/nock/aws.js').mockAWSInfo
+
 
 nock.disableNetConnect()
 
@@ -30,6 +31,9 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
   // manually harvesting
   agent.config.no_immediate_harvest = true
 
+  // turn off native metrics to avoid unwanted gc metrics
+  agent.config.feature_flag.native_metrics = false
+
   var redirect = nock(url).post(path('get_redirect_host'))
                    .reply(200, {return_value : "collector.newrelic.com"})
 
@@ -51,6 +55,7 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
   mockAWSInfo()
 
   agent.start(function cb_start(error, config) {
+    sampler.nativeMetrics && sampler.nativeMetrics.unbind()
     t.notOk(error, 'got no error on connection')
     t.deepEqual(config, {agent_run_id : RUN_ID}, 'got configuration')
     t.ok(redirect.isDone(),    "requested redirect")
@@ -58,9 +63,10 @@ test("harvesting with a mocked collector that returns 415 after connect", functi
 
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
-    transaction.end(function() {      
+    transaction.end(function() {
       agent.traces.trace = transaction.trace
 
+      sampler.nativeMetrics && sampler.nativeMetrics.unbind()
       agent.harvest(function cb_harvest(error) {
         t.notOk(error, "no error received on 415")
         t.ok(sendMetrics.isDone(), "initial sent metrics...")
@@ -101,6 +107,9 @@ test("discarding metrics and errors after a 415", function (t) {
   // manually harvesting
   agent.config.no_immediate_harvest = true
 
+  // turn off native metrics to avoid unwanted gc metrics
+  agent.config.feature_flag.native_metrics = false
+
   nock(url).post(path('get_redirect_host'))
            .reply(200, {return_value : "collector.newrelic.com"})
 
@@ -119,6 +128,7 @@ test("discarding metrics and errors after a 415", function (t) {
     // need sample data to give the harvest cycle something to send
     agent.errors.add(transaction, new Error('test error'))
     agent.traces.trace = transaction.trace
+    sampler.nativeMetrics && sampler.nativeMetrics.unbind()
 
     agent.harvest(function cb_harvest(error) {
       t.notOk(error, "shouldn't have gotten back error for 415")

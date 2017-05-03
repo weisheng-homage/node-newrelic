@@ -1,21 +1,19 @@
 'use strict'
 
-var path        = require('path')
-  , chai        = require('chai')
-  , should      = chai.should()
-  , expect      = chai.expect
-  , helper      = require('../lib/agent_helper.js')
-  , API         = require('../../api.js')
-  , Metrics     = require('../../lib/metrics')
-  , Trace       = require('../../lib/transaction/trace')
-  , Transaction = require('../../lib/transaction')
-  , hashes      = require('../../lib/util/hashes')
-  , NAMES       = require('../../lib/metrics/names.js')
+var chai        = require('chai')
+var should      = chai.should()
+var expect      = chai.expect
+var helper      = require('../lib/agent_helper.js')
+var API         = require('../../api.js')
+var Metrics     = require('../../lib/metrics')
+var Trace       = require('../../lib/transaction/trace')
+var Transaction = require('../../lib/transaction')
+var hashes      = require('../../lib/util/hashes')
 
 
 describe("Transaction", function () {
   var agent
-    , trans
+  var trans
 
 
   beforeEach(function () {
@@ -146,8 +144,8 @@ describe("Transaction", function () {
     it("should allow multiple overlapping metric measurements for same name",
        function () {
       var TRACE_NAME = 'Custom/Test06'
-        , SLEEP_DURATION = 43
-        , tt = new Transaction(agent)
+      var SLEEP_DURATION = 43
+      var tt = new Transaction(agent)
 
 
       tt.measure(TRACE_NAME, null, SLEEP_DURATION)
@@ -211,13 +209,14 @@ describe("Transaction", function () {
         expect(trans.nameState.getName()).equal(null)
       })
 
-      it("should return the right name if partialName and url are set", function () {
+      it("should return the right name if partialName and url are set", function() {
         trans.nameState.setPrefix('Framework')
         trans.nameState.setVerb('verb')
         trans.nameState.appendPath('route')
         trans.url = '/route'
-        expect(trans.getName()).equal('WebTransaction/Framework/verb/route')
-        expect(trans.nameState.getName()).equal('Framework/verb/route')
+        expect(trans.getName())
+          .to.equal('WebTransaction/WebFrameworkUri/Framework/VERB/route')
+        expect(trans.nameState.getName()).to.equal('Framework/VERB/route')
       })
 
       it("should return the name if it has already been set", function () {
@@ -243,18 +242,32 @@ describe("Transaction", function () {
       })
 
       it("produces a non-error name when status code is ignored", function () {
-        trans.setName('/test/string?do=thing&another=thing', 404)
+        agent.config.error_collector.ignore_status_codes = [404, 500]
+        trans.setName('/test/string?do=thing&another=thing', 500)
         expect(trans.name).equal('WebTransaction/NormalizedUri/*')
       })
 
       it("produces a non-error partial name when status code is ignored", function () {
-        trans.setName('/test/string?do=thing&another=thing', 404)
+        agent.config.error_collector.ignore_status_codes = [404, 500]
+        trans.setName('/test/string?do=thing&another=thing', 500)
         expect(trans._partialName).equal('NormalizedUri/*')
       })
 
       it("passes through status code when status is 404", function () {
         trans.setName('/test/string?do=thing&another=thing', 404)
         expect(trans.statusCode).equal(404)
+      })
+
+      it("produces a 'not found' partial name when status is 404", function() {
+        trans.nameState.setName('Expressjs', 'GET', '/')
+        trans.setName('/test/string?do=thing&another=thing', 404)
+        expect(trans._partialName).equal('Expressjs/GET/(not found)')
+      })
+
+      it("produces a 'not found' name when status is 404", function() {
+        trans.nameState.setName('Expressjs', 'GET', '/')
+        trans.setName('/test/string?do=thing&another=thing', 404)
+        expect(trans.name).equal('WebTransaction/Expressjs/GET/(not found)')
       })
 
       it("produces a regular name when status is 501", function () {
@@ -304,7 +317,8 @@ describe("Transaction", function () {
       })
 
       it("keeps the custom name when error status is ignored", function () {
-        trans.setName('/test/string?do=thing&another=thing', 404)
+        agent.config.error_collector.ignore_status_codes = [404, 500]
+        trans.setName('/test/string?do=thing&another=thing', 500)
         expect(trans.name).equal('WebTransaction/Custom/test')
       })
 
@@ -343,7 +357,7 @@ describe("Transaction", function () {
 
   describe("when setting apdex for key transactions", function () {
     var trans
-      , metric
+    var metric
 
 
     before(function () {

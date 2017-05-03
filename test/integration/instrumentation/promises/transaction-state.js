@@ -1,6 +1,5 @@
 'use strict'
 
-var test = require('tap').test
 var helper = require('../../../lib/agent_helper')
 
 var COUNT = 2
@@ -9,7 +8,15 @@ module.exports = runTests
 runTests.runMultiple = runMultiple
 
 
-function runTests(t, agent, Promise) {
+function runTests(t, agent, Promise, library) {
+
+  /* eslint-disable no-shadow, brace-style */
+  if (library) {
+    performTests('Fullfillment Factories',
+      function(Promise, val) { return library.resolve(val) },
+      function(Promise, err) { return library.reject(err) }
+    )
+  }
 
   performTests('Fullfillment Factories',
     function(Promise, val) { return Promise.resolve(val) },
@@ -34,24 +41,46 @@ function runTests(t, agent, Promise) {
     }
   )
 
-  performTests('Promise.method',
-    function(Promise, val) { return Promise.method(function() { return val })() },
-    function(Promise, err) { return Promise.method(function() { throw err })() }
-  )
+  if (Promise.method) {
+    performTests('Promise.method',
+      function(Promise, val) { return Promise.method(function() { return val })() },
+      function(Promise, err) { return Promise.method(function() { throw err })() }
+    )
+  }
 
-  performTests('Promise.try',
-    function(Promise, val) { return Promise.try(function() { return val }) },
-    function(Promise, err) { return Promise.try(function() { throw err }) }
-  )
+  if (Promise.try) {
+    performTests('Promise.try',
+      function(Promise, val) { return Promise.try(function() { return val }) },
+      function(Promise, err) { return Promise.try(function() { throw err }) }
+    )
+  }
+  /* eslint-enable no-shadow, brace-style */
 
   function performTests(name, resolve, reject) {
     doPerformTests(name, resolve, reject, true)
     doPerformTests(name, resolve, reject, false)
   }
 
-  function doPerformTests(name, resolve, reject, enableSegments) {
+  function doPerformTests(name, resolve, reject) {
+    t.test(name + ': does not expose internal properties', function(t) {
+      t.plan(1 * COUNT + 1)
+
+      runMultiple(COUNT, function(i, cb) {
+        helper.runInTransaction(agent, function() {
+          var p = resolve(Promise).then(cb, cb)
+          var nrKeys = Object.keys(p).filter(function(key) {
+            return /^__NR_/.test(key)
+          })
+          t.deepEqual(nrKeys, [], 'should not expose any internal keys')
+        })
+      }, function(err) {
+        t.error(err, 'should not error')
+        t.end()
+      })
+    })
+
     t.test(name + ': preserves transaction in resolve callback', function(t) {
-      t.plan(4 * COUNT)
+      t.plan(4 * COUNT + 1)
 
       runMultiple(COUNT, function(i, cb) {
         helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -64,15 +93,16 @@ function runTests(t, agent, Promise) {
               t.equal(res, i, 'should be the correct value')
               checkTransaction(t, agent, transaction)
             })
-            .finally(cb)
+            .then(cb, cb)
         })
-      }, function() {
+      }, function(err) {
+        t.error(err, 'should not error')
         t.end()
       })
     })
 
     t.test(name + ': preserves transaction in reject callback', function(t) {
-      t.plan(3 * COUNT)
+      t.plan(3 * COUNT + 1)
 
       runMultiple(COUNT, function(i, cb) {
         helper.runInTransaction(agent, function transactionWrapper(transaction) {
@@ -85,9 +115,10 @@ function runTests(t, agent, Promise) {
               t.equal(reason, err, 'should be the same error')
               checkTransaction(t, agent, transaction)
             })
-            .finally(cb)
+            .then(cb, cb)
         })
-      }, function() {
+      }, function(err) {
+        t.error(err, 'should not error')
         t.end()
       })
     })
@@ -107,7 +138,10 @@ function runTests(t, agent, Promise) {
         t.equal(res, 2, 'should be the correct result')
         checkTransaction(t, agent, transaction)
       })
-      .finally(function finallyHandler() {
+      .then(function() {
+        t.end()
+      }, function(err) {
+        t.fail(err)
         t.end()
       })
     })
@@ -131,7 +165,10 @@ function runTests(t, agent, Promise) {
         t.equal(reason, err, 'should be the same error')
         checkTransaction(t, agent, transaction)
       })
-      .finally(function finallyHandler() {
+      .then(function finallyHandler() {
+        t.end()
+      }, function(err) {
+        t.fail(err)
         t.end()
       })
     })
@@ -141,7 +178,7 @@ function runTests(t, agent, Promise) {
 function runMultiple(count, fn, cb) {
   var finished = 0
   for (var i = 0; i < count; ++i) {
-    fn(i, function runMultipleCallback(){
+    fn(i, function runMultipleCallback() {
       if (++finished >= count) {
         cb()
       }

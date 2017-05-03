@@ -2,10 +2,12 @@
 
 var chai = require('chai')
 var expect = chai.expect
+var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
 var helper = require('../../lib/agent_helper')
 var Shim = require('../../../lib/shim/shim')
 var DatastoreShim = require('../../../lib/shim/datastore-shim')
 var ParsedStatement = require('../../../lib/db/parsed-statement')
+
 
 describe('DatastoreShim', function() {
   var agent = null
@@ -14,7 +16,7 @@ describe('DatastoreShim', function() {
 
   beforeEach(function() {
     agent = helper.loadMockedAgent()
-    shim = new DatastoreShim(agent, 'test-cassandra', DatastoreShim.CASSANDRA)
+    shim = new DatastoreShim(agent, 'test-cassandra', null, DatastoreShim.CASSANDRA)
     wrappable = {
       name: 'this is a name',
       bar: function barsName() { return 'bar' },
@@ -64,7 +66,13 @@ describe('DatastoreShim', function() {
 
   describe('well-known datastores', function() {
     it('should be enumerated on the class and prototype', function() {
-      var datastores = ['CASSANDRA', 'MYSQL', 'REDIS']
+      var datastores = [
+        'CASSANDRA',
+        'MONGODB',
+        'MYSQL',
+        'REDIS',
+        'POSTGRES'
+      ]
       datastores.forEach(function(ds) {
         expect(DatastoreShim).to.have.property(ds)
         expect(shim).to.have.property(ds)
@@ -249,16 +257,50 @@ describe('DatastoreShim', function() {
     })
 
     describe('wrapper', function() {
-      it('should create a datastore operation metric', function() {
-        shim.recordOperation(wrappable, 'getActiveSegment')
+      describe('when `record` is false', function() {
+        it('should create a datastore operation segment but no metric', function() {
+          shim.recordOperation(wrappable, 'getActiveSegment', {record: false})
 
-        helper.runInTransaction(agent, function(tx) {
-          var startingSegment = agent.tracer.getSegment()
-          var segment = wrappable.getActiveSegment()
-          expect(segment).to.not.equal(startingSegment)
-          expect(segment.transaction).to.equal(tx)
-          expect(segment.name).to.equal('Datastore/operation/Cassandra/getActiveSegment')
-          expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment()
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name).to.equal('getActiveSegment')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
+        })
+      })
+
+      describe('when `record` is true', function() {
+        it('should create a datastore operation metric', function() {
+          shim.recordOperation(wrappable, 'getActiveSegment')
+
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment()
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name)
+              .to.equal('Datastore/operation/Cassandra/getActiveSegment')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
+        })
+      })
+
+      describe('when `record` is defaulted', function() {
+        it('should create a datastore operation metric', function() {
+          shim.recordOperation(wrappable, 'getActiveSegment')
+
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment()
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name)
+              .to.equal('Datastore/operation/Cassandra/getActiveSegment')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
         })
       })
 
@@ -267,9 +309,11 @@ describe('DatastoreShim', function() {
         var toWrap = function() { executed = true }
         var wrapped = shim.recordOperation(toWrap, {})
 
-        expect(executed).to.be.false
-        wrapped()
-        expect(executed).to.be.true
+        helper.runInTransaction(agent, function() {
+          expect(executed).to.be.false
+          wrapped()
+          expect(executed).to.be.true
+        })
       })
 
       it('should invoke the spec in the context of the wrapped function', function() {
@@ -285,8 +329,10 @@ describe('DatastoreShim', function() {
           return {}
         })
 
-        wrappable.bar('a', 'b', 'c')
-        expect(executed).to.be.true
+        helper.runInTransaction(agent, function() {
+          wrappable.bar('a', 'b', 'c')
+          expect(executed).to.be.true
+        })
       })
 
       it('should bind the callback if there is one', function() {
@@ -302,7 +348,108 @@ describe('DatastoreShim', function() {
         }
 
         var wrapped = shim.recordOperation(toWrap, {callback: shim.LAST})
-        wrapped(cb)
+
+        helper.runInTransaction(agent, function() {
+          wrapped(cb)
+        })
+      })
+
+      describe('with `extras`', function() {
+        var localhost = null
+        beforeEach(function() {
+          localhost = getMetricHostName(agent, 'localhost')
+          shim.recordOperation(wrappable, 'getActiveSegment', function(s, fn, n, args) {
+            return {extras: args[0]}
+          })
+        })
+
+        function run(extras, cb) {
+          helper.runInTransaction(agent, function() {
+            var segment = wrappable.getActiveSegment(extras)
+            cb(segment)
+          })
+        }
+
+        it('should normalize the values of datastore instance attributes', function() {
+          run({
+            host: 'localhost',
+            port_path_or_id: 1234,
+            database_name: 'foobar'
+          }, function(segment) {
+            expect(segment).to.have.property('parameters')
+            expect(segment.parameters).to.have.property('host', localhost)
+            expect(segment.parameters).to.have.property('port_path_or_id', '1234')
+            expect(segment.parameters).to.have.property('database_name', 'foobar')
+          })
+
+          run({
+            host: 'some_other_host',
+            port_path_or_id: null,
+            database_name: null
+          }, function(segment) {
+            expect(segment).to.have.property('parameters')
+            expect(segment.parameters).to.have.property('host', 'some_other_host')
+            expect(segment.parameters).to.have.property('port_path_or_id', 'unknown')
+            expect(segment.parameters).to.have.property('database_name', 'unknown')
+          })
+        })
+
+        it('should remove `database_name` if disabled', function() {
+          agent.config.datastore_tracer.database_name_reporting.enabled = false
+          run({
+            host: 'localhost',
+            port_path_or_id: 1234,
+            database_name: 'foobar'
+          }, function(segment) {
+            expect(segment).to.have.property('parameters')
+            expect(segment.parameters).to.have.property('host', localhost)
+            expect(segment.parameters).to.have.property('port_path_or_id', '1234')
+            expect(segment.parameters).to.not.have.property('database_name')
+          })
+        })
+
+        it('should remove `host` and `port_path_or_id` if disabled', function() {
+          agent.config.datastore_tracer.instance_reporting.enabled = false
+          run({
+            host: 'localhost',
+            port_path_or_id: 1234,
+            database_name: 'foobar'
+          }, function(segment) {
+            expect(segment).to.have.property('parameters')
+            expect(segment.parameters).to.not.have.property('host')
+            expect(segment.parameters).to.not.have.property('port_path_or_id')
+            expect(segment.parameters).to.have.property('database_name', 'foobar')
+          })
+        })
+      })
+    })
+
+    describe('recorder', function() {
+      beforeEach(function(done) {
+        shim.recordOperation(wrappable, 'getActiveSegment', function() {
+          return {
+            name: 'op',
+            extras: {
+              host: 'some_host',
+              port_path_or_id: 1234,
+              database_name: 'foobar'
+            }
+          }
+        })
+        helper.runInTransaction(agent, function(tx) {
+          wrappable.getActiveSegment()
+          tx.end(function() { done() })
+        })
+      })
+
+      it('should create datastore metrics', function() {
+        var metrics = agent.metrics.unscoped
+        expect(metrics).to.have.property('Datastore/all')
+        expect(metrics).to.have.property('Datastore/allOther')
+        expect(metrics).to.have.property('Datastore/Cassandra/all')
+        expect(metrics).to.have.property('Datastore/Cassandra/allOther')
+        expect(metrics).to.have.property('Datastore/operation/Cassandra/op')
+        expect(metrics).to.have.property('Datastore/instance/Cassandra/some_host/1234')
       })
     })
   })
@@ -352,16 +499,51 @@ describe('DatastoreShim', function() {
         query = 'SELECT property FROM my_table'
       })
 
-      it('should create a datastore query metric', function() {
-        shim.recordQuery(wrappable, 'getActiveSegment', {query: shim.FIRST})
+      describe('when `record` is false', function() {
+        it('should create a datastore query segment but no metric', function() {
+          shim.recordQuery(wrappable, 'getActiveSegment', {
+            query: shim.FIRST,
+            record: false
+          })
 
-        helper.runInTransaction(agent, function(tx) {
-          var startingSegment = agent.tracer.getSegment()
-          var segment = wrappable.getActiveSegment(query)
-          expect(segment).to.not.equal(startingSegment)
-          expect(segment.transaction).to.equal(tx)
-          expect(segment.name).to.equal('Datastore/statement/Cassandra/my_table/select')
-          expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment(query)
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name).to.equal('getActiveSegment')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
+        })
+      })
+
+      describe('when `record` is true', function() {
+        it('should create a datastore query metric', function() {
+          shim.recordQuery(wrappable, 'getActiveSegment', {query: shim.FIRST})
+
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment(query)
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name).to.equal('Datastore/statement/Cassandra/my_table/select')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
+        })
+      })
+
+      describe('when `record` is defaulted', function() {
+        it('should create a datastore query metric', function() {
+          shim.recordQuery(wrappable, 'getActiveSegment', {query: shim.FIRST})
+
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment(query)
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name).to.equal('Datastore/statement/Cassandra/my_table/select')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
         })
       })
 
@@ -370,9 +552,11 @@ describe('DatastoreShim', function() {
         var toWrap = function() { executed = true }
         var wrapped = shim.recordQuery(toWrap, {})
 
-        expect(executed).to.be.false
-        wrapped()
-        expect(executed).to.be.true
+        helper.runInTransaction(agent, function() {
+          expect(executed).to.be.false
+          wrapped()
+          expect(executed).to.be.true
+        })
       })
 
       it('should bind the callback if there is one', function() {
@@ -391,7 +575,10 @@ describe('DatastoreShim', function() {
           query: shim.FIRST,
           callback: shim.LAST
         })
-        wrapped(query, cb)
+
+        helper.runInTransaction(agent, function() {
+          wrapped(query, cb)
+        })
       })
 
       it('should bind the row callback if there is one', function() {
@@ -410,7 +597,10 @@ describe('DatastoreShim', function() {
           query: shim.FIRST,
           rowCallback: shim.LAST
         })
-        wrapped(query, cb)
+
+        helper.runInTransaction(agent, function() {
+          wrapped(query, cb)
+        })
       })
     })
   })
@@ -568,17 +758,59 @@ describe('DatastoreShim', function() {
         // Check the segment from the first call.
         var cbSegment = args[2]()
         expect(cbSegment).to.have.property('name')
-          .match(/^1 calls.*?getActiveSegment/)
+          .match(/^Callback: getActiveSegment/)
+        expect(cbSegment.parameters).to.have.property('count')
+          .equal(1)
 
         // Call it a second time and see if the name changed.
         args[2]()
-        expect(cbSegment).to.have.property('name')
-          .match(/^2 calls.*?getActiveSegment/)
+        expect(cbSegment.parameters).to.have.property('count')
+          .equal(2)
 
         // And a third time, why not?
         args[2]()
-        expect(cbSegment).to.have.property('name')
-          .match(/^3 calls.*?getActiveSegment/)
+        expect(cbSegment.parameters).to.have.property('count')
+          .equal(3)
+      })
+    })
+  })
+
+  describe('#captureInstanceAttributes', function() {
+    it('should not crash outside of a transaction', function() {
+      expect(function() {
+        shim.captureInstanceAttributes('foo', 123, 'bar')
+      }).to.not.throw()
+    })
+
+    it('should not add parameters to segments it did not create', function() {
+      var bound = agent.tracer.wrapFunction('foo', null, function(host, port, db) {
+        shim.captureInstanceAttributes(host, port, db)
+        return shim.getSegment()
+      }, function(segment, args) {
+        return args
+      })
+
+      helper.runInTransaction(agent, function() {
+        var segment = bound('foobar', 123, 'bar')
+        expect(segment).to.have.property('parameters')
+        expect(segment.parameters).to.not.have.property('host')
+        expect(segment.parameters).to.not.have.property('port_path_or_id')
+        expect(segment.parameters).to.not.have.property('database_name')
+      })
+    })
+
+    it('should add normalized attributes to its own segments', function() {
+      var wrapped = shim.recordOperation(function(host, port, db) {
+        shim.captureInstanceAttributes(host, port, db)
+        return shim.getSegment()
+      })
+
+      helper.runInTransaction(agent, function() {
+        var segment = wrapped('foobar', 123, 'bar')
+        expect(segment).to.have.property('parameters')
+        expect(segment.parameters).to.have.property('host', 'foobar')
+        expect(segment.parameters).to.have.property('port_path_or_id', '123')
+        expect(segment.parameters).to.have.property('database_name', 'bar')
       })
     })
   })

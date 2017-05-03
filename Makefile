@@ -99,8 +99,9 @@ prerelease: node_modules ca-gen $(CERTIFICATE) docker
 	@node test/bin/install_sub_deps prerelease
 	time $(TAP) $(PRERELEASE)
 
-smoke: clean node_modules
-	npm install --production
+smoke: clean
+	npm install --production --loglevel warn
+	npm install tap
 	@cd test/smoke && npm install
 	time $(TAP) $(SMOKE)
 
@@ -179,11 +180,14 @@ $(CERTIFICATE): $(CACERT)
 		-out $(CERTIFICATE)
 	@rm -f server.csr
 
+security:
+	./node_modules/.bin/nsp check
+
 services:
 	if docker ps -a | grep -q "nr_node_memcached"; then \
 	  docker start nr_node_memcached; \
 	else \
-	  docker run -d --name nr_node_memcached -p 11211:11211 borja/docker-memcached; \
+	  docker run -d --name nr_node_memcached -p 11211:11211 memcached; \
 	fi
 	if docker ps -a | grep -q "nr_node_mongodb"; then \
 	  docker start nr_node_mongodb; \

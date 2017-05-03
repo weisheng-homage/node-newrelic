@@ -3,19 +3,18 @@
 // shut up, Express
 process.env.NODE_ENV = 'test'
 
-var path    = require('path')
-  , test    = require('tap').test
-  , request = require('request')
-  , helper  = require('../../lib/agent_helper')
-  , API     = require('../../../api.js')
+var test    = require('tap').test
+var request = require('request')
+var helper  = require('../../lib/agent_helper')
+var API     = require('../../../api.js')
 
 
 var TEST_PATH = '/test'
-  , TEST_PORT = 9876
-  , TEST_HOST = 'localhost'
-  , TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
-  , DELAY     = 600
-  , BODY      = "<!DOCTYPE html>\n" +
+var TEST_PORT = 9876
+var TEST_HOST = 'localhost'
+var TEST_URL  = 'http://' + TEST_HOST + ':' + TEST_PORT + TEST_PATH
+var DELAY     = 600
+var BODY      = "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
                 "  <title>yo dawg</title>\n" +
@@ -28,19 +27,19 @@ var TEST_PATH = '/test'
 
 // Regression test for issue 154
 // https://github.com/newrelic/node-newrelic/pull/154
-test("using only the express router", function (t) {
+test("using only the express router", function(t) {
   var agent = helper.instrumentMockedAgent()
   var router = require('express').Router()
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 
-  router.get('/test', function () {
+  router.get('/test', function() {
     //
   })
 
-  router.get('/test2', function () {
+  router.get('/test2', function() {
     //
   })
 
@@ -48,14 +47,14 @@ test("using only the express router", function (t) {
   t.end()
 })
 
-test("the express router should go through a whole request lifecycle", function (t) {
+test("the express router should go through a whole request lifecycle", function(t) {
   var agent = helper.instrumentMockedAgent()
   var router = require('express').Router()
   var server
 
   t.plan(2)
 
-  this.tearDown(function cb_tearDown() {
+  t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
   })
 
@@ -84,7 +83,7 @@ test("agent instrumentation of Express 4", function (t) {
       , server = require('http').createServer(app)
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -141,7 +140,7 @@ test("agent instrumentation of Express 4", function (t) {
       , server = require('http').createServer(app)
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -183,7 +182,7 @@ test("agent instrumentation of Express 4", function (t) {
     agent.config.browser_monitoring.browser_key = '12345'
     agent.config.browser_monitoring.js_agent_loader = 'function(){}'
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -220,7 +219,7 @@ test("agent instrumentation of Express 4", function (t) {
       , server = require('http').createServer(app)
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -267,34 +266,29 @@ test("agent instrumentation of Express 4", function (t) {
 
   t.test("should measure request duration properly (NA-46)",
        {timeout : 2 * 1000},
-       function (t) {
+       function(t) {
     var agent  = helper.instrumentMockedAgent()
-      , app    = require('express')()
-      , server = require('http').createServer(app)
+    var app    = require('express')()
+    var server = require('http').createServer(app)
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })
 
-    app.get(TEST_PATH, function (request, response) {
+    app.get(TEST_PATH, function(request, response) {
       t.ok(agent.getTransaction(),
            "the transaction should be visible inside the Express handler")
-           setTimeout(function () { response.send(BODY); }, DELAY)
+           setTimeout(function() { response.send(BODY) }, DELAY)
     })
 
     server.listen(TEST_PORT, TEST_HOST, function ready() {
-      request.get(TEST_URL, function (error, response, body) {
+      request.get(TEST_URL, function(error, response, body) {
         if (error) t.fail(error)
 
         t.ok(agent.environment.toJSON().some(function cb_some(pair) {
-          return pair[0] === 'Dispatcher' && pair[1] === 'express'
-        }),
-        "should indicate that the Express dispatcher is in play")
-
-        t.ok(agent.environment.toJSON().some(function cb_some(pair) {
-          return pair[0] === 'Framework' && pair[1] === 'express'
+          return pair[0] === 'Framework' && pair[1] === 'Expressjs'
         }),
         "should indicate that Express itself is in play")
 
@@ -321,7 +315,7 @@ test("agent instrumentation of Express 4", function (t) {
       , server = require('http').createServer(app)
 
 
-    this.tearDown(function cb_tearDown() {
+    t.tearDown(function cb_tearDown() {
       server.close()
       helper.unloadAgent(agent)
     })

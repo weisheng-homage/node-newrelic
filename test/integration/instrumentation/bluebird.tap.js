@@ -2,7 +2,6 @@
 
 var test = require('tap').test
 var helper = require('../../lib/agent_helper')
-var assertSegments = require('../../lib/metrics_helper').assertSegments
 var testPromiseSegments = require('./promises/segments.js')
 var testTransactionState = require('./promises/transaction-state.js')
 
@@ -13,12 +12,14 @@ test('transaction state', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
   testTransactionState(t, agent, Promise)
+  t.autoend()
 })
 
 test('segments', function(t) {
   var agent = setupAgent(t)
   var Promise = require('bluebird')
   testPromiseSegments(t, agent, Promise)
+  t.autoend()
 })
 
 test('no transaction', function(t) {
@@ -263,31 +264,41 @@ test('Promise#spread', function(t) {
   })
 })
 
-test('Promise#asCallback', function(t) {
-  testPromiseInstanceMethod(t, 6, function asCallbackTest(p, name) {
-    return p.asCallback(function(err, result) {
-      t.notOk(err, name + 'should not have an error')
-      t.same(result, [1, 2, 3, name], name + 'should have the correct result value')
-    }).then(function() {
-      throw new Error('Promise#asCallback test error')
-    }).then(function() {
-      t.fail(name + 'should have skipped then after rejection')
-    }).asCallback(function(err, result) {
-      t.ok(err, name + 'should have error in asCallback')
-      t.notOk(result, name + 'should not have a result')
-      if (err) {
-        t.equal(
-          err.message,
-          'Promise#asCallback test error',
-          name + 'should be the correct error'
-        )
-      }
-    }).catch(function(err){
-      t.ok(err, name + 'should have error in catch too')
-      // Swallowing error that doesn't get caught in the asCallback.
+function testAsCallbackBehavior(methodName) {
+  test('Promise#' + methodName, function(t) {
+    testPromiseInstanceMethod(t, 8, function asCallbackTest(p, name, agent) {
+      var startTransaction = agent.getTransaction();
+      return p[methodName](function(err, result) {
+        var inCallbackTransaction = agent.getTransaction();
+        t.same(startTransaction, inCallbackTransaction, name + 'should have the same transaction inside the success callback');
+        t.notOk(err, name + 'should not have an error')
+        t.same(result, [1, 2, 3, name], name + 'should have the correct result value')
+      }).then(function() {
+        throw new Error('Promise#' + methodName + ' test error')
+      }).then(function() {
+        t.fail(name + 'should have skipped then after rejection')
+      })[methodName](function(err, result) {
+        var inCallbackTransaction = agent.getTransaction();
+        t.same(startTransaction, inCallbackTransaction, name + 'should have the same transaction inside the error callback');
+        t.ok(err, name + 'should have error in ' + methodName)
+        t.notOk(result, name + 'should not have a result')
+        if (err) {
+          t.equal(
+            err.message,
+            'Promise#' + methodName + ' test error',
+            name + 'should be the correct error'
+          )
+        }
+      }).catch(function(err){
+        t.ok(err, name + 'should have error in catch too')
+        // Swallowing error that doesn't get caught in the asCallback/nodeify.
+      })
     })
   })
-})
+}
+
+testAsCallbackBehavior('asCallback')
+testAsCallbackBehavior('nodeify')
 
 test('Promise#bind', function(t) {
   testPromiseInstanceMethod(t, 2, function bindTest(p, name) {
@@ -365,373 +376,6 @@ test('Promise#catchThrow', function(t) {
         t.equal(err, foo, name + 'should pass throught the correct object')
       })
     })
-})
-
-test('segments', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-  testPromiseSegments(t, agent, Promise)
-})
-
-test('all', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p1 = new Promise(function(resolve, reject) {
-      resolve(1)
-    })
-
-    var p2 = new Promise(function(resolve, reject) {
-      resolve(2)
-    })
-
-    Promise.all([p1, p2]).then(function() {
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('all on instance', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p1 = new Promise(function(resolve, reject) {
-      resolve([1, 2])
-    })
-
-    p1.all().then(function() {
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('props', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p1 = new Promise(function(resolve, reject) {
-      resolve(1)
-    })
-
-    var p2 = new Promise(function(resolve, reject) {
-      resolve(2)
-    })
-
-    Promise.props({
-      first: p1,
-      second: p2
-    }).then(function(result) {
-      t.equal(result.first, 1)
-      t.equal(result.second, 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('props on instance', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p1 = new Promise(function(resolve, reject) {
-      resolve({
-        first: 1,
-        second: 2
-      })
-    })
-
-    p1.props().then(function(result) {
-      t.equal(result.first, 1)
-      t.equal(result.second, 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('any', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    Promise.any([
-      Promise.resolve(1),
-      Promise.resolve(2)
-    ]).then(function(result) {
-      t.equal(result, 1)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('any on instance', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p = new Promise(function(resolve, reject) {
-      resolve([1, 2])
-    })
-
-    p.any().then(function(result) {
-      t.equal(result, 1)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('race', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    Promise.race([
-      Promise.resolve(1),
-      Promise.resolve(2)
-    ]).then(function(result) {
-      t.equal(result, 1)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('some', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    Promise.some([
-      Promise.resolve(1),
-      Promise.resolve(2),
-      Promise.resolve(3)
-    ], 2).then(function(result) {
-      t.equal(result.length, 2)
-      t.equal(result[0], 1)
-      t.equal(result[1], 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('some on instance', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p = new Promise(function(resolve, reject) {
-      resolve([1, 2, 3])
-    })
-
-    p.some(2).then(function(result) {
-      t.equal(result.length, 2)
-      t.equal(result[0], 1)
-      t.equal(result[1], 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('map', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    Promise.map([1, 2], function(item) {
-      return Promise.resolve(item)
-    }).then(function(result) {
-      t.equal(result.length, 2)
-      t.equal(result[0], 1)
-      t.equal(result[1], 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('map on instance', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p = new Promise(function(resolve) {
-      resolve([1, 2])
-    })
-
-    p.map(function(item) {
-      return Promise.resolve(item)
-    }).then(function(result) {
-      t.equal(result.length, 2)
-      t.equal(result[0], 1)
-      t.equal(result[1], 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('reduce', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    Promise.reduce([1, 2], function(total, item) {
-      return Promise.resolve(item).then(function(result) {
-        return total + result
-      })
-    }, 0).then(function(total) {
-      t.equal(total, 3)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('reduce on instance', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p = new Promise(function(resolve) {
-      resolve([1, 2])
-    })
-
-    p.reduce(function(total, item) {
-      return Promise.resolve(item).then(function(result) {
-        return total + result
-      })
-    }, 0).then(function(total) {
-      t.equal(total, 3)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('filter', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    Promise.resolve([1, 2, 3, 4]).filter(function(value) {
-      // filter out even numbers
-      return (value % 2)
-    })
-    .then(function(result) {
-      t.equal(result.length, 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('filter on instance', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p = new Promise(function(resolve) {
-      resolve([1, 2, 3, 4])
-    })
-
-    p.filter(function(value) {
-      // filter out even numbers
-      return (value % 2)
-    })
-    .then(function(result) {
-      t.equal(result.length, 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('each', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    Promise.resolve([1, Promise.resolve(2)]).each(function(value) {
-      // do something with the value
-    })
-    .then(function(result) {
-      t.equal(result.length, 2)
-      t.equal(result[0], 1)
-      t.equal(result[1], 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('each on instance', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p = new Promise(function(resolve) {
-      resolve([1, Promise.resolve(2)])
-    })
-
-    p.each(function(value) {
-      // do something with the value
-    })
-    .then(function(result) {
-      t.equal(result.length, 2)
-      t.equal(result[0], 1)
-      t.equal(result[1], 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('mapSeries', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    Promise.mapSeries([1, 2], function(item) {
-      return Promise.resolve(item)
-    }).then(function(result) {
-      t.equal(result.length, 2)
-      t.equal(result[0], 1)
-      t.equal(result[1], 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
-})
-
-test('mapSeries on instance', function(t) {
-  var agent = setupAgent(t)
-  var Promise = require('bluebird')
-
-  helper.runInTransaction(agent, function transactionWrapper(transaction) {
-    var p = new Promise(function(resolve) {
-      resolve([1, 2])
-    })
-
-    p.mapSeries(function(item) {
-      return Promise.resolve(item)
-    }).then(function(result) {
-      t.equal(result.length, 2)
-      t.equal(result[0], 1)
-      t.equal(result[1], 2)
-      t.equal(agent.getTransaction(), transaction, 'has the right transaction')
-      t.end()
-    })
-  })
 })
 
 test('all', function(t) {
@@ -1111,7 +755,7 @@ function testPromiseInstanceMethod(t, plan, testFunc) {
     var p = new Promise(function(resolve, reject) {
       resolve([1, 2, 3, name])
     })
-    return testFunc(p, name)
+    return testFunc(p, name, agent)
   })
 }
 

@@ -1,13 +1,5 @@
 'use strict'
 
-// hapi 1.20.0 depends on node 0.10.x
-var semver = require('semver')
-if (semver.satisfies(process.version, '<0.10')) {
-  console.log('TAP version 13\n# disabled because of incompatibility')
-  console.log('ok 1 nothing to do\n\n1..1\n\n# ok')
-  process.exit(0)
-}
-
 var path    = require('path')
   , test    = require('tap').test
   , request = require('request')
@@ -31,7 +23,7 @@ var TEST_PATH = '/test'
 
 
 test("agent instrumentation of Hapi", function (t) {
-  t.plan(4)
+  t.autoend()
 
   t.test("for a normal request", {timeout : 1000}, function (t) {
     var agent  = helper.instrumentMockedAgent()
@@ -209,19 +201,11 @@ test("agent instrumentation of Hapi", function (t) {
 
         var errors = agent.errors.errors
         t.ok(errors, "errors were found")
-        t.equal(errors.length, 2, "should be 2 errors")
+        t.equal(errors.length, 1, "should be 1 error")
 
         var first = errors[0]
-        var second = errors[1]
         t.ok(first, "have the first error")
-
-        t.equal(first[2], "Cannot read property 'ohno' of undefined",
-                "got the expected error")
-
-        t.ok(second, "have the second error")
-
-        t.equal(second[2], "HttpError 500",
-                "got the expected error")
+        t.contains(first[2], 'ohno', 'got the expected error')
 
         server.stop(function () {
           helper.unloadAgent(agent)

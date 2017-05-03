@@ -4,7 +4,10 @@ var chai = require('chai')
 var EventEmitter = require('events').EventEmitter
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
+var Promise = global.Promise || require('bluebird')
+var semver = require('semver')
 var Shim = require('../../../lib/shim/shim')
+
 
 describe('Shim', function() {
   var agent = null
@@ -16,7 +19,7 @@ describe('Shim', function() {
     shim = new Shim(agent, 'test-module')
     wrappable = {
       name: 'this is a name',
-      bar: function barsName() { return 'bar' },
+      bar: function barsName(unused, params) { return 'bar' }, // eslint-disable-line
       fiz: function fizsName() { return 'fiz' },
       anony: function() {},
       getActiveSegment: function() {
@@ -213,24 +216,26 @@ describe('Shim', function() {
 
     describe('with properties', function() {
       var barTestWrapper = null
+      var originalBar = null
       var ret = null
 
       beforeEach(function() {
         barTestWrapper = function() {}
+        originalBar = wrappable.bar
         ret = shim.wrap(wrappable, 'bar', function() {
           return barTestWrapper
         })
       })
 
       it('should accept a single property', function() {
-        var original = wrappable.fiz
+        var originalFiz = wrappable.fiz
         shim.wrap(wrappable, 'fiz', function(_, toWrap, name) {
           expect(toWrap).to.equal(wrappable.fiz)
           expect(name).to.equal('fiz', 'should use property as name')
         })
 
         expect(ret).to.equal(wrappable)
-        expect(wrappable.fiz).to.equal(original, 'should not replace unwrapped')
+        expect(wrappable.fiz).to.equal(originalFiz, 'should not replace unwrapped')
       })
 
       it('should accept an array of properties', function() {
@@ -250,7 +255,7 @@ describe('Shim', function() {
       })
 
       it('should replace wrapped properties on the original object', function() {
-        expect(wrappable.bar).to.equal(barTestWrapper)
+        expect(wrappable.bar).to.not.equal(originalBar)
       })
 
       it('should mark wrapped properties as such', function() {
@@ -259,6 +264,22 @@ describe('Shim', function() {
 
       it('should not mark unwrapped properties as wrapped', function() {
         expect(shim.isWrapped(wrappable, 'fiz')).to.be.false
+      })
+    })
+
+    describe('with a function', function() {
+      var wrapper = null
+      beforeEach(function() {
+        wrapper = function wrapperFunc() {}
+        shim.wrap(wrappable, 'bar', wrapper)
+      })
+
+      it('should maintain the name', function() {
+        expect(wrappable.bar).to.have.property('name', 'barsName')
+      })
+
+      it('should maintain the arity', function() {
+        expect(wrappable.bar).to.have.length(2)
       })
     })
   })
@@ -271,7 +292,8 @@ describe('Shim', function() {
         started: false,
         touched: false,
         start: function() { this.started = true },
-        touch: function() { this.touched = true }
+        touch: function() { this.touched = true },
+        probe: function() { this.probed = true }
       }
     })
 
@@ -430,6 +452,19 @@ describe('Shim', function() {
         toWrap.foo()
       })
 
+      it('should invoke the spec with `new` if itself is invoked with `new`', function() {
+        function Foo() {
+          expect(this).to.be.an.instanceOf(Foo)
+        }
+        var WrappedFoo = shim.wrapReturn(Foo, function() {
+          expect(this).to.be.an.instanceOf(Foo)
+        })
+
+        var foo = new WrappedFoo()
+        expect(foo).to.be.an.instanceOf(Foo)
+        expect(foo).to.be.an.instanceOf(WrappedFoo)
+      })
+
       it('should pass items in the `args` parameter to the spec', function() {
         /* eslint-disable max-params */
         shim.wrapReturn(toWrap, 'foo', function(_, fn, name, ret, a, b, c) {
@@ -442,6 +477,126 @@ describe('Shim', function() {
 
         toWrap.foo()
       })
+    })
+  })
+
+  describe('#wrapClass', function() {
+    it('should not wrap non-function objects', function() {
+      shim.wrapClass(wrappable, 'name', function() {})
+      expect(shim.isWrapped(wrappable, 'name')).to.be.false
+    })
+
+    describe('with no properties', function() {
+      it('should wrap the first parameter if no properties are given', function() {
+        var wrapped = shim.wrapClass(wrappable.bar, function() {})
+
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
+
+      it('should wrap the first parameter if `null` is given for properties', function() {
+        var wrapped = shim.wrapClass(wrappable.bar, null, function() {})
+
+        expect(wrapped).to.not.equal(wrappable.bar)
+        expect(shim.isWrapped(wrapped)).to.be.true
+        expect(shim.unwrap(wrapped)).to.equal(wrappable.bar)
+      })
+    })
+
+    describe('with properties', function() {
+      it('should replace wrapped properties on the original object', function() {
+        var original = wrappable.bar
+        shim.wrapClass(wrappable, 'bar', function() {})
+
+        expect(wrappable.bar).to.not.equal(original)
+        expect(shim.isWrapped(wrappable, 'bar')).to.be.true
+        expect(shim.unwrap(wrappable.bar)).to.equal(original)
+      })
+    })
+
+    describe('wrapper', function() {
+      var executed = null
+      var toWrap = null
+      var original = null
+
+      beforeEach(function() {
+        executed = false
+        toWrap = {
+          Foo: function() {
+            this.executed = executed = true
+            this.context = this
+            this.args = shim.toArray(arguments)
+          }
+        }
+        original = toWrap.Foo
+      })
+
+      it('should execute the wrapped function', function() {
+        shim.wrapClass(toWrap, 'Foo', function() {})
+        var res = new toWrap.Foo('a', 'b', 'c')
+        expect(executed).to.be.true
+        expect(res.context).to.equal(res)
+        expect(res.args).to.eql(['a', 'b', 'c'])
+      })
+
+      it('should call the hooks in the correct order', function() {
+        var preExecuted = false
+        var postExecuted = false
+        shim.wrapClass(toWrap, 'Foo', {
+          pre: function() {
+            preExecuted = true
+            expect(this).to.not.have.property('executed')
+            expect(this).to.be.an.instanceOf(toWrap.Foo)
+            expect(this).to.be.an.instanceOf(original)
+          },
+          post: function() {
+            postExecuted = true
+            expect(this).to.have.property('executed', true)
+            expect(this).to.be.an.instanceOf(toWrap.Foo)
+            expect(this).to.be.an.instanceOf(original)
+          }
+        })
+
+        var foo = new toWrap.Foo()
+        expect(preExecuted).to.be.true
+        expect(foo.executed).to.be.true
+        expect(postExecuted).to.be.true
+      })
+
+      it('should pass items in the `args` parameter to the spec', function() {
+        /* eslint-disable max-params */
+        shim.wrapClass(toWrap, 'Foo', function(_, fn, name, args, a, b, c) {
+          expect(arguments.length).to.equal(7)
+          expect(a).to.equal('a')
+          expect(b).to.equal('b')
+          expect(c).to.equal('c')
+        }, ['a', 'b', 'c'])
+        /* eslint-enable max-params */
+
+        /* eslint-disable no-unused-vars */
+        var foo = new toWrap.Foo()
+        /* eslint-enable no-unused-vars */
+      })
+    })
+  })
+
+  describe('#wrapExport', function() {
+    it('should execute the given wrap function', function() {
+      var executed = false
+      shim.wrapExport({}, function() {
+        executed = true
+      })
+      expect(executed).to.be.true()
+    })
+
+    it('should store the wrapped version for later retrival', function() {
+      var original = {}
+      var wrapped = shim.wrapExport(original, function() {
+        return {}
+      })
+
+      expect(shim.getExport()).to.equal(wrapped).and.not.equal(original)
     })
   })
 
@@ -544,10 +699,10 @@ describe('Shim', function() {
           expect(ret).to.equal(stream)
         })
 
-        var oldDur = stream.segment.timer.duration
+        var oldDur = stream.segment.timer.getDurationInMillis()
         setTimeout(function() {
           stream.emit('end')
-          expect(stream.segment.timer.duration).to.be.above(oldDur)
+          expect(stream.segment.timer.getDurationInMillis()).to.be.above(oldDur)
           done()
         }, 5)
       })
@@ -562,12 +717,11 @@ describe('Shim', function() {
           expect(ret).to.equal(stream)
         })
 
-        var oldDur = stream.segment.timer.duration
         stream.on('error', function() {}) // to prevent the error being thrown
-        var oldDur = stream.segment.timer.duration
+        var oldDur = stream.segment.timer.getDurationInMillis()
         setTimeout(function() {
           stream.emit('error', 'foobar')
-          expect(stream.segment.timer.duration).to.be.above(oldDur)
+          expect(stream.segment.timer.getDurationInMillis()).to.be.above(oldDur)
           done()
         }, 5)
       })
@@ -583,14 +737,14 @@ describe('Shim', function() {
         })
 
         expect(function() {
-          stream.emit('error', 'foobar')
+          stream.emit('error', new Error('foobar'))
         }).to.throw('foobar')
       })
 
 
-      it('should bind emit to the recording segment', function() {
+      it('should bind emit to a child segment', function() {
         var wrapped = shim.record(toWrap, function() {
-          return {name: 'test segment', stream: true}
+          return {name: 'test segment', stream: 'foobar'}
         })
 
         helper.runInTransaction(agent, function() {
@@ -599,7 +753,8 @@ describe('Shim', function() {
         })
 
         stream.on('foobar', function() {
-          expect(shim.getSegment()).to.equal(stream.segment)
+          var emitSegment = shim.getSegment()
+          expect(emitSegment.parent).to.equal(stream.segment)
         })
         stream.emit('foobar')
       })
@@ -620,101 +775,272 @@ describe('Shim', function() {
         expect(stream.segment.children).to.have.length(1)
         var eventSegment = stream.segment.children[0]
         expect(eventSegment).to.have.property('name')
-          .match(/^1 calls.*?foobar/)
+          .match(/Event callback: foobar/)
+        expect(eventSegment.parameters).to.have.property('count')
+          .equals(1)
 
         // Emit it again and see if the name updated.
         stream.emit('foobar')
         expect(stream.segment.children).to.have.length(1)
-        var eventSegment = stream.segment.children[0]
-        expect(eventSegment).to.have.property('name')
-          .match(/^2 calls.*?foobar/)
+        expect(stream.segment.children[0]).to.equal(eventSegment)
+        expect(eventSegment.parameters).to.have.property('count')
+          .equals(2)
 
         // Emit it once more and see if the name updated again.
         stream.emit('foobar')
         expect(stream.segment.children).to.have.length(1)
-        var eventSegment = stream.segment.children[0]
-        expect(eventSegment).to.have.property('name')
-          .match(/^3 calls.*?foobar/)
+        expect(stream.segment.children[0]).to.equal(eventSegment)
+        expect(eventSegment.parameters).to.have.property('count')
+          .equals(3)
+      })
+    })
+
+    describe('with a promise', function() {
+      var itUnhandled = semver.satisfies(process.version, '>=1.4.1') ? it : xit
+
+      var promise = null
+      var toWrap = null
+
+      beforeEach(function() {
+        var defer = {}
+        promise = new Promise(function(resolve, reject) {
+          defer.resolve = resolve
+          defer.reject = reject
+        })
+        promise.resolve = defer.resolve
+        promise.reject = defer.reject
+
+        toWrap = function() {
+          promise.segment = agent.tracer.getSegment()
+          return promise
+        }
+      })
+
+      afterEach(function() {
+        promise = null
+        toWrap = null
+      })
+
+      it('should touch the segment when promise resolves', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', promise: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
+
+          ret.then(function(val) {
+            expect(result).to.equal(val)
+            expect(promise.segment.timer.getDurationInMillis()).to.be.above(oldDur)
+            done()
+          }).catch(done)
+        })
+
+        var oldDur = promise.segment.timer.getDurationInMillis()
+        var result = {}
+        setTimeout(function() {
+          promise.resolve(result)
+        }, 5)
+      })
+
+      it('should touch the segment when promise rejects', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', promise: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
+
+          ret.then(function() {
+            done(new Error('Should not have resolved!'))
+          }, function(err) {
+            expect(err).to.equal(result)
+            expect(promise.segment.timer.getDurationInMillis()).to.be.above(oldDur)
+            done()
+          }).catch(done)
+        })
+
+        var oldDur = promise.segment.timer.getDurationInMillis()
+        var result = {}
+        setTimeout(function() {
+          promise.reject(result)
+        }, 5)
+      })
+
+      itUnhandled('should not affect unhandledRejection event', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', promise: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
+
+          process.on('unhandledRejection', function(err, p) {
+            expect(err).to.equal(result)
+            expect(p).to.equal(ret)
+            done()
+          })
+        })
+
+        var result = {}
+        setTimeout(function() {
+          promise.reject(result)
+        }, 5)
       })
     })
 
     describe('wrapper', function() {
-      it('should create a segment', function() {
-        shim.record(wrappable, 'getActiveSegment', function() {
-          return {name: 'test segment'}
-        })
+      describe('when called without a transaction', function() {
+        it('should not create a segment', function() {
+          shim.record(wrappable, 'getActiveSegment', function() {
+            return {name: 'test segment'}
+          })
 
-        helper.runInTransaction(agent, function(tx) {
-          var startingSegment = agent.tracer.getSegment()
           var segment = wrappable.getActiveSegment()
-          expect(segment).to.not.equal(startingSegment)
-          expect(segment.transaction).to.equal(tx)
-          expect(segment.name).to.equal('test segment')
-          expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          expect(segment).to.be.null()
+        })
+
+        it('should execute the wrapped function', function() {
+          var executed = false
+          var toWrap = function() { executed = true }
+          var wrapped = shim.record(toWrap, function() {
+            return {name: 'test segment'}
+          })
+
+          expect(executed).to.be.false
+          wrapped()
+          expect(executed).to.be.true
+        })
+
+        it('should not invoke the spec', function() {
+          var executed = false
+          shim.record(wrappable, 'bar', function() {
+            executed = true
+          })
+
+          wrappable.bar('a', 'b', 'c')
+          expect(executed).to.be.false()
+        })
+
+        it('should not bind the callback if there is one', function() {
+          var cb = function() {}
+          var toWrap = function(wrappedCB) {
+            expect(wrappedCB).to.equal(cb)
+            expect(shim.isWrapped(wrappedCB)).to.be.false()
+          }
+
+          var wrapped = shim.record(toWrap, function() {
+            return {name: 'test segment', callback: shim.LAST}
+          })
+          wrapped(cb)
+        })
+
+        it('should not bind the rowCallback if there is one', function() {
+          var cb = function() {}
+          var toWrap = function(wrappedCB) {
+            expect(wrappedCB).to.equal(cb)
+            expect(shim.isWrapped(wrappedCB)).to.be.false()
+          }
+
+          var wrapped = shim.record(toWrap, function() {
+            return {name: 'test segment', rowCallback: shim.LAST}
+          })
+          wrapped(cb)
         })
       })
 
-      it('should execute the wrapped function', function() {
-        var executed = false
-        var toWrap = function() { executed = true }
-        var wrapped = shim.record(toWrap, function() {
-          return {name: 'test segment'}
+
+      describe('when called in a transaction', function() {
+        it('should create a segment', function() {
+          shim.record(wrappable, 'getActiveSegment', function() {
+            return {name: 'test segment'}
+          })
+
+          helper.runInTransaction(agent, function(tx) {
+            var startingSegment = agent.tracer.getSegment()
+            var segment = wrappable.getActiveSegment()
+            expect(segment).to.not.equal(startingSegment)
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name).to.equal('test segment')
+            expect(agent.tracer.getSegment()).to.equal(startingSegment)
+          })
         })
 
-        expect(executed).to.be.false
-        wrapped()
-        expect(executed).to.be.true
-      })
+        it('should execute the wrapped function', function() {
+          var executed = false
+          var toWrap = function() { executed = true }
+          var wrapped = shim.record(toWrap, function() {
+            return {name: 'test segment'}
+          })
 
-      it('should invoke the spec in the context of the wrapped function', function() {
-        var original = wrappable.bar
-        var executed = false
-        shim.record(wrappable, 'bar', function(_, fn, name, args) {
-          executed = true
-          expect(fn).to.equal(original)
-          expect(name).to.equal('bar')
-          expect(this).to.equal(wrappable)
-          expect(args).to.deep.equal(['a', 'b', 'c'])
+          helper.runInTransaction(agent, function() {
+            expect(executed).to.be.false
+            wrapped()
+            expect(executed).to.be.true
+          })
         })
 
-        wrappable.bar('a', 'b', 'c')
-        expect(executed).to.be.true
-      })
+        it('should invoke the spec in the context of the wrapped function', function() {
+          var original = wrappable.bar
+          var executed = false
+          shim.record(wrappable, 'bar', function(_, fn, name, args) {
+            executed = true
+            expect(fn).to.equal(original)
+            expect(name).to.equal('bar')
+            expect(this).to.equal(wrappable)
+            expect(args).to.deep.equal(['a', 'b', 'c'])
+          })
 
-      it('should bind the callback if there is one', function() {
-        var cb = function() {}
-        var toWrap = function(wrappedCB) {
-          expect(wrappedCB).to.not.equal(cb)
-          expect(shim.isWrapped(wrappedCB)).to.be.true
-          expect(shim.unwrap(wrappedCB)).to.equal(cb)
-
-          expect(function() {
-            wrappedCB()
-          }).to.not.throw()
-        }
-
-        var wrapped = shim.record(toWrap, function() {
-          return {name: 'test segment', callback: shim.LAST}
+          helper.runInTransaction(agent, function() {
+            wrappable.bar('a', 'b', 'c')
+            expect(executed).to.be.true
+          })
         })
-        wrapped(cb)
-      })
 
-      it('should bind the rowCallback if there is one', function() {
-        var cb = function() {}
-        var toWrap = function(wrappedCB) {
-          expect(wrappedCB).to.not.equal(cb)
-          expect(shim.isWrapped(wrappedCB)).to.be.true
-          expect(shim.unwrap(wrappedCB)).to.equal(cb)
+        it('should bind the callback if there is one', function() {
+          var cb = function() {}
+          var toWrap = function(wrappedCB) {
+            expect(wrappedCB).to.not.equal(cb)
+            expect(shim.isWrapped(wrappedCB)).to.be.true
+            expect(shim.unwrap(wrappedCB)).to.equal(cb)
 
-          expect(function() {
-            wrappedCB()
-          }).to.not.throw()
-        }
+            expect(function() {
+              wrappedCB()
+            }).to.not.throw()
+          }
 
-        var wrapped = shim.record(toWrap, function() {
-          return {name: 'test segment', rowCallback: shim.LAST}
+          var wrapped = shim.record(toWrap, function() {
+            return {name: 'test segment', callback: shim.LAST}
+          })
+
+          helper.runInTransaction(agent, function() {
+            wrapped(cb)
+          })
         })
-        wrapped(cb)
+
+        it('should bind the rowCallback if there is one', function() {
+          var cb = function() {}
+          var toWrap = function(wrappedCB) {
+            expect(wrappedCB).to.not.equal(cb)
+            expect(shim.isWrapped(wrappedCB)).to.be.true
+            expect(shim.unwrap(wrappedCB)).to.equal(cb)
+
+            expect(function() {
+              wrappedCB()
+            }).to.not.throw()
+          }
+
+          var wrapped = shim.record(toWrap, function() {
+            return {name: 'test segment', rowCallback: shim.LAST}
+          })
+
+          helper.runInTransaction(agent, function() {
+            wrapped(cb)
+          })
+        })
       })
     })
   })
@@ -840,19 +1166,19 @@ describe('Shim', function() {
 
   describe('#getSegment', function() {
     it('should return the segment a function is bound to', function() {
-      var segment = {}
+      var segment = { probe: function() {} }
       var bound = shim.bindSegment(function() {}, segment)
       expect(shim.getSegment(bound)).to.equal(segment)
     })
 
     it('should return the current segment if the function is not bound', function() {
-      var segment = {}
+      var segment = { probe: function() {} }
       agent.tracer.segment = segment
       expect(shim.getSegment(function() {})).to.equal(segment)
     })
 
     it('should return the current segment if no object is provided', function() {
-      var segment = {}
+      var segment = { probe: function() {} }
       agent.tracer.segment = segment
       expect(shim.getSegment()).to.equal(segment)
     })
@@ -866,13 +1192,13 @@ describe('Shim', function() {
     })
 
     it('should store the segment on the object', function() {
-      var segment = {}
+      var segment = { probe: function() {} }
       shim.storeSegment(wrappable, segment)
       expect(shim.getSegment(wrappable)).to.equal(segment)
     })
 
     it('should default to the current segment', function() {
-      var segment = {}
+      var segment = { probe: function() {} }
       agent.tracer.segment = segment
       shim.storeSegment(wrappable)
       expect(shim.getSegment(wrappable)).to.equal(segment)
@@ -1151,7 +1477,8 @@ describe('Shim', function() {
         started: false,
         touched: false,
         start: function() { this.started = true },
-        touch: function() { this.touched = true }
+        touch: function() { this.touched = true },
+        probe: function() { this.probed = true }
       }
     })
 
@@ -1171,7 +1498,7 @@ describe('Shim', function() {
     })
 
     it('should make the segment active for the duration of execution', function() {
-      var prevSegment = {name: 'prevSegment'}
+      var prevSegment = {name: 'prevSegment', probe: function() {}}
       agent.tracer.segment = prevSegment
       var activeSegment = shim.applySegment(wrappable.getActiveSegment, segment)
       expect(agent.tracer.segment).to.equal(prevSegment)
@@ -1212,7 +1539,7 @@ describe('Shim', function() {
       })
 
       it('should still return the active segment to the previous one', function() {
-        var prevSegment = {name: 'prevSegment'}
+        var prevSegment = {name: 'prevSegment', probe: function() {}}
         agent.tracer.segment = prevSegment
 
         expect(function() {
@@ -1276,29 +1603,71 @@ describe('Shim', function() {
       var extras = null
 
       beforeEach(function() {
-        agent.config.capture_params = true
-        helper.runInTransaction(agent, function() {
-          extras = {
-            host: 'my awesome host',
-            port: 1234,
-            foo: 'bar',
-            fiz: 'bang'
-          }
+        extras = {
+          host: 'my awesome host',
+          port_path_or_id: 1234,
+          database_name: 'my_db',
+          foo: 'bar',
+          fiz: 'bang',
+          ignore_me: 'baz'
+        }
 
-          segment = shim.createSegment({name: 'child', extras: extras})
+        agent.config.ignored_params = [
+          'ignore_me',
+          'host',
+          'port_path_or_id',
+          'database_name'
+        ]
+      })
+
+      describe('and capture_params is true', function() {
+        beforeEach(function() {
+          agent.config.capture_params = true
+          helper.runInTransaction(agent, function() {
+            segment = shim.createSegment({name: 'child', extras: extras})
+          })
+        })
+
+        it('should copy parameters provided into `segment.parameters`', function() {
+          expect(segment).to.have.property('parameters')
+          expect(segment.parameters).to.have.property('foo', 'bar')
+          expect(segment.parameters).to.have.property('fiz', 'bang')
+        })
+
+        it('should respect `ignored_params`', function() {
+          expect(segment).to.have.property('parameters')
+          expect(segment.parameters).to.not.have.property('ignore_me')
+        })
+
+        it('should allow datastore instance attrs despite `ignored_params`', function() {
+          expect(segment).to.have.property('parameters')
+          expect(segment.parameters).to.have.property('host', 'my awesome host')
+          expect(segment.parameters).to.have.property('port_path_or_id', 1234)
+          expect(segment.parameters).to.have.property('database_name', 'my_db')
         })
       })
 
-      it('should copy parameters provided into `segment.parameters`', function() {
-        expect(segment).to.have.property('parameters')
+      describe('and capture_params is false', function() {
+        beforeEach(function() {
+          agent.config.capture_params = false
+          helper.runInTransaction(agent, function() {
+            segment = shim.createSegment({name: 'child', extras: extras})
+          })
+        })
 
-        expect(segment.parameters).to.have.property('foo', 'bar')
-        expect(segment.parameters).to.have.property('fiz', 'bang')
-      })
+        it('should not copy parameters provided into `segment.parameters`', function() {
+          expect(segment).to.have.property('parameters')
+          expect(segment.parameters).to.not.have.property('foo')
+          expect(segment.parameters).to.not.have.property('fiz')
+          expect(segment.parameters).to.not.have.property('ignore_me')
+        })
 
-      it('should copy the `host` and `port` directly onto the segment', function() {
-        expect(segment).to.have.property('host', 'my awesome host')
-        expect(segment).to.have.property('port', 1234)
+        it('should still allow datastore instance attrs', function() {
+          expect(segment).to.have.property('parameters')
+          expect(segment.parameters).to.have.property('host', 'my awesome host')
+          expect(segment.parameters).to.have.property('port_path_or_id', 1234)
+          expect(segment.parameters).to.have.property('database_name', 'my_db')
+        })
       })
     })
   })
@@ -1543,14 +1912,81 @@ describe('Shim', function() {
       expect(obj).to.have.property('fiz', 'bang')
     })
   })
+
+  describe('#setDefaults', function() {
+    it('should copy over defaults when provided object is null', function() {
+      var obj = null
+      var defaults = {foo: 1, bar: 2}
+      var defaulted = shim.setDefaults(obj, defaults)
+
+      expect(obj).to.not.equal(defaulted).and.not.equal(defaults)
+      expect(defaulted).to.deep.equal(defaults)
+    })
+
+    it('should copy each key over', function() {
+      var obj = {}
+      var defaults = {foo: 1, bar: 2}
+      var defaulted = shim.setDefaults(obj, defaults)
+
+      expect(obj).to.equal(defaulted).and.not.equal(defaults)
+      expect(defaulted).to.deep.equal(defaults)
+    })
+
+    it('should not replace existing keys', function() {
+      var obj = {foo: null}
+      var defaults = {foo: 1, bar: 2}
+      var defaulted = shim.setDefaults(obj, defaults)
+
+      expect(obj).to.equal(defaulted).and.not.equal(defaults)
+      expect(defaulted).to.deep.equal({foo: null, bar: 2})
+    })
+  })
+
+  describe('#proxy', function() {
+    var original = null
+    var proxied = null
+
+    beforeEach(function() {
+      original = {foo: 1, bar: 2, biz: 3, baz: 4}
+      proxied = {}
+    })
+
+    afterEach(function() {
+      original = null
+      proxied = null
+    })
+
+    it('should proxy individual properties', function() {
+      shim.proxy(original, 'foo', proxied)
+      expect(original).to.have.property('foo', 1)
+      expect(proxied).to.have.property('foo', 1)
+      expect(proxied).to.not.have.property('bar')
+      expect(proxied).to.not.have.property('biz')
+
+      proxied.foo = 'other'
+      expect(original).to.have.property('foo', 'other')
+    })
+
+    it('should proxy arrays of properties', function() {
+      shim.proxy(original, ['foo', 'bar'], proxied)
+      expect(original).to.have.property('foo', 1)
+      expect(original).to.have.property('bar', 2)
+      expect(proxied).to.have.property('foo', 1)
+      expect(proxied).to.have.property('bar', 2)
+      expect(proxied).to.not.have.property('biz')
+
+      proxied.foo = 'other'
+      expect(original).to.have.property('foo', 'other')
+      expect(original).to.have.property('bar', 2)
+
+      proxied.bar = 'another'
+      expect(original).to.have.property('foo', 'other')
+      expect(original).to.have.property('bar', 'another')
+    })
+  })
 })
 
 function testNonWritable(obj, key, value) {
-  // Skip this check on Node 0.8.x.
-  if (/^v0\.8\./.test(process.version)) {
-    return
-  }
-
   expect(function() {
     obj[key] = 'testNonWritable test value'
   }).to.throw(

@@ -1,27 +1,32 @@
 'use strict'
 
-var path   = require('path')
-  , chai   = require('chai')
-  , should = chai.should()
-  , expect = chai.expect
-  , API    = require('../../../stub_api.js')
+var chai   = require('chai')
+var should = chai.should()
+var expect = chai.expect
+var API    = require('../../../stub_api.js')
 
 
-describe("the stubbed New Relic agent API", function () {
+describe("the stubbed New Relic agent API", function() {
   var api
 
-  beforeEach(function () {
+  beforeEach(function() {
     api = new API()
   })
 
-  it("should export 18 API calls", function () {
-    expect(Object.keys(api.constructor.prototype).length).equal(18)
+  it("should export 21 API calls", function() {
+    expect(Object.keys(api.constructor.prototype).length).equal(21)
   })
 
   it("exports a transaction naming function", function () {
     should.exist(api.setTransactionName)
     expect(api.setTransactionName).a('function')
   })
+
+  it("exports a dispatcher naming function", function () {
+    should.exist(api.setDispatcher)
+    expect(api.setDispatcher).a('function')
+  })
+
 
   it("shouldn't throw when transaction is named", function () {
     expect(function () { api.setTransactionName('TEST/*'); }).not.throws()
@@ -83,6 +88,15 @@ describe("the stubbed New Relic agent API", function () {
 
   it("shouldn't throw when a custom parameter is added", function () {
     expect(function () { api.addCustomParameter('test', 'value'); }).not.throws()
+  })
+
+  it("exports a function for adding multiple custom parameters at once", function () {
+    should.exist(api.addCustomParameters)
+    expect(api.addCustomParameters).a('function')
+  })
+
+  it("shouldn't throw when multiple custom parameters are added", function () {
+    expect(function () { api.addCustomParameters({test: 'value', test2: 'value2'}); }).not.throws()
   })
 
   it("shouldn't throw when a custom segment is added", function () {

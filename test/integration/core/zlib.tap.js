@@ -5,11 +5,25 @@ var semver = require('semver')
 var zlib = require('zlib')
 var helper = require('../../lib/agent_helper')
 var verifySegments = require('./verify.js')
-var CONTENT = 'some content'
-var DEFLATED_CONTENT = 'eJwrzs9NVUjOzytJzSsBAB7IBNA='
-var DEFLATED_RAW = 'K87PTVVIzs8rSc0rAQA='
-var GZIP_CONTENT = 'H4sIAAAAAAAAAyvOz01VSM7PK0nNKwEAPzEfQwwAAAA='
 var concat = require('concat-stream')
+
+// Prepare our data values. Note that since the agent isn't loaded yet these
+// compressions are immune to agent fiddling.
+// TODO: Once Node v0.10 is deprecated, remove the check for gzipSync below.
+var CONTENT = 'some content'
+var DEFLATED_CONTENT = null
+var DEFLATED_RAW = null
+var GZIP_CONTENT = null
+if (zlib.gzipSync) {
+  DEFLATED_CONTENT = zlib.deflateSync(CONTENT).toString('base64')
+  DEFLATED_RAW = zlib.deflateRawSync(CONTENT).toString('base64')
+  GZIP_CONTENT = zlib.gzipSync(CONTENT).toString('base64')
+} else {
+  DEFLATED_CONTENT = 'eJwrzs9NVUjOzytJzSsBAB7IBNA='
+  DEFLATED_RAW = 'K87PTVVIzs8rSc0rAQA='
+  GZIP_CONTENT = 'H4sIAAAAAAAAAyvOz01VSM7PK0nNKwEAPzEfQwwAAAA='
+}
+
 
 test('deflate', function(t) {
   var agent = setupAgent(t)
@@ -88,15 +102,11 @@ test('unzip', function(t) {
   })
 })
 
-// there is an incompatibility between the streams 1 and streams 2 that
-// breaks our instrumentation. This is tracked in issue #577.
-// TODO: break this incompatibility out into its own test when it comes
-// time to fix the instrumentation
-test('createGzip', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createGzip', function(t) {
   testStream(t, 'createGzip', CONTENT, GZIP_CONTENT)
 })
 
-test('createGunzip', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createGunzip', function(t) {
   testStream(
     t,
     'createGunzip',
@@ -105,7 +115,7 @@ test('createGunzip', {skip: semver.satisfies(process.version, "<0.10")}, functio
   )
 })
 
-test('createUnzip', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createUnzip', function(t) {
   testStream(
     t,
     'createUnzip',
@@ -114,11 +124,11 @@ test('createUnzip', {skip: semver.satisfies(process.version, "<0.10")}, function
   )
 })
 
-test('createDeflate', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createDeflate', function(t) {
   testStream(t, 'createDeflate', CONTENT, DEFLATED_CONTENT)
 })
 
-test('createInflate', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createInflate', function(t) {
   testStream(
     t,
     'createInflate',
@@ -127,11 +137,11 @@ test('createInflate', {skip: semver.satisfies(process.version, "<0.10")}, functi
   )
 })
 
-test('createDeflateRaw', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createDeflateRaw', function(t) {
   testStream(t, 'createDeflateRaw', CONTENT, DEFLATED_RAW)
 })
 
-test('createInflateRaw', {skip: semver.satisfies(process.version, "<0.10")}, function(t) {
+test('createInflateRaw', function(t) {
   testStream(
     t,
     'createInflateRaw',

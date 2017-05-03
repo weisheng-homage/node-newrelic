@@ -3,24 +3,21 @@
 // shut up, Express
 process.env.NODE_ENV = 'test'
 
-var path = require('path')
 var test = require('tap').test
 var request = require('request')
 var helper = require('../../lib/agent_helper')
-var API = require('../../../api.js')
-var skip = require('./skip')
 
 
 // CONSTANTS
 var TEST_PORT = 9876
 var TEST_HOST = 'localhost'
 var TEST_URL = 'http://' + TEST_HOST + ':' + TEST_PORT
-var TEST_OPTIONS = {
-  skip: skip()
-}
 
-test("test capture_params for express", TEST_OPTIONS, function (t) {
-  t.test("no variables", function (t) {
+
+test("test capture_params for express", function(t) {
+  t.autoend()
+
+  t.test("no variables", function(t) {
     t.plan(5)
     var agent = helper.instrumentMockedAgent({
       express4: true,
@@ -30,7 +27,7 @@ test("test capture_params for express", TEST_OPTIONS, function (t) {
     var server = require('http').createServer(app)
 
 
-    this.tearDown(function () {
+    t.tearDown(function() {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -41,14 +38,14 @@ test("test capture_params for express", TEST_OPTIONS, function (t) {
     // set capture_params so we get the data we need.
     agent.config.capture_params = true
 
-    app.get('/user/', function (req, res) {
+    app.get('/user/', function(req, res) {
       t.ok(agent.getTransaction(), "transaction is available")
 
       res.send({yep : true})
       res.end()
     })
 
-    agent.on('transactionFinished', function (transaction){
+    agent.on('transactionFinished', function(transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
       if (transaction.trace.parameters.httpResponseMessage) {
         t.deepEqual(transaction.trace.parameters, {
@@ -95,7 +92,7 @@ test("test capture_params for express", TEST_OPTIONS, function (t) {
     var server = require('http').createServer(app)
 
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -162,7 +159,7 @@ test("test capture_params for express", TEST_OPTIONS, function (t) {
     var server = require('http').createServer(app)
 
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -229,7 +226,7 @@ test("test capture_params for express", TEST_OPTIONS, function (t) {
     var server = require('http').createServer(app)
 
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })
@@ -297,7 +294,7 @@ test("test capture_params for express", TEST_OPTIONS, function (t) {
     var server = require('http').createServer(app)
 
 
-    this.tearDown(function () {
+    t.tearDown(function () {
       server.close()
       helper.unloadAgent(agent)
     })

@@ -32,6 +32,46 @@ describe("the New Relic agent API", function () {
     expect(api.setTransactionName).to.be.a('function')
   })
 
+  it("exports a dispatcher setter", function () {
+    should.exist(api.setDispatcher)
+    expect(api.setDispatcher).to.be.a('function')
+  })
+
+  describe("dispatch setter", function () {
+    afterEach(function () {
+      agent.environment.clearDispatcher()
+    })
+    it("sets the dispatcher", function () {
+      api.setDispatcher('test')
+      expect(agent.environment.get('Dispatcher')).include.members(['test'])
+    })
+
+    it("sets the dispatcher and version", function () {
+      api.setDispatcher('test', 2)
+      expect(agent.environment.get('Dispatcher')).include.members(['test'])
+      expect(agent.environment.get('Dispatcher Version')).include.members(['2'])
+    })
+
+    it("does not allow internal calls to setDispatcher to override", function () {
+      agent.environment.setDispatcher('internal', '3')
+      expect(agent.environment.get('Dispatcher')).include.members(['internal'])
+      expect(agent.environment.get('Dispatcher Version')).include.members(['3'])
+
+      api.setDispatcher('test', 2)
+      expect(agent.environment.get('Dispatcher')).include.members(['test'])
+      expect(agent.environment.get('Dispatcher Version')).include.members(['2'])
+
+      agent.environment.setDispatcher('internal', '3')
+      expect(agent.environment.get('Dispatcher')).include.members(['test'])
+      expect(agent.environment.get('Dispatcher Version')).include.members(['2'])
+    })
+  })
+
+  it("exports a dispatcher setter", function () {
+    should.exist(api.setDispatcher)
+    expect(api.setDispatcher).to.be.a('function')
+  })
+
   it("exports a controller naming function", function () {
     should.exist(api.setControllerName)
     expect(api.setControllerName).to.be.a('function')
@@ -60,6 +100,11 @@ describe("the New Relic agent API", function () {
   it("exports a function for adding custom instrumentation", function () {
     should.exist(api.instrument)
     expect(api.instrument).to.be.a('function')
+  })
+
+  it("exports a function for adding multiple custom parameters at once", function () {
+    should.exist(api.addCustomParameters)
+    expect(api.addCustomParameters).a('function')
   })
 
   describe("when explicitly naming transactions", function () {
@@ -372,9 +417,9 @@ describe("the New Relic agent API", function () {
 
   describe("when handed a new naming rule", function () {
     it("should add it to the agent's normalizer", function () {
-      expect(agent.userNormalizer.rules.length).equal(0)
+      expect(agent.userNormalizer.rules.length).equal(1) // default ignore rule
       api.addNamingRule('^/simple.*', 'API')
-      expect(agent.userNormalizer.rules.length).equal(1)
+      expect(agent.userNormalizer.rules.length).equal(2)
     })
 
     describe("in the base case", function () {
@@ -398,7 +443,7 @@ describe("the New Relic agent API", function () {
 
       it("should add it to the agent's normalizer", function () {
         expect(agent.urlNormalizer.rules.length).equal(3)
-        expect(agent.userNormalizer.rules.length).equal(1)
+        expect(agent.userNormalizer.rules.length).equal(1 + 1) // +1 default rule
       })
 
       it("should leave the passed-in pattern alone", function () {
@@ -473,9 +518,9 @@ describe("the New Relic agent API", function () {
 
   describe("when handed a new pattern to ignore", function () {
     it("should add it to the agent's normalizer", function () {
-      expect(agent.userNormalizer.rules.length).equal(0)
+      expect(agent.userNormalizer.rules.length).equal(1) // default ignore rule
       api.addIgnoringRule('^/simple.*')
-      expect(agent.userNormalizer.rules.length).equal(1)
+      expect(agent.userNormalizer.rules.length).equal(2)
     })
 
     describe("in the base case", function () {
@@ -499,7 +544,7 @@ describe("the New Relic agent API", function () {
 
       it("should add it to the agent's normalizer", function () {
         expect(agent.urlNormalizer.rules.length).equal(3)
-        expect(agent.userNormalizer.rules.length).equal(1)
+        expect(agent.userNormalizer.rules.length).equal(1 + 1) // +1 default rule
       })
 
       it("should leave the passed-in pattern alone", function () {
@@ -576,7 +621,7 @@ describe("the New Relic agent API", function () {
       agent.on('transactionFinished', function (transaction) {
         expect(agent.errors.errors.length).equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('WebTransaction/Uri/*')
+        expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('test error')
         expect(caught[3]).equal('TypeError')
 
@@ -599,7 +644,7 @@ describe("the New Relic agent API", function () {
       agent.on('transactionFinished', function (transaction) {
         expect(agent.errors.errors.length).equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('WebTransaction/Uri/*')
+        expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('test error')
         expect(caught[3]).equal('TypeError')
         expect(caught[4].userAttributes.hi).equal('yo')
@@ -623,7 +668,7 @@ describe("the New Relic agent API", function () {
       agent.on('transactionFinished', function (transaction) {
         expect(agent.errors.errors.length).equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('WebTransaction/Uri/*')
+        expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('not an Error')
         expect(caught[3]).equal('Object')
 
@@ -644,7 +689,7 @@ describe("the New Relic agent API", function () {
       agent.on('transactionFinished', function (transaction) {
         expect(agent.errors.errors.length).equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('WebTransaction/Uri/*')
+        expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('')
         expect(caught[3]).equal('Error')
 
@@ -681,7 +726,7 @@ describe("the New Relic agent API", function () {
       agent.on('transactionFinished', function (transaction) {
         expect(agent.errors.errors.length).equal(1)
         var caught = agent.errors.errors[0]
-        expect(caught[1]).equal('WebTransaction/Uri/*')
+        expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('busted, bro')
         expect(caught[3]).equal('Error')
 
@@ -806,10 +851,90 @@ describe("the New Relic agent API", function () {
       mock.verify()
     })
 
-    it('calls harvest when options.collectPendingData is true', function() {
+    it('calls harvest when options.collectPendingData is true and state is "started"', function() {
       var mock = sinon.mock(agent)
+      agent.setState('started')
       mock.expects('harvest').once()
       api.shutdown({collectPendingData: true})
+      mock.verify()
+    })
+
+    it('calls harvest when options.collectPendingData is true ' +
+       'and state is not "started" and changes to "started"', function() {
+      var mock = sinon.mock(agent)
+      agent.setState('starting')
+      mock.expects('harvest').once()
+      api.shutdown({collectPendingData: true})
+      agent.setState('started')
+      mock.verify()
+    })
+
+    it('does not call harvest when options.collectPendingData is true ' +
+       'and state is not "started" and not changed', function() {
+      var mock = sinon.mock(agent)
+      agent.setState('starting')
+      mock.expects('harvest').never()
+      api.shutdown({collectPendingData: true})
+      mock.verify()
+    })
+
+    it('calls stop when options.collectPendingData is true, timeout is not given ' +
+       'and state is not "started" and changes to "errored"', function() {
+      var mock = sinon.mock(agent)
+      agent.setState('starting')
+      mock.expects('stop').once()
+      api.shutdown({collectPendingData: true})
+      agent.setState('errored')
+      mock.verify()
+    })
+
+    it('calls stop when options.collectPendingData is true, timeout is given ' +
+       'and state is not "started" and changes to "errored"', function() {
+      var mock = sinon.mock(agent)
+      agent.setState('starting')
+      mock.expects('stop').once()
+      api.shutdown({collectPendingData: true, timeout: 1000})
+      agent.setState('errored')
+      mock.verify()
+    })
+
+    it('calls harvest when a timeout is given and not reached', function() {
+      var mock = sinon.mock(agent)
+      agent.setState('starting')
+      mock.expects('harvest').once()
+      api.shutdown({collectPendingData: true, timeout: 1000})
+      agent.setState('started')
+      mock.verify()
+    })
+
+    it('calls stop when timeout is reached and does not harvest', function() {
+      var mock = sinon.mock(agent)
+      agent.setState('starting')
+      mock.expects('harvest').never()
+      mock.expects('stop').once()
+      api.shutdown({collectPendingData: true, timeout: 1000}, function() {
+        mock.verify()
+      })
+    })
+
+    it('calls harvest when timeout is not a number', function() {
+      var mock = sinon.mock(agent)
+      agent.setState('starting')
+      mock.expects('harvest').once()
+      api.shutdown({collectPendingData: true, timeout: "xyz"}, function() {
+        mock.verify()
+      })
+    })
+
+    it('does not error when timeout is not a number', function() {
+      var mock = sinon.mock(agent)
+      agent.setState('starting')
+
+      var shutdown = function() {
+        api.shutdown({collectPendingData: true, timeout: "abc"})
+      }
+
+      expect(shutdown).to.not.throw(Error)
       mock.verify()
     })
 
@@ -876,7 +1001,7 @@ describe("the New Relic agent API", function () {
     it('should register the instrumentation with shimmer', function() {
       var opts = {
         moduleName: 'foobar',
-        onRequire: function(){}
+        onRequire: function() {}
       }
       api.instrument(opts)
 
@@ -886,8 +1011,8 @@ describe("the New Relic agent API", function () {
     })
 
     it('should convert separate args into an options object', function() {
-      function onRequire(){}
-      function onError(){}
+      function onRequire() {}
+      function onError() {}
       api.instrument('foobar', onRequire, onError)
 
       var opts = shimmer.registerInstrumentation.getCall(0).args[0]
@@ -909,7 +1034,7 @@ describe("the New Relic agent API", function () {
     it('should register the instrumentation with shimmer', function() {
       var opts = {
         moduleName: 'foobar',
-        onRequire: function(){}
+        onRequire: function() {}
       }
       api.instrumentDatastore(opts)
 
@@ -920,9 +1045,43 @@ describe("the New Relic agent API", function () {
     })
 
     it('should convert separate args into an options object', function() {
-      function onRequire(){}
-      function onError(){}
+      function onRequire() {}
+      function onError() {}
       api.instrumentDatastore('foobar', onRequire, onError)
+
+      var opts = shimmer.registerInstrumentation.getCall(0).args[0]
+      expect(opts).to.have.property('moduleName', 'foobar')
+      expect(opts).to.have.property('onRequire', onRequire)
+      expect(opts).to.have.property('onError', onError)
+    })
+  })
+
+  describe('instrumentWebframework', function() {
+    beforeEach(function() {
+      sinon.spy(shimmer, 'registerInstrumentation')
+    })
+
+    afterEach(function() {
+      shimmer.registerInstrumentation.restore()
+    })
+
+    it('should register the instrumentation with shimmer', function() {
+      var opts = {
+        moduleName: 'foobar',
+        onRequire: function() {}
+      }
+      api.instrumentWebframework(opts)
+
+      expect(shimmer.registerInstrumentation.calledOnce).to.be.true
+      var args = shimmer.registerInstrumentation.getCall(0).args
+      expect(args[0]).to.equal(opts)
+        .and.have.property('type', 'web-framework')
+    })
+
+    it('should convert separate args into an options object', function() {
+      function onRequire() {}
+      function onError() {}
+      api.instrumentWebframework('foobar', onRequire, onError)
 
       var opts = shimmer.registerInstrumentation.getCall(0).args[0]
       expect(opts).to.have.property('moduleName', 'foobar')

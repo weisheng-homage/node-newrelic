@@ -72,8 +72,11 @@ test('connect', function connectTest(t) {
     socket.on('data', function onData(data) {
       t.equal(data.toString(), 'some data')
       socket.end('end data')
-      server.close()
     })
+  })
+
+  t.tearDown(function() {
+    server.close()
   })
 
   server.listen(4123, function listening() {
@@ -129,8 +132,8 @@ test('connect', function connectTest(t) {
         t.ok(dnsSegment.timer.touched, 'dns segment should started and ended')
         t.equal(
           dnsSegment.children.length,
-          1,
-          'dns should have a single callback segment'
+          0,
+          'dns should have no children'
         )
       } else {
         t.equal(

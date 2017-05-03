@@ -1,36 +1,35 @@
-var path    = require('path')
+'use strict'
+
 var test    = require('tap').test
 var request = require('request')
 var helper  = require('../../../lib/agent_helper.js')
-var instrument = require('../../../../lib/instrumentation/hapi.js')
-
 
 module.exports = runTests
 
-function runTests(hapi, createServer) {
-  if (!createServer) {
-    createServer = function createServer(host, port) {
-      var server = new hapi.Server()
-      server.connection({
-        host: host,
-        port: port
-      })
-      return server
-    }
-  }
+function runTests(createServer) {
+  test("Hapi capture params support", function(t) {
+    t.autoend()
 
-  test("Hapi capture params support", function (t) {
-    t.plan(4)
+    var agent = null
+    var server = null
 
-    t.test("simple case with no params", function (t) {
-      var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
-      instrument(agent, hapi)
-      var server = createServer('localhost', 8089)
+    t.beforeEach(function(done) {
+      agent = helper.instrumentMockedAgent({send_request_uri_attribute: true})
+
+      server = createServer('localhost', 8089)
 
       // disabled by default
       agent.config.capture_params = true
+      done()
+    })
 
-      agent.on('transactionFinished', function (transaction) {
+    t.afterEach(function(done) {
+      helper.unloadAgent(agent)
+      server.stop(done)
+    })
+
+    t.test("simple case with no params", function(t) {
+      agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
         if (transaction.trace.parameters.httpResponseMessage) {
           t.deepEqual(transaction.trace.parameters, {
@@ -56,44 +55,32 @@ function runTests(hapi, createServer) {
             "request_uri": "/test/"
           }, 'parameters should only have request/response params')
         }
-
-        helper.unloadAgent(agent)
-        server.stop(function () {
-          t.end()
-        })
       })
 
       server.route({
         method : 'GET',
         path   : '/test/',
-        handler : function (request, reply) {
+        handler : function(request, reply) {
           t.ok(agent.getTransaction(), "transaction is available")
 
           reply({status : 'ok'})
         }
       })
 
-      server.start(function () {
+      server.start(function() {
         request.get('http://localhost:8089/test/',
                     {json : true},
-                    function (error, res, body) {
+                    function(error, res, body) {
 
           t.equal(res.statusCode, 200, "nothing exploded")
           t.deepEqual(body, {status : 'ok'}, "got expected response")
+          t.end()
         })
       })
     })
 
-    t.test("case with route params", function (t) {
-      var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
-
-      instrument(agent, hapi)
-      var server = createServer('localhost', 8089)
-
-      // disabled by default
-      agent.config.capture_params = true
-
-      agent.on('transactionFinished', function (transaction) {
+    t.test("case with route params", function(t) {
+      agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
         if (transaction.trace.parameters.httpResponseMessage) {
           t.deepEqual(transaction.trace.parameters, {
@@ -121,43 +108,32 @@ function runTests(hapi, createServer) {
             "request_uri": "/test/1337/"
           }, 'parameters should have id')
         }
-
-        helper.unloadAgent(agent)
-        server.stop(function () {
-          t.end()
-        })
       })
 
       server.route({
         method : 'GET',
         path   : '/test/{id}/',
-        handler : function (request, reply) {
+        handler : function(request, reply) {
           t.ok(agent.getTransaction(), "transaction is available")
 
           reply({status : 'ok'})
         }
       })
 
-      server.start(function () {
+      server.start(function() {
         request.get('http://localhost:8089/test/1337/',
                     {json : true},
-                    function (error, res, body) {
+                    function(error, res, body) {
 
           t.equal(res.statusCode, 200, "nothing exploded")
           t.deepEqual(body, {status : 'ok'}, "got expected response")
+          t.end()
         })
       })
     })
 
-    t.test("case with query params", function (t) {
-      var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
-      instrument(agent, hapi)
-      var server = createServer('localhost', 8089)
-
-      // disabled by default
-      agent.config.capture_params = true
-
-      agent.on('transactionFinished', function (transaction) {
+    t.test("case with query params", function(t) {
+      agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
         if (transaction.trace.parameters.httpResponseMessage) {
           t.deepEqual(transaction.trace.parameters, {
@@ -185,43 +161,32 @@ function runTests(hapi, createServer) {
             "request_uri": "/test/"
           }, 'parameters should have name')
         }
-
-        helper.unloadAgent(agent)
-        server.stop(function () {
-          t.end()
-        })
       })
 
       server.route({
         method : 'GET',
         path   : '/test/',
-        handler : function (request, reply) {
+        handler : function(request, reply) {
           t.ok(agent.getTransaction(), "transaction is available")
 
           reply({status : 'ok'})
         }
       })
 
-      server.start(function () {
+      server.start(function() {
         request.get('http://localhost:8089/test/?name=hapi',
                     {json : true},
-                    function (error, res, body) {
+                    function(error, res, body) {
 
           t.equal(res.statusCode, 200, "nothing exploded")
           t.deepEqual(body, {status : 'ok'}, "got expected response")
+          t.end()
         })
       })
     })
 
-   t.test("case with both route and query params", function (t) {
-      var agent  = helper.instrumentMockedAgent({ send_request_uri_attribute: true })
-      instrument(agent, hapi)
-      var server = createServer('localhost', 8089)
-
-      // disabled by default
-      agent.config.capture_params = true
-
-      agent.on('transactionFinished', function (transaction) {
+    t.test("case with both route and query params", function(t) {
+      agent.on('transactionFinished', function(transaction) {
         t.ok(transaction.trace, 'transaction has a trace.')
         if (transaction.trace.parameters.httpResponseMessage) {
           t.deepEqual(transaction.trace.parameters, {
@@ -251,30 +216,26 @@ function runTests(hapi, createServer) {
             "request_uri": "/test/1337/"
           }, 'parameters should have name and id')
         }
-
-        helper.unloadAgent(agent)
-        server.stop(function () {
-          t.end()
-        })
       })
 
       server.route({
         method : 'GET',
         path   : '/test/{id}/',
-        handler : function (request, reply) {
+        handler : function(request, reply) {
           t.ok(agent.getTransaction(), "transaction is available")
 
           reply({status : 'ok'})
         }
       })
 
-      server.start(function () {
+      server.start(function() {
         request.get('http://localhost:8089/test/1337/?name=hapi',
                     {json : true},
-                    function (error, res, body) {
+                    function(error, res, body) {
 
           t.equal(res.statusCode, 200, "nothing exploded")
           t.deepEqual(body, {status : 'ok'}, "got expected response")
+          t.end()
         })
       })
     })

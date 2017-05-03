@@ -22,6 +22,10 @@ var CAPATH = path.join(__dirname, 'ca-certificate.crt')
 var _agent
 
 var helper = module.exports = {
+  getAgent: function getAgent() {
+    return _agent
+  },
+
   /**
    * Set up an agent that won't try to connect to the collector, but also
    * won't instrument any calling code.
@@ -108,10 +112,8 @@ var helper = module.exports = {
     shimmer.unwrapAll()
     shimmer.debug = false
 
-    // On v0.8 each mocked agent will add an uncaughtException handler, and on
-    // all versions each agent will add an unhandledRejection handler. These
-    // handlers need to be removed on unload.
-    removeListenerByName(process, 'uncaughtException', '__NR_uncaughtExceptionHandler')
+    // On all versions each agent will add an unhandledRejection handler. This
+    // handler needs to be removed on unload.
     removeListenerByName(process, 'unhandledRejection', '__NR_unhandledRejectionHandler')
 
     if (agent === _agent) _agent = null
@@ -194,7 +196,7 @@ var helper = module.exports = {
     var server  = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
       auto_reconnect : true
     })
-    var db = mongodb.Db('integration', server, {
+    var db = new mongodb.Db('integration', server, {
       w: 1,
       safe : true,
       numberOfRetries: 10,

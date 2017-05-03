@@ -1,4 +1,7 @@
+'use strict'
+
 var nock = require('nock')
+
 
 module.exports.mockAWSInfo = function() {
   var awsHost = "http://169.254.169.254"
