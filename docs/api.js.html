@@ -2,22 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: api.js</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>api.js - Documentation</title>
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
     <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
 </head>
-
 <body>
 
-<div id="main">
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
 
-    <h1 class="page-title">Source: api.js</h1>
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-Context-Preservation.html">Transaction State Preservation</a></li><li class="nav-item"><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li><li class="nav-item"><a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a></li><li class="nav-item"><a href="tutorial-Webframework-Simple.html">Intro to Web Framework Instrumentation</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="API.html">API</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameter">addCustomParameter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameters">addCustomParameters</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addIgnoringRule">addIgnoringRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addNamingRule">addNamingRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createTracer">createTracer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createWebTransaction">createWebTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getBrowserTimingHeader">getBrowserTimingHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrument">instrument</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentDatastore">instrumentDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentWebframework">instrumentWebframework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setControllerName">setControllerName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setDispatcher">setDispatcher</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setIgnoreTransaction">setIgnoreTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setTransactionName">setTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#shutdown">shutdown</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="DatastoreShim.html">DatastoreShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#bindRowCallbackSegment">bindRowCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#captureInstanceAttributes">captureInstanceAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#parseQuery">parseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordBatchQuery">recordBatchQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordOperation">recordOperation</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordQuery">recordQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setDatastore">setDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setParser">setParser</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Shim.html">Shim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#applySegment">applySegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#argsToArray">argsToArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCallbackSegment">bindCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCreateTransaction">bindCreateTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindSegment">bindSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#createSegment">createSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperties">defineProperties</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperty">defineProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#execute">execute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getName">getName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getSegment">getSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isArray">isArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isBoolean">isBoolean</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isFunction">isFunction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNumber">isNumber</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isObject">isObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isPromise">isPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isString">isString</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isWrapped">isWrapped</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#listenerCount">listenerCount</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#normalizeIndex">normalizeIndex</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#once">once</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#proxy">proxy</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#record">record</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setDefaults">setDefaults</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setInternalProperty">setInternalProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#storeSegment">storeSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#toArray">toArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrap">unwrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrap">wrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapClass">wrapClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapExport">wrapExport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapReturn">wrapReturn</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionShim.html">TransactionShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#popTransactionName">popTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#pushTransactionName">pushTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#setTransactionName">setTransactionName</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="WebFrameworkShim.html">WebFrameworkShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#captureUrlParams">captureUrlParams</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#errorHandled">errorHandled</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordMiddleware">recordMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordParamware">recordParamware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordRender">recordRender</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setErrorPredicate">setErrorPredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setFramework">setFramework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setRouteParser">setRouteParser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setTransactionUri">setTransactionUri</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#wrapMiddlewareMounter">wrapMiddlewareMounter</a></span></li><li class="nav-heading">Interfaces</li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="DatastoreExtras.html">DatastoreExtras</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareSpec.html">MiddlewareSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="OperationSpec.html">OperationSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="global.html#ParsedQueryData">ParsedQueryData</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="QuerySpec.html">QuerySpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RecorderSpec.html">RecorderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RenderSpec.html">RenderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="SegmentSpec.html">SegmentSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="TransactionSpec.html">TransactionSpec</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#shimRequire">shimRequire</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">api.js</h1>
+    
 
     
 
@@ -28,6 +41,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>'use strict'
 
+var arity = require('./lib/util/arity')
 var util = require('util')
 var logger = require('./lib/logger').child({component: 'api'})
 var NAMES = require('./lib/metrics/names')
@@ -118,6 +132,41 @@ API.prototype.setTransactionName = function setTransactionName(name) {
 }
 
 /**
+ * Specify the `Dispatcher` and `Dispatcher Version` environment values.
+ * A dispatcher is typically the service responsible for brokering
+ * the request with the process responsible for responding to the
+ * request.  For example Node's `http` module would be the dispatcher
+ * for incoming HTTP requests.
+ *
+ * @param {string} name The string you would like to report to New Relic
+ *                      as the dispatcher.
+ *
+ * @param {string} [version] The dispatcher version you would like to
+ *                           report to New Relic
+ */
+API.prototype.setDispatcher = function setDispatcher(name, version) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/setDispatcher'
+  )
+  metric.incrementCallCount()
+
+  if (!name || typeof name !== 'string') {
+    logger.error("setDispatcher must be called with a name, and name must be a string.")
+    return
+  }
+
+  // No objects allowed.
+  if (version &amp;&amp; typeof version !== 'object') {
+    version = String(version)
+  } else {
+    logger.info('setDispatcher was called with an object as the version parameter')
+    version = null
+  }
+
+  this.agent.environment.setDispatcher(name, version, true)
+}
+
+/**
  * Give the current transaction a name based on your own idea of what
  * constitutes a controller in your Node application. Also allows you to
  * optionally specify the action being invoked on the controller. If the action
@@ -177,18 +226,13 @@ API.prototype.addCustomParameter = function addCustomParameter(name, value) {
   )
   metric.incrementCallCount()
 
-  // If high security mode is on or custom params are specified as off,
-  // custom params are disabled
-  if (this.agent.config.capture_params === false) {
-    logger.trace("addCustomParameter was called while disabled with name %s", name)
-
-    if (this.agent.config.high_security === true) {
-      logger.warnOnce("Custom params",
-          "Custom parameters are disabled by high security mode.")
-      return false
-    }
-    logger.warnOnce("Custom params",
-        "addCustomParameter was called while config.capture_params was false")
+  // If high security mode is on, custom params are disabled.
+  if (this.agent.config.high_security === true) {
+    logger.warnOnce(
+      "Custom params",
+      "Custom parameters are disabled by high security mode."
+    )
+    return false
   }
 
   var ignored = this.agent.config.ignored_params || []
@@ -227,6 +271,35 @@ API.prototype.addCustomParameter = function addCustomParameter(name, value) {
 }
 
 /**
+ * Adds all custom parameters in an object to the current transaction.
+ *
+ * See documentation for newrelic.addCustomParameter for more information on
+ * setting custom parameters.
+ *
+ * An example of setting a custom parameter object:
+ *
+ *    newrelic.addCustomParameters({test: 'value', test2: 'value2'});
+ *
+ * @param {object} [params]
+ * @param {string} [params.KEY] The name you want displayed in the RPM UI.
+ * @param {string} [params.KEY.VALUE] The value you want displayed. Must be serializable.
+ */
+API.prototype.addCustomParameters = function addCustomParameters(params) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/addCustomParameters'
+  )
+  metric.incrementCallCount()
+
+  for (var key in params) {
+    if (!params.hasOwnProperty(key)) {
+      continue
+    }
+
+    this.addCustomParameter(key, params[key])
+  }
+}
+
+/**
  * Tell the tracer whether to ignore the current transaction. The most common
  * use for this will be to mark a transaction as ignored (maybe it's handling
  * a websocket polling channel, or maybe it's an external call you don't care
@@ -251,13 +324,18 @@ API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
 }
 
 /**
- * Send errors to New Relic that you've already handled yourself. Should
- * be an Error or one of its subtypes, but the API will handle strings
- * and objects that have an attached .message or .stack property.
+ * Send errors to New Relic that you've already handled yourself. Should be an
+ * `Error` or one of its subtypes, but the API will handle strings and objects
+ * that have an attached `.message` or `.stack` property.
  *
- * @param {Error}  error            The error to be traced.
- * @param {object} customParameters Any custom parameters to be displayed in
- *                                  the New Relic UI.
+ * NOTE: Errors that are recorded using this method do _not_ obey the
+ * `ignore_status_codes` configuration.
+ *
+ * @param {Error} error
+ *  The error to be traced.
+ *
+ * @param {object} [customParameters]
+ *  Optional. Any custom parameters to be displayed in the New Relic UI.
  */
 API.prototype.noticeError = function noticeError(error, customParameters) {
   var metric = this.agent.metrics.getOrCreateMetric(
@@ -357,27 +435,41 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
 
   var config = this.agent.config
 
-  /* Gracefully fail.
+  /**
+   * Gracefully fail.
    *
    * Output an HTML comment and log a warning the comment is meant to be
    * innocuous to the end user.
+   *
+   * @param {number} num          - Error code from `RUM_ISSUES`.
+   * @param {bool} [quite=false]  - Be quiet about this failure.
+   *
+   * @see RUM_ISSUES
    */
-  function _gracefail(num) {
-    logger.warn(RUM_ISSUES[num])
+  function _gracefail(num, quiet) {
+    if (quiet) {
+      logger.debug(RUM_ISSUES[num])
+    } else {
+      logger.warn(RUM_ISSUES[num])
+    }
     return '&lt;!-- NREUM: (' + num + ') -->'
   }
 
   var browser_monitoring = config.browser_monitoring
 
-  // config.browser_monitoring should always exist, but we don't want the agent to bail
-  // here if something goes wrong
+  // config.browser_monitoring should always exist, but we don't want the agent
+  // to bail here if something goes wrong
   if (!browser_monitoring) return _gracefail(2)
 
   /* Can control header generation with configuration this setting is only
    * available in the newrelic.js config file, it is not ever set by the
    * server.
    */
-  if (!browser_monitoring.enable) return _gracefail(0)
+  if (!browser_monitoring.enable) {
+    // It has been disabled by the user; no need to warn them about their own
+    // settings so fail quietly and gracefully.
+    return _gracefail(0, true)
+  }
 
   var trans = this.agent.getTransaction()
 
@@ -518,7 +610,7 @@ API.prototype.createTracer = function createTracer(name, callback) {
 
   var segment = tracer.createSegment(name, customRecorder)
   segment.start()
-  return tracer.bindFunction(callback, segment, true)
+  return arity.fixArity(callback, tracer.bindFunction(callback, segment, true))
 }
 
 /**
@@ -574,7 +666,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, handle) 
 
   var tracer = this.agent.tracer
 
-  return tracer.transactionNestProxy('web', function createWebSegment() {
+  var proxy = tracer.transactionNestProxy('web', function createWebSegment() {
     var tx = tracer.getTransaction()
 
     logger.debug(
@@ -591,6 +683,7 @@ API.prototype.createWebTransaction = function createWebTransaction(url, handle) 
 
     return tracer.bindFunction(handle, tx.webSegment).apply(this, arguments)
   })
+  return arity.fixArity(handle, proxy)
 }
 
 /**
@@ -658,7 +751,7 @@ function createBackgroundTransaction(name, group, handle) {
 
   var tracer = this.agent.tracer
 
-  return tracer.transactionNestProxy('bg', function createBackgroundSegment() {
+  var proxy = tracer.transactionNestProxy('bg', function createBGSegment() {
     var tx = tracer.getTransaction()
 
     logger.debug(
@@ -676,6 +769,7 @@ function createBackgroundTransaction(name, group, handle) {
 
     return tracer.bindFunction(handle, tx.bgSegment).apply(this, arguments)
   })
+  return arity.fixArity(handle, proxy)
 }
 
 API.prototype.endTransaction = function endTransaction() {
@@ -904,10 +998,6 @@ API.prototype.instrument = function instrument(moduleName, onRequire, onError) {
  * @param {function} [options.onError]
  *  If provided, should `onRequire` throw an error, the error will be passed to
  *  this function.
- *
- * @param {string} [options.datastoreName]
- *  If provided, this will be used for naming the metrics. Otherwise the
- *  instrumentation will need set the datastore name manually.
  */
 API.prototype.instrumentDatastore =
 function instrumentDatastore(moduleName, onRequire, onError) {
@@ -930,12 +1020,53 @@ function instrumentDatastore(moduleName, onRequire, onError) {
 }
 
 /**
+ * Registers an instrumentation function.
+ *
+ *  - `newrelic.instrumentWebframework(moduleName, onRequire [,onError])`
+ *  - `newrelic.instrumentWebframework(options)`
+ *
+ * @param {object} options
+ *  The options for this custom instrumentation.
+ *
+ * @param {string} options.moduleName
+ *  The module name given to require to load the module
+ *
+ * @param {function}  options.onRequire
+ *  The function to call when the module is required
+ *
+ * @param {function} [options.onError]
+ *  If provided, should `onRequire` throw an error, the error will be passed to
+ *  this function.
+ */
+API.prototype.instrumentWebframework =
+function instrumentWebframework(moduleName, onRequire, onError) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/instrumentWebframework'
+  )
+  metric.incrementCallCount()
+
+  var opts = moduleName
+  if (typeof opts === 'string') {
+    opts = {
+      moduleName: moduleName,
+      onRequire: onRequire,
+      onError: onError
+    }
+  }
+
+  opts.type = MODULE_TYPE.WEB_FRAMEWORK
+  shimmer.registerInstrumentation(opts)
+}
+
+/**
  * Shuts down the agent.
  *
  * @param {object}  [options]                           object with shut down options
  * @param {boolean} [options.collectPendingData=false]  If true, the agent will send any
  *                                                      pending data to the collector
  *                                                      before shutting down.
+ * @param {number}  [options.timeout]                   time in ms to wait before
+ *                                                      shutting down
  * @param {function} [callback]                         callback function that runs when
  *                                                      agent stopped
  */
@@ -950,24 +1081,56 @@ API.prototype.shutdown = function shutdown(options, cb) {
     if (typeof options === 'function') {
       callback = options
     } else {
-      callback = new Function() // eslint-disable-line no-new-func
+      callback = function noop() {}
     }
   }
 
   var agent = this.agent
-  if (options &amp;&amp; options.collectPendingData) {
-    agent.harvest(function cb_harvest(error) {
-      if (error) {
-        logger.error(error, 'An error occurred while running last harvest' +
-          ' before shutdown.')
+
+  function cb_harvest(error) {
+    if (error) {
+      logger.error(
+        error,
+        'An error occurred while running last harvest before shutdown.'
+      )
+    }
+    agent.stop(callback)
+  }
+
+  if (options &amp;&amp; options.collectPendingData &amp;&amp; agent._state !== 'started') {
+    if (typeof options.timeout === 'number') {
+      var shutdownTimeout = setTimeout(function shutdownTimeout() {
+        agent.stop(callback)
+      }, options.timeout)
+      // timer.unref only in 0.9+
+      if (shutdownTimeout.unref) {
+        shutdownTimeout.unref()
       }
-      agent.stop(callback)
+    } else if (options.timeout) {
+      logger.warn(
+        'options.timeout should be of type "number". Got %s',
+        typeof options.timeout
+      )
+    }
+
+    agent.on('started', function shutdownHarvest() {
+      agent.harvest(cb_harvest)
     })
+    agent.on('errored', function logShutdownError(error) {
+      agent.stop(callback)
+      if (error) {
+        logger.error(
+          error,
+          'The agent encountered an error after calling shutdown.'
+        )
+      }
+    })
+  } else if (options &amp;&amp; options.collectPendingData) {
+    agent.harvest(cb_harvest)
   } else {
     agent.stop(callback)
   }
 }
-
 
 function _checkKeyLength(object, maxLength) {
   var keys = Object.keys(object)
@@ -998,17 +1161,13 @@ module.exports = API
 
 </div>
 
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="API.html">API</a></li><li><a href="DatastoreShim.html">DatastoreShim</a></li><li><a href="Shim.html">Shim</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li></ul><h3>Interfaces</h3><ul><li><a href="DatastoreExtras.html">DatastoreExtras</a></li><li><a href="OperationSpec.html">OperationSpec</a></li><li><a href="global.html#ParsedQueryData">ParsedQueryData</a></li><li><a href="QuerySpec.html">QuerySpec</a></li><li><a href="RecorderSpec.html">RecorderSpec</a></li><li><a href="SegmentSpec.html">SegmentSpec</a></li><li><a href="TransactionSpec.html">TransactionSpec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_bindAllCallbacks">_bindAllCallbacks</a></li><li><a href="global.html#_bindStream">_bindStream</a></li><li><a href="global.html#bindRowCallbackSegment">bindRowCallbackSegment</a></li></ul>
-</nav>
-
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Aug 04 2016 14:24:47 GMT-0700 (PDT)
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed May 03 2017 17:21:38 GMT-0700 (PDT) using the Minami theme.
 </footer>
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
 </body>
 </html>

@@ -2,22 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/shim/shim.js</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>lib/shim/shim.js - Documentation</title>
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
     <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
 </head>
-
 <body>
 
-<div id="main">
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
 
-    <h1 class="page-title">Source: lib/shim/shim.js</h1>
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-Context-Preservation.html">Transaction State Preservation</a></li><li class="nav-item"><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li><li class="nav-item"><a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a></li><li class="nav-item"><a href="tutorial-Webframework-Simple.html">Intro to Web Framework Instrumentation</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="API.html">API</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameter">addCustomParameter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameters">addCustomParameters</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addIgnoringRule">addIgnoringRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addNamingRule">addNamingRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createTracer">createTracer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createWebTransaction">createWebTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getBrowserTimingHeader">getBrowserTimingHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrument">instrument</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentDatastore">instrumentDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentWebframework">instrumentWebframework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setControllerName">setControllerName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setDispatcher">setDispatcher</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setIgnoreTransaction">setIgnoreTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setTransactionName">setTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#shutdown">shutdown</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="DatastoreShim.html">DatastoreShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#bindRowCallbackSegment">bindRowCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#captureInstanceAttributes">captureInstanceAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#parseQuery">parseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordBatchQuery">recordBatchQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordOperation">recordOperation</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordQuery">recordQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setDatastore">setDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setParser">setParser</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Shim.html">Shim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#applySegment">applySegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#argsToArray">argsToArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCallbackSegment">bindCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCreateTransaction">bindCreateTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindSegment">bindSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#createSegment">createSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperties">defineProperties</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperty">defineProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#execute">execute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getName">getName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getSegment">getSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isArray">isArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isBoolean">isBoolean</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isFunction">isFunction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNumber">isNumber</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isObject">isObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isPromise">isPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isString">isString</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isWrapped">isWrapped</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#listenerCount">listenerCount</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#normalizeIndex">normalizeIndex</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#once">once</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#proxy">proxy</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#record">record</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setDefaults">setDefaults</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setInternalProperty">setInternalProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#storeSegment">storeSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#toArray">toArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrap">unwrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrap">wrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapClass">wrapClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapExport">wrapExport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapReturn">wrapReturn</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionShim.html">TransactionShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#popTransactionName">popTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#pushTransactionName">pushTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#setTransactionName">setTransactionName</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="WebFrameworkShim.html">WebFrameworkShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#captureUrlParams">captureUrlParams</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#errorHandled">errorHandled</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordMiddleware">recordMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordParamware">recordParamware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordRender">recordRender</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setErrorPredicate">setErrorPredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setFramework">setFramework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setRouteParser">setRouteParser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setTransactionUri">setTransactionUri</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#wrapMiddlewareMounter">wrapMiddlewareMounter</a></span></li><li class="nav-heading">Interfaces</li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="DatastoreExtras.html">DatastoreExtras</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareSpec.html">MiddlewareSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="OperationSpec.html">OperationSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="global.html#ParsedQueryData">ParsedQueryData</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="QuerySpec.html">QuerySpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RecorderSpec.html">RecorderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RenderSpec.html">RenderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="SegmentSpec.html">SegmentSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="TransactionSpec.html">TransactionSpec</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#shimRequire">shimRequire</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">lib/shim/shim.js</h1>
+    
 
     
 
@@ -28,10 +41,12 @@
         <article>
             <pre class="prettyprint source linenums"><code>'use strict'
 
+var arity = require('../util/arity')
 var events = require('events')
 var logger = require('../logger.js').child({component: 'Shim'})
+var path = require('path')
 var Transaction = require('../transaction')
-var urltils = require('../util/urltils')
+var util = require('util')
 
 
 /**
@@ -70,6 +85,20 @@ var TRANSACTION_TYPES = {
   WEB: 'web'
 }
 
+/**
+ * Enumeration of segment parameters which ignore the `capture_params`
+ * configuration value.
+ * @private
+ *
+ * @readonly
+ * @enum {boolean}
+ */
+var IGNORES_CAPTURE_PARAMS = {
+  host: true,
+  port_path_or_id: true,
+  database_name: true
+}
+
 
 /**
  * Constructs a shim associated with the given agent instance.
@@ -78,17 +107,28 @@ var TRANSACTION_TYPES = {
  * @classdesc
  *  A helper class for wrapping modules with segments.
  *
- * @param {Agent}   agent       - The agent this shim will use.
- * @param {string}  moduleName  - The name of the module being instrumented.
+ * @param {Agent}   agent         - The agent this shim will use.
+ * @param {string}  moduleName    - The name of the module being instrumented.
+ * @param {string}  resolvedName  - The full path to the loaded module.
  */
-function Shim(agent, moduleName) {
+function Shim(agent, moduleName, resolvedName) {
   if (!agent || !moduleName) {
     throw new Error('Shim must be initialized with an agent and module name.')
   }
 
   this._logger = logger.child({module: moduleName})
   this._agent = agent
+  this._toExport = null
   this.defineProperty(this, 'moduleName', moduleName)
+
+  // Determine the root directory of the
+  var moduleRoot = null
+  var next = resolvedName || '/'
+  do {
+    moduleRoot = next
+    next = path.dirname(moduleRoot)
+  } while (moduleRoot.length > 1 &amp;&amp; !/node_modules(?:\/@[^/]+)?$/.test(next))
+  this._moduleRoot = moduleRoot
 }
 module.exports = Shim
 
@@ -136,15 +176,13 @@ defineProperties(Shim.prototype, {
   }
 })
 
-// These two methods need to know if the AST transform is enabled. If it is not,
-// extra work maintaining the transaction must be done.
-//
-// TODO: Create versions that don't care about the transaction tracing.
 Shim.prototype.wrap = wrap
 Shim.prototype.bindSegment = bindSegment
 
 Shim.prototype.execute = execute
 Shim.prototype.wrapReturn = wrapReturn
+Shim.prototype.wrapClass = wrapClass
+Shim.prototype.wrapExport = wrapExport
 Shim.prototype.record = record
 Shim.prototype.isWrapped = isWrapped
 Shim.prototype.unwrap = unwrap
@@ -157,6 +195,7 @@ Shim.prototype.createSegment = createSegment
 Shim.prototype.getName = getName
 Shim.prototype.isObject = isObject
 Shim.prototype.isFunction = isFunction
+Shim.prototype.isPromise = isPromise
 Shim.prototype.isString = isString
 Shim.prototype.isNumber = isNumber
 Shim.prototype.isBoolean = isBoolean
@@ -169,6 +208,12 @@ Shim.prototype.once = once
 Shim.prototype.setInternalProperty = setInternalProperty
 Shim.prototype.defineProperty = defineProperty
 Shim.prototype.defineProperties = defineProperties
+Shim.prototype.setDefaults = setDefaults
+Shim.prototype.proxy = proxy
+Shim.prototype.require = shimRequire
+
+// Internal methods.
+Shim.prototype.getExport = getExport
 Shim.prototype.enableDebug = enableDebug
 Shim.prototype.__NR_unwrap = unwrapAll
 
@@ -469,6 +514,11 @@ Shim.prototype.__NR_unwrap = unwrapAll
  *  stream. If the value is a string it is assumed to be the name of an event to
  *  measure. A segment will be created to record emissions of the event.
  *
+ * @property {bool} [promise]
+ *  Indicates if the return value from the wrapped function is a Promise. If the
+ *  value is truthy then the recording will extend to the completion of the
+ *  Promise.
+ *
  * @property {number|CallbackBindFunction} [callback]
  *  If this is a number, it identifies which argument is the callback and the
  *  segment will also be bound to the callback. Otherwise, the passed function
@@ -490,6 +540,11 @@ Shim.prototype.__NR_unwrap = unwrapAll
  *  methods which simply call other public methods and you only want to record
  *  the method directly called by the user while still instrumenting all
  *  endpoints.
+ *
+ * @property {function} [after=null]
+ *  A function to call after the synchronous execution of the recorded method.
+ *  If the function synchronously threw an error, that error will be handed to
+ *  this function.
  *
  * @see SegmentSpec
  * @see RecorderFunction
@@ -544,6 +599,9 @@ function execute(nodule, spec) {
  *
  * When called with just a function, the spec will be executed on the function
  * and the return value of the spec simply passed back.
+ *
+ * The wrapped version will have the same prototype as the original
+ * method.
  *
  * @memberof Shim.prototype
  *
@@ -624,6 +682,11 @@ function wrap(nodule, properties, spec, args) {
  * - `wrapReturn(nodule, properties, spec [, args])`
  * - `wrapReturn(func, spec [, args])`
  *
+ * If the wrapper is executed with `new` then the wrapped function will also be
+ * called with `new`. This feature should only be used with factory methods
+ * disguised as classes. Normally {@link Shim#wrapClass} should be used to wrap
+ * constructors instead.
+ *
  * @memberof Shim.prototype
  *
  * @param {Object|Function} nodule
@@ -656,6 +719,9 @@ function wrapReturn(nodule, properties, spec, args) {
   if (!this.isFunction(spec)) {
     spec = _specToFunction(spec)
   }
+  if (!this.isArray(args)) {
+    args = []
+  }
 
   // Perform the wrapping!
   return this.wrap(nodule, properties, function returnWrapper(shim, fn, fnName) {
@@ -665,17 +731,26 @@ function wrapReturn(nodule, properties, spec, args) {
     }
 
     return function wrappedReturnFn() {
-      // Call the underlying function.
-      var ret = fn.apply(this, arguments)
+      // Call the underlying function. If this was called as a constructor, call
+      // the wrapped function as a constructor too.
+      var ctx = this
+      var ret = null
+      if (this instanceof wrappedReturnFn) {
+        var fnArgs = argsToArray.apply(shim, arguments)
+        fnArgs.unshift(fn) // `unshift` === `push_front`
+        ctx = ret = new (fn.bind.apply(fn, fnArgs))()
+      } else {
+        ret = fn.apply(ctx, arguments)
+      }
 
       // Assemble the arguments to hand to the spec.
       var _args = [shim, fn, fnName, ret]
-      if (args &amp;&amp; args.length > 0) {
+      if (args.length > 0) {
         _args.push.apply(_args, args)
       }
 
       // Call the spec and see if it handed back a different return value.
-      var newRet = spec.apply(this, _args)
+      var newRet = spec.apply(ctx, _args)
       if (newRet) {
         ret = newRet
       }
@@ -683,6 +758,132 @@ function wrapReturn(nodule, properties, spec, args) {
       return ret
     }
   })
+}
+
+/**
+ * Wraps a class constructor using a subclass with pre- and post-construction
+ * hooks.
+ *
+ * - `wrapClass(nodule, properties, spec [, args])`
+ * - `wrapClass(func, spec [, args])`
+ *
+ * @memberof Shim.prototype
+ *
+ * @param {Object|Function} nodule
+ *  The source for the properties to wrap, or a single function to wrap.
+ *
+ * @param {string|Array.&lt;string>} [properties]
+ *  One or more properties to wrap. If omitted, the `nodule` parameter is
+ *  assumed to be the constructor to wrap.
+ *
+ * @param {Object|Function} spec
+ *  The spec for wrapping the returned value from the properties or a post hook.
+ *
+ * @param {Function} spec.pre
+ *  A function called with the constructor's arguments before the base class'
+ *  constructor is executed.
+ *
+ * @param {Function} spec.post
+ *  A function called with the constructor's arguments after the base class'
+ *  constructor is executed.
+ *
+ * @param {Array.&lt;*>} [args=[]]
+ *  Optional extra arguments to be sent to the spec when executing it.
+ *
+ * @return {Object|Function} The first parameter to this function, after
+ *  wrapping it or its properties.
+ *
+ * @see Shim#wrap
+ */
+function wrapClass(nodule, properties, spec, args) {
+  // Munge our parameters as needed.
+  if (this.isObject(properties) &amp;&amp; !this.isArray(properties)) {
+    // wrapReturn(nodule, spec [, args])
+    args = spec
+    spec = properties
+    properties = null
+  }
+  if (this.isFunction(spec)) {
+    spec = {pre: null, post: spec}
+  } else {
+    spec.pre = spec.pre || null
+    spec.post = spec.post || null
+  }
+  if (!this.isArray(args)) {
+    args = []
+  }
+
+  // Perform the wrapping!
+  return this.wrap(nodule, properties, function classWrapper(shim, Base, fnName) {
+    // Only functions can have return values for us to wrap.
+    if (!shim.isFunction(Base) || shim.isWrapped(Base)) {
+      return Base
+    }
+
+    function WrappedClass() {
+      var cnstrctArgs = argsToArray.apply(shim, arguments)
+      if (!(this instanceof WrappedClass)) {
+        // Some libraries support calling constructors without the `new` keyword.
+        // In order to support this we must apply the super constructor if `this`
+        // is not an instance of ourself. JavaScript really needs a better way
+        // to generically apply constructors.
+        cnstrctArgs.unshift(WrappedClass) // `unshift` === `push_front`
+        return new (WrappedClass.bind.apply(WrappedClass, cnstrctArgs))()
+      }
+
+      // Assemble the arguments to hand to the spec.
+      var _args = [shim, Base, fnName, cnstrctArgs]
+      if (args.length > 0) {
+        _args.push.apply(_args, args)
+      }
+
+      // Call the spec's before hook, then call the base constructor, then call
+      // the spec's after hook.
+      spec.pre &amp;&amp; spec.pre.apply(this, _args)
+      Base.apply(this, cnstrctArgs)
+      spec.post &amp;&amp; spec.post.apply(this, _args)
+    }
+    util.inherits(WrappedClass, Base)
+
+    return WrappedClass
+  })
+}
+
+/**
+ * Wraps the actual module being instrumented to change what `require` returns.
+ *
+ * - `wrapExport(nodule, spec)`
+ *
+ * @memberof Shim.prototype
+ *
+ * @param {*} nodule
+ *  The original export to replace with our new one.
+ *
+ * @param {WrapFunction} spec
+ *  A wrapper function. The return value from this spec is what will replace
+ *  the export.
+ *
+ * @return {*} The return value from `spec`.
+ */
+function wrapExport(nodule, spec) {
+  return this._toExport = this.wrap(nodule, spec)
+}
+
+/**
+ * If the export was wrapped, that wrapper is returned, otherwise `defaultExport`.
+ *
+ * @private
+ * @memberof Shim.prototype
+ *
+ * @param {*} defaultExport - The original export in case it was never wrapped.
+ *
+ * @return {*} The result from calling {@link Shim#wrapExport} or `defaultExport`
+ *  if it was never used.
+ *
+ * @see Shim.wrapExport
+ */
+function getExport(defaultExport) {
+  return this._toExport || defaultExport
 }
 
 /**
@@ -754,6 +955,13 @@ function record(nodule, properties, recordNamer) {
     shim.logger.trace('Wrapping "%s" with metric recording.', name)
 
     return function wrapper() {
+      // See if we're in a transaction.
+      var parent = shim.getSegment()
+      if (!parent) {
+        shim.logger.debug('Not recording function %s, not in a transaction.', name)
+        return fn.apply(this, arguments)
+      }
+
       // Create the segment that will be recorded.
       var args = argsToArray.apply(shim, arguments)
       var segDesc = recordNamer.call(this, shim, fn, name, args)
@@ -766,12 +974,13 @@ function record(nodule, properties, recordNamer) {
       //  - We are _not_ making an internal segment.
       //  - OR the parent segment is either not internal or not from this shim.
       var segment = null
-      var parent = shim.getSegment()
       var shouldCreateSegment = !(
         segDesc.internal &amp;&amp; parent &amp;&amp; parent.internal &amp;&amp; shim === parent.shim
       )
       if (shouldCreateSegment) {
         segment = shim.createSegment(segDesc)
+      } else {
+        segment = parent
       }
 
       // Now bind any callbacks specified in the segment descriptor.
@@ -782,15 +991,48 @@ function record(nodule, properties, recordNamer) {
       })
 
       // Apply the function, and (if it returned a stream) bind that too.
-      var ret = shim.applySegment(fn, segment, true, this, args)
-      if (segment &amp;&amp; segDesc.stream &amp;&amp; ret) {
-        shim.logger.trace('Binding return value as stream.')
-        _bindStream(shim, ret, segment, {
-          event: shim.isString(segDesc.stream) ? segDesc.stream : null,
-          shouldCreateSegment: shouldCreateSegment
-        })
+      var ret = _applyRecorderSegment(segment, this, args, segDesc)
+      if (segment &amp;&amp; ret) {
+        if (segDesc.stream) {
+          shim.logger.trace('Binding return value as stream.')
+          _bindStream(shim, ret, segment, {
+            event: shim.isString(segDesc.stream) ? segDesc.stream : null,
+            shouldCreateSegment: shouldCreateSegment
+          })
+        } else if (segDesc.promise) {
+          shim.logger.trace('Binding return value as Promise.')
+          ret = _bindPromise(shim, ret, segment)
+        }
       }
       return ret
+    }
+
+    function _applyRecorderSegment(segment, ctx, args, segDesc) {
+      var error = null
+      var promised = false
+      try {
+        var ret = shim.applySegment(fn, segment, true, ctx, args)
+        if (segDesc.after &amp;&amp; segDesc.promise &amp;&amp; shim.isPromise(ret)) {
+          promised = true
+          return ret.then(function onThen(val) {
+            segment.touch()
+            segDesc.after(shim, fn, name, null)
+            return val
+          }, function onCatch(err) {
+            segment.touch()
+            segDesc.after(shim, fn, name, err)
+            throw err // NOTE: This is not an error from our instrumentation.
+          })
+        }
+        return ret
+      } catch (err) {
+        error = err
+        throw err // Just rethrowing this error, not our error!
+      } finally {
+        if (segDesc.after &amp;&amp; (error || !promised)) {
+          segDesc.after(shim, fn, name, error)
+        }
+      }
     }
   })
 }
@@ -931,17 +1173,25 @@ function bindSegment(nodule, property, segment, full) {
     property = null
   }
 
-  return this.wrap(nodule, property, function wrapFunc(shim, func) {
+  var wrapped = this.wrap(nodule, property, function wrapFunc(shim, func) {
     if (!shim.isFunction(func)) {
       return func
     }
 
     // Wrap up the function with this segment.
     segment = segment || shim.getSegment()
-    var wrapped = _makeBindWrapper(shim, func, segment, full || false)
-    shim.storeSegment(wrapped, segment)
-    return wrapped
+    var binder = _makeBindWrapper(shim, func, segment, full || false)
+    shim.storeSegment(binder, segment)
+    return binder
   })
+
+  // In order to maintain arity on older versions of node we wrap all our
+  // wrappers in an eval'd function. We need to store the segment on this outer
+  // function.
+  // TODO: Remove this once Node v0.12 is deprecated.
+  this.storeSegment(property ? wrapped[property] : wrapped, segment)
+
+  return wrapped
 }
 
 /**
@@ -998,6 +1248,8 @@ function bindCallbackSegment(args, cbIdx, parentSegment) {
         segment.async = false
       }
 
+      // CB may end the transaction so update the parent's time preemptively.
+      realParent &amp;&amp; realParent.touch()
       try {
         return shim.applySegment(cb, segment, true, this, arguments)
       } finally {
@@ -1149,12 +1401,19 @@ function createSegment(name, recorder, parent) {
     segment.shim = this
   }
 
-  if (segment &amp;&amp; opts.extras) {
-    urltils.copyParameters(this.agent.config, opts.extras, segment.parameters)
-    segment.host = opts.extras.host
-    segment.port = opts.extras.port
-    delete segment.parameters.host
-    delete segment.parameters.port
+  if (segment &amp;&amp; opts.hasOwnProperty('extras')) {
+    var ignoredParams = this.agent.config.ignored_params
+    var captureParams = this.agent.config.capture_params
+    for (var key in opts.extras) {
+      if (
+        opts.extras.hasOwnProperty(key) &amp;&amp; (
+          IGNORES_CAPTURE_PARAMS.hasOwnProperty(key) ||
+          (captureParams &amp;&amp; ignoredParams.indexOf(key) === -1)
+        )
+      ) {
+        segment.setParameter(key, opts.extras[key])
+      }
+    }
   }
   this.logger.trace(
     {segment: opts},
@@ -1253,6 +1512,19 @@ function isBoolean(obj) {
  */
 function isArray(obj) {
   return obj instanceof Array
+}
+
+/**
+ * Determines if the given object is a promise instance.
+ *
+ * @memberof Shim.prototype
+ *
+ * @param {*} obj - The object to check.
+ *
+ * @return {bool} True if the object is a promise, else false.
+ */
+function isPromise(obj) {
+  return obj &amp;&amp; typeof obj.then === 'function'
 }
 
 /**
@@ -1435,6 +1707,82 @@ function defineProperties(obj, props) {
 }
 
 /**
+ * Performs a shallow copy of each property from `defaults` only if `obj` does
+ * not already have that property.
+ *
+ * @memberof Shim.prototype
+ *
+ * @param {object?} obj       - The object to copy the defaults onto.
+ * @param {object}  defaults  - A mapping of keys to default values.
+ *
+ * @return {object} The `obj` with the default values copied onto it. If `obj`
+ *  was falsey, then a new object with the defaults copied onto it is returned
+ *  instead.
+ */
+function setDefaults(obj, defaults) {
+  if (!obj) {
+    obj = {}
+  }
+  var hasOwnProperty = Object.hasOwnProperty
+
+  Object.keys(defaults).forEach(function forEachDefaultKey(key) {
+    if (!hasOwnProperty.call(obj, key)) {
+      obj[key] = defaults[key]
+    }
+  })
+
+  return obj
+}
+
+/**
+ * Proxies all set/get actions for each given property on `dest` onto `source`.
+ *
+ * @memberof Shim.prototype
+ *
+ * @param {*} source
+ *  The object on which all the set/get actions will actually occur.
+ *
+ * @param {string|Array.&lt;string>} properties
+ *  All of the properties to proxy.
+ *
+ * @param {*} dest
+ *  The object which is proxying the source's properties.
+ */
+function proxy(source, properties, dest) {
+  if (!this.isArray(properties)) {
+    properties = [properties]
+  }
+
+  properties.forEach(function forEachProxyProp(prop) {
+    Object.defineProperty(dest, prop, {
+      get: function proxyGet() {
+        return source[prop]
+      },
+      set: function proxySet(val) {
+        return source[prop] = val
+      }
+    })
+  })
+}
+
+/**
+ * Loads a node module from the instrumented library's own root directory.
+ *
+ * @param {string} filePath - A relative path inside the module's directory.
+ *
+ * @return {*?} The result of loading the given module. If the module fails to
+ *  load, `null` is returned instead.
+ */
+function shimRequire(filePath) {
+  try {
+    return require(path.resolve(this._moduleRoot, filePath))
+  } catch (e) {
+    this.logger.debug('Failed to load %j: %s', filePath, e.stack)
+    return null
+  }
+}
+
+/**
  * Enables debugging mode of the shim.
  *
  * In debug mode the shim will track all methods that it wraps so they can be
@@ -1519,6 +1867,11 @@ function _wrap(shim, original, name, spec, args) {
   // Apply the spec and see if it returned a wrapped version of the property.
   var wrapped = spec.apply(null, specArgs)
   if (wrapped &amp;&amp; wrapped !== original) {
+    if (shim.isFunction(wrapped)) {
+      wrapped = arity.fixArity(original, wrapped)
+      wrapped.prototype = original.prototype
+    }
+
     shim.setInternalProperty(wrapped, '__NR_original', original)
     if (shim._debug) {
       shim._wrapped.push(wrapped)
@@ -1643,6 +1996,7 @@ function _makeTransWrapper(shim, fn, name, spec) {
  * generic callback binding method, `bindCallbackSegment`, otherwise.
  *
  * @this *
+ * @private
  *
  * @param {Shim} shim
  *  The shim performing this binding.
@@ -1672,12 +2026,12 @@ function _makeTransWrapper(shim, fn, name, spec) {
  */
 function _bindAllCallbacks(shim, fn, name, args, spec) {
   // Check for a normal callback.
-  if ('callback' in spec.spec &amp;&amp; spec.spec.callback !== null) {
+  if (spec.spec.hasOwnProperty('callback') &amp;&amp; spec.spec.callback !== null) {
     _bindCallback(this, spec.spec.callback, shim.bindCallbackSegment)
   }
 
   // And check for a row callback.
-  if ('rowCallback' in spec.spec &amp;&amp; spec.spec.rowCallback !== null) {
+  if (spec.spec.hasOwnProperty('rowCallback') &amp;&amp; spec.spec.rowCallback !== null) {
     _bindCallback(
       this,
       spec.spec.rowCallback,
@@ -1698,7 +2052,7 @@ function _bindAllCallbacks(shim, fn, name, args, spec) {
         if (spec.shouldCreateSegment) {
           binder.call(shim, args, cbIdx, spec.segment)
         } else {
-          args[cbIdx] = shim.bindSegment(args[cbIdx])
+          args[cbIdx] = shim.bindSegment(args[cbIdx], spec.segment, true)
         }
       }
     }
@@ -1707,6 +2061,8 @@ function _bindAllCallbacks(shim, fn, name, args, spec) {
 
 /**
  * Binds the given segment to the lifetime of the stream.
+ *
+ * @private
  *
  * @param {Shim} shim
  *  The shim performing the wrapping/binding.
@@ -1731,48 +2087,97 @@ function _bindAllCallbacks(shim, fn, name, args, spec) {
  *  true unless this segment and its parent are both internal segments.
  */
 function _bindStream(shim, stream, segment, spec) {
-  shim.bindSegment(stream, 'emit', segment)
-  if (shim.isFunction(stream.on)) {
-    var ender = shim.once(function segmentEnder() {
-      segment &amp;&amp; segment.touch()
-    })
+  if (!segment || !shim.isFunction(stream.emit)) {
+    shim.logger.trace(
+      'Not binding stream; have segment=%j; typeof emit=%s',
+      !!segment, typeof stream.emit
+    )
+    return
+  }
 
-    // Listen for both `end` and `error` events to end the segment.
-    // An `error` event _may_ still emit `end`, but not always so we may
-    // as well cover all our bases.
-    stream.on('end', ender)
-    stream.on('error', function queryErrorHandler(err) {
-      ender()
-      if (shim.listenerCount(stream, 'error') &lt; 2) {
-        throw err
-      }
-    })
+  // We have a segment and an emit function, pull out the relevant parts of the
+  // spec and prepare to create an event segment.
+  var specEvent = (spec &amp;&amp; spec.event) || null
+  var shouldCreateSegment = (spec &amp;&amp; spec.shouldCreateSegment) || false
+  var segmentName = 'Event callback: ' + specEvent
 
-    // If we're given an event to measure then add a listener for it.
-    // TODO:  Add aggregate segments and measure the actual listener functions
-    //        instead of using one normal segment and adding our own listener.
-    if (spec &amp;&amp; spec.event) {
-      var emitCount = 0
-      var eventSegment = null
-      var segmentName = ' calls to event: ' + spec.event
-      stream.on(spec.event, function rowEventHandler() {
-        if (++emitCount === 1) {
-          segment &amp;&amp; segment.touch()
-          if (spec.shouldCreateSegment) {
-            eventSegment = shim.createSegment(emitCount + segmentName, segment)
-          } else {
-            eventSegment = segment
-          }
-        }
+  // Wrap emit such that each event handler is executed within context of this
+  // segment or the event-specific segment.
+  shim.wrap(stream, 'emit', function wrapStreamEmit(shim, emit) {
+    var streamBoundEmit = shim.bindSegment(emit, segment, true)
+    var eventSegment = null
+    var eventBoundEmit = null
+    var emitCount = 0
 
-        if (eventSegment) {
-          if (eventSegment !== segment) {
-            eventSegment.name = emitCount + segmentName
-          }
-          eventSegment.touch()
-        }
-      })
+    if (!shouldCreateSegment) {
+      return streamBoundEmit
     }
+
+    return function wrappedEmit(evnt) {
+      var emitToCall = streamBoundEmit
+      if (evnt === specEvent) {
+        if (!eventBoundEmit) {
+          eventSegment = shim.createSegment(segmentName, segment)
+          eventBoundEmit = shim.bindSegment(emit, eventSegment, true)
+        }
+        eventSegment.setParameter('count', ++emitCount)
+        emitToCall = eventBoundEmit
+      }
+      if (evnt === 'end' || evnt === 'error') {
+        segment.touch()
+      }
+
+      return emitToCall.apply(this, arguments)
+    }
+  })
+
+  // Also wrap up any listeners for end or error events.
+  shim.wrap(stream, ['on', 'addListener'], function wrapOn(shim, fn) {
+    if (!shim.isFunction(fn)) {
+      return fn
+    }
+
+    return function wrappedOn(onEvent) {
+      if (onEvent !== specEvent &amp;&amp; (onEvent === 'end' || onEvent === 'error')) {
+        var args = argsToArray.apply(shim, arguments)
+        shim.bindCallbackSegment(args, shim.LAST, segment)
+        return fn.apply(this, args)
+      }
+      return fn.apply(this, arguments)
+    }
+  })
+}
+
+/**
+ * Binds the given segment to the completion of the Promise.
+ *
+ * @private
+ *
+ * @param {Shim} shim
+ *  The shim performing the wrapping/binding.
+ *
+ * @param {!Promise} promise
+ *  The Promise to bind.
+ *
+ * @param {!TraceSegment} segment
+ *  The segment to bind to the Promise.
+ *
+ * @return {Promise} The promise to continue with.
+ */
+function _bindPromise(shim, promise, segment) {
+  // If this promise has a "finally" hook use that, it is guaranteed to be
+  // without sideeffect.
+  if (typeof promise.finally === 'function') {
+    return promise.finally(thenTouch)
+  }
+
+  promise.then(thenTouch, thenTouch)
+  return promise.catch(function catchRethrow(err) {
+    throw err // NOTE: This is not our error, don't blame us!
+  })
+
+  function thenTouch() {
+    segment.touch()
   }
 }
 </code></pre>
@@ -1784,17 +2189,13 @@ function _bindStream(shim, stream, segment, spec) {
 
 </div>
 
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="API.html">API</a></li><li><a href="DatastoreShim.html">DatastoreShim</a></li><li><a href="Shim.html">Shim</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li></ul><h3>Interfaces</h3><ul><li><a href="DatastoreExtras.html">DatastoreExtras</a></li><li><a href="OperationSpec.html">OperationSpec</a></li><li><a href="global.html#ParsedQueryData">ParsedQueryData</a></li><li><a href="QuerySpec.html">QuerySpec</a></li><li><a href="RecorderSpec.html">RecorderSpec</a></li><li><a href="SegmentSpec.html">SegmentSpec</a></li><li><a href="TransactionSpec.html">TransactionSpec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_bindAllCallbacks">_bindAllCallbacks</a></li><li><a href="global.html#_bindStream">_bindStream</a></li><li><a href="global.html#bindRowCallbackSegment">bindRowCallbackSegment</a></li></ul>
-</nav>
-
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Aug 04 2016 14:24:47 GMT-0700 (PDT)
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed May 03 2017 17:21:38 GMT-0700 (PDT) using the Minami theme.
 </footer>
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
 </body>
 </html>

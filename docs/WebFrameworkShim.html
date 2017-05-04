@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>DatastoreShim - Documentation</title>
+    <title>WebFrameworkShim - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">DatastoreShim</h1>
+    <h1 class="page-title">WebFrameworkShim</h1>
     
 
     
@@ -42,10 +42,10 @@
 <header>
     
         <h2>
-        DatastoreShim
+        WebFrameworkShim
         </h2>
         
-            <div class="class-description"><p>A helper class for wrapping datastore modules.</p></div>
+            <div class="class-description"><p>A helper class for wrapping web framework modules.</p></div>
         
     
 </header>
@@ -60,7 +60,7 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="DatastoreShim"><span class="type-signature"></span>new DatastoreShim<span class="signature">(agent, moduleName, resolvedName, datastoreId<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="WebFrameworkShim"><span class="type-signature"></span>new WebFrameworkShim<span class="signature">(agent, moduleName, resolvedName, frameworkId<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -68,7 +68,7 @@
 
 <div class="description">
     <p>Constructs a shim associated with the given agent instance, specialized for
-instrumenting datastores.</p>
+instrumenting web frameworks.</p>
 </div>
 
 
@@ -104,7 +104,7 @@ instrumenting datastores.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line82">line 82</a>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line98">line 98</a>
     </li></ul></dd>
     
 
@@ -114,9 +114,9 @@ instrumenting datastores.</p>
     <dt class="tag-see">See:</dt>
     <dd class="tag-see">
         <ul>
-            <li><a href="Shim.html">Shim</a></li>
+            <li><a href="TransactionShim.html">TransactionShim</a></li>
         
-            <li><a href="DatastoreShim.html#.DATASTORE_NAMES">DatastoreShim.DATASTORE_NAMES</a></li>
+            <li><a href="WebFrameworkShim.html#.FRAMEWORK_NAMES">WebFrameworkShim.FRAMEWORK_NAMES</a></li>
         </ul>
     </dd>
     
@@ -261,7 +261,7 @@ instrumenting datastores.</p>
 
         <tr>
             
-                <td class="name"><code>datastoreId</code></td>
+                <td class="name"><code>frameworkId</code></td>
             
 
             <td class="type">
@@ -288,8 +288,8 @@ instrumenting datastores.</p>
             
 
             <td class="description last">
-                <p>The name of the datastore being instrumented. If available, use one of the
- values from <a href="DatastoreShim.html#.DATASTORE_NAMES"><code>DatastoreShim.DATASTORE_NAMES</code></a>.</p>
+                <p>The name of the web framework being instrumented. If available, use one of
+ the values from <a href="WebFrameworkShim.html#.FRAMEWORK_NAMES"><code>WebFrameworkShim.FRAMEWORK_NAMES</code></a>.</p>
                 
             </td>
         </tr>
@@ -324,7 +324,7 @@ instrumenting datastores.</p>
 
 
     <ul>
-        <li><a href="Shim.html">Shim</a></li>
+        <li><a href="TransactionShim.html">TransactionShim</a></li>
     </ul>
 
 
@@ -344,16 +344,16 @@ instrumenting datastores.</p>
         
             
 <div class="section-members">
-<h4 class="name" id=".DATASTORE_NAMES"><span class="type-signature">(static, readonly) </span>DATASTORE_NAMES<span class="type-signature"> :string</span></h4>
+<h4 class="name" id=".FRAMEWORK_NAMES"><span class="type-signature">(static, readonly) </span>FRAMEWORK_NAMES<span class="type-signature"> :string</span></h4>
 
 
 
 
 <div class="description">
-    <p>An enumeration of well-known datastores so that new instrumentations can use
-the same names we already use for first-party instrumentation.</p>
-<p>Each of these values is also exposed directly on the DatastoreShim class as
-static members.</p>
+    <p>An enumeration of well-known web frameworks so that new instrumentations can
+use the same names we already use for first-party instrumentation.</p>
+<p>Each of these values is also exposed directly on the WebFrameworkShim class
+as static members.</p>
 </div>
 
 
@@ -386,7 +386,7 @@ static members.</p>
 
         <tr>
             
-                <td class="name"><code>CASSANDRA</code></td>
+                <td class="name"><code>CONNECT</code></td>
             
 
             <td class="type">
@@ -411,7 +411,7 @@ static members.</p>
 
         <tr>
             
-                <td class="name"><code>MEMCACHED</code></td>
+                <td class="name"><code>DIRECTOR</code></td>
             
 
             <td class="type">
@@ -436,7 +436,7 @@ static members.</p>
 
         <tr>
             
-                <td class="name"><code>MONGODB</code></td>
+                <td class="name"><code>EXPRESS</code></td>
             
 
             <td class="type">
@@ -461,7 +461,7 @@ static members.</p>
 
         <tr>
             
-                <td class="name"><code>MYSQL</code></td>
+                <td class="name"><code>HAPI</code></td>
             
 
             <td class="type">
@@ -486,32 +486,7 @@ static members.</p>
 
         <tr>
             
-                <td class="name"><code>REDIS</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>POSTGRES</code></td>
+                <td class="name"><code>RESTIFY</code></td>
             
 
             <td class="type">
@@ -568,137 +543,7 @@ static members.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line22">line 22</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><code>string</code></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-</div>
-
-        
-            
-<div class="section-members">
-<h4 class="name" id=".QUERY_PARSERS"><span class="type-signature">(static, readonly) </span>QUERY_PARSERS<span class="type-signature"> :string</span></h4>
-
-
-
-
-<div class="description">
-    <p>Pre-defined query parsers for well-known languages.</p>
-<p>Each of these values is also exposed directly on the DatastoreShim class as
-static members.</p>
-</div>
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>SQL_PARSER</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line53">line 53</a>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line23">line 23</a>
     </li></ul></dd>
     
 
@@ -2267,225 +2112,6 @@ invoked.</p>
 
     
 
-    <h4 class="name" id="bindRowCallbackSegment"><span class="type-signature"></span>bindRowCallbackSegment<span class="signature">(args, cbIdx, parentSegment<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Wraps the callback in an arguments array with one that is bound to a segment.</p>
-<ul>
-<li><code>bindRowCallbackSegment(args, cbIdx [, parentSegment])</code></li>
-</ul>
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line571">line 571</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>Array</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">
-                <p>The arguments array to replace the callback in.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>cbIdx</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>Number</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">
-                <p>The index of the callback in the arguments array.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>parentSegment</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>TraceSegment</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">
-                <p>Optional. The segment to be the parent row callback's segment. Defaults to
- the segment active when the row callback is first called.</p>
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
     <h4 class="name" id="bindSegment"><span class="type-signature"></span>bindSegment<span class="signature">(nodule, property<span class="signature-attributes">opt</span>, segment<span class="signature-attributes">opt, nullable</span>, full<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
 
     
@@ -2807,15 +2433,14 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
 
     
 
-    <h4 class="name" id="captureInstanceAttributes"><span class="type-signature"></span>captureInstanceAttributes<span class="signature">(host, port, database)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="captureUrlParams"><span class="type-signature"></span>captureUrlParams<span class="signature">(params)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Normalizes and adds datastore instance attributes to the current segment.</p>
-<p>If the current segment was not created by this shim then no action is taken.</p>
+    <p>Capture URL parameters from a request object as attributes of the current segment.</p>
 </div>
 
 
@@ -2851,7 +2476,7 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line629">line 629</a>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line653">line 653</a>
     </li></ul></dd>
     
 
@@ -2895,13 +2520,13 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
 
         <tr>
             
-                <td class="name"><code>host</code></td>
+                <td class="name"><code>params</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code>string</code></span>
+<span class="param-type"><code>Object</code></span>
 
 
             
@@ -2912,62 +2537,7 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
             
 
             <td class="description last">
-                <p>The name of the database host.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>port</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-|
-
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>The port, path, or ID of the database server.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>database</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>The name of the database in use.</p>
+                <p>An object with key-value pairs.</p>
                 
             </td>
         </tr>
@@ -3609,6 +3179,176 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
             <td class="description last">
                 <p>The value to set. If a function is given, it is used as a getter, otherwise
  the value is directly set as an unwritable property.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="errorHandled"><span class="type-signature"></span>errorHandled<span class="signature">(req, err)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Indicates that the given error has been handled for this request.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line621">line 621</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="WebFrameworkShim.html#noticeError">WebFrameworkShim#noticeError</a></li>
+        
+            <li><a href="WebFrameworkShim.html#setErrorPredicate">WebFrameworkShim#setErrorPredicate</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Request</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The request which caused the error.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>err</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>*</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The error which has been handled.</p>
                 
             </td>
         </tr>
@@ -5842,6 +5582,200 @@ array length before checking it.</p>
 
     
 
+    <h4 class="name" id="noticeError"><span class="type-signature"></span>noticeError<span class="signature">(req, err<span class="signature-attributes">nullable</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Tells the shim that the given request has caused an error.</p>
+<p>The given error will be checked for truthiness and if it passes the error
+predicate check before being held onto.</p>
+<p>Use <a href="WebFrameworkShim.html#errorHandled"><code>WebFrameworkShim#errorHandled</code></a> to unnotice an error if it is later
+caught by the user.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line603">line 603</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="WebFrameworkShim.html#errorHandled">WebFrameworkShim#errorHandled</a></li>
+        
+            <li><a href="WebFrameworkShim.html#setErrorPredicate">WebFrameworkShim#setErrorPredicate</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>req</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Request</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The request which caused the error.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>err</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>*</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                    &lt;nullable><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The error which has occurred.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
     <h4 class="name" id="once"><span class="type-signature"></span>once<span class="signature">(fn)</span><span class="type-signature"> &rarr; {function}</span></h4>
 
     
@@ -6007,15 +5941,16 @@ array length before checking it.</p>
 
     
 
-    <h4 class="name" id="parseQuery"><span class="type-signature"></span>parseQuery<span class="signature">(query, nodule)</span><span class="type-signature"> &rarr; {ParsedStatement}</span></h4>
+    <h4 class="name" id="popTransactionName"><span class="type-signature"></span>popTransactionName<span class="signature">(pathSegment<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Parses the given query to extract information for any metrics that will be
-created.</p>
+    <p>Pops one or more elements off the transaction naming stack.</p>
+<p>Ideally it is not necessary to ever provide the <code>pathSegment</code> parameter for
+this function, but we do not live in an ideal world.</p>
 </div>
 
 
@@ -6028,6 +5963,11 @@ created.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TransactionShim.html#popTransactionName">TransactionShim#popTransactionName</a>
+    </li></ul></dd>
     
 
     
@@ -6051,19 +5991,12 @@ created.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line544">line 544</a>
+        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line69">line 69</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="DatastoreShim.html#setParser">DatastoreShim#setParser</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -6090,6 +6023,8 @@ created.</p>
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -6102,7 +6037,7 @@ created.</p>
 
         <tr>
             
-                <td class="name"><code>query</code></td>
+                <td class="name"><code>pathSegment</code></td>
             
 
             <td class="type">
@@ -6115,37 +6050,22 @@ created.</p>
             </td>
 
             
-
-            
-
-            <td class="description last">
-                <p>The query to parse.</p>
+                <td class="attributes">
                 
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>nodule</code></td>
-            
-
-            <td class="type">
-            
+                    &lt;optional><br>
                 
-<span class="param-type"><code>Object</code></span>
 
+                
 
-            
-            </td>
-
+                
+                </td>
             
 
             
 
             <td class="description last">
-                <p>Context for the queryParse to run under.</p>
+                <p>Optional. Path segment to pop the stack repeatedly until a segment matching
+ <code>pathSegment</code> is removed.</p>
                 
             </td>
         </tr>
@@ -6166,31 +6086,6 @@ created.</p>
 
 
 
-
-<div class="section-returns">
-<h5>Returns:</h5>
-
-        
-
-<dl class="param-type">
-    <dt>
-        Type:
-    </dt>
-    <dd>
-        
-<span class="param-type"><code>ParsedStatement</code></span>
-
-
-    </dd>
-</dl>
-
-
-<div class="param-desc">
-    <p>The parsed query object.</p>
-</div>
-
-    
-</div>
 
 
 
@@ -6366,6 +6261,152 @@ created.</p>
 
             <td class="description last">
                 <p>The object which is proxying the source's properties.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="pushTransactionName"><span class="type-signature"></span>pushTransactionName<span class="signature">(pathSegment)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Pushes a new path segment onto the transaction naming stack.</p>
+<p>Transactions are named for the middlware that sends the reponse. Some web
+frameworks are capable of mounting middlware in complex routing stacks. In
+order to maintain the correct name, transactions keep a stack of mount points
+for each middlware/router/app/whatever. The instrumentation should push on
+the mount path for wrapped things when route resolution enters and pop it
+back off when resolution exits the item.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TransactionShim.html#pushTransactionName">TransactionShim#pushTransactionName</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line50">line 50</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pathSegment</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The path segment to add to the naming stack.</p>
                 
             </td>
         </tr>
@@ -6668,21 +6709,18 @@ created.</p>
 
     
 
-    <h4 class="name" id="recordBatchQuery"><span class="type-signature"></span>recordBatchQuery<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, querySpec)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
+    <h4 class="name" id="recordMiddleware"><span class="type-signature"></span>recordMiddleware<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, spec<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Just like <a href="DatastoreShim.html#recordQuery"><code>DatastoreShim#recordQuery</code></a>, but with a <code>batch</code> suffix for
-the recorded metric.</p>
+    <p>Records the provided function as a middleware.</p>
 <ul>
-<li><code>recordBatchQuery(nodule, properties, querySpec)</code></li>
-<li><code>recordBatchQuery(func, querySpec)</code></li>
+<li><code>recordMiddleware(nodule, properties [, spec])</code></li>
+<li><code>recordMiddleware(func [, spec])</code></li>
 </ul>
-<p>The resulting wrapped methods will record their actions using the datastore
-<code>STATEMENT</code> metric with a <code>/batch</code> suffix.</p>
 </div>
 
 
@@ -6718,7 +6756,7 @@ the recorded metric.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line526">line 526</a>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line525">line 525</a>
     </li></ul></dd>
     
 
@@ -6728,15 +6766,7 @@ the recorded metric.</p>
     <dt class="tag-see">See:</dt>
     <dd class="tag-see">
         <ul>
-            <li><a href="Shim.html#wrap">Shim#wrap</a></li>
-        
-            <li><a href="Shim.html#record">Shim#record</a></li>
-        
-            <li><a href="DatastoreShim.html#recordQuery">DatastoreShim#recordQuery</a></li>
-        
-            <li><a href="QuerySpec.html">QuerySpec</a></li>
-        
-            <li><a href="global.html#QuerySpecFunction">QuerySpecFunction</a></li>
+            <li><a href="WebFrameworkShim.html#wrapMiddlewareMounter">WebFrameworkShim#wrapMiddlewareMounter</a></li>
         </ul>
     </dd>
     
@@ -6856,16 +6886,13 @@ the recorded metric.</p>
 
         <tr>
             
-                <td class="name"><code>querySpec</code></td>
+                <td class="name"><code>spec</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code><a href="QuerySpec.html">QuerySpec</a></code></span>
-|
-
-<span class="param-type"><code><a href="global.html#QuerySpecFunction">QuerySpecFunction</a></code></span>
+<span class="param-type"><code><a href="MiddlewareSpec.html">MiddlewareSpec</a></code></span>
 
 
             
@@ -6873,6 +6900,8 @@ the recorded metric.</p>
 
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
                 
@@ -6884,7 +6913,7 @@ the recorded metric.</p>
             
 
             <td class="description last">
-                <p>The spec for this query function.</p>
+                <p>The spec for wrapping the middleware.</p>
                 
             </td>
         </tr>
@@ -6944,20 +6973,23 @@ the recorded metric.</p>
 
     
 
-    <h4 class="name" id="recordOperation"><span class="type-signature"></span>recordOperation<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, opSpec)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
+    <h4 class="name" id="recordParamware"><span class="type-signature"></span>recordParamware<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, spec<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Wraps the given properties as datastore operations that should be recorded.</p>
+    <p>Records the provided function as a paramware.</p>
 <ul>
-<li><code>recordOperation(nodule, properties, opSpec)</code></li>
-<li><code>recordOperation(func, opSpec)</code></li>
+<li><code>recordParamware(nodule, properties [, spec])</code></li>
+<li><code>recordParamware(func [, spec])</code></li>
 </ul>
-<p>The resulting wrapped methods will record their actions using the datastore
-<code>OPERATION</code> metric.</p>
+<p>Paramware are specialized middleware that execute when certain route
+parameters are encountered. For example, the route <code>/users/:userId</code> could
+trigger a paramware hooked to <code>userId</code>.</p>
+<p>For every new request that comes in, this should be called as early in the
+processing as possible.</p>
 </div>
 
 
@@ -6993,25 +7025,12 @@ the recorded metric.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line419">line 419</a>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line566">line 566</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="Shim.html#wrap">Shim#wrap</a></li>
-        
-            <li><a href="Shim.html#record">Shim#record</a></li>
-        
-            <li><a href="OperationSpec.html">OperationSpec</a></li>
-        
-            <li><a href="global.html#SegmentFunction">SegmentFunction</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -7129,16 +7148,13 @@ the recorded metric.</p>
 
         <tr>
             
-                <td class="name"><code>opSpec</code></td>
+                <td class="name"><code>spec</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code><a href="OperationSpec.html">OperationSpec</a></code></span>
-|
-
-<span class="param-type"><code><a href="global.html#SegmentFunction">SegmentFunction</a></code></span>
+<span class="param-type"><code><a href="MiddlewareSpec.html">MiddlewareSpec</a></code></span>
 
 
             
@@ -7146,6 +7162,8 @@ the recorded metric.</p>
 
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
                 
@@ -7157,7 +7175,7 @@ the recorded metric.</p>
             
 
             <td class="description last">
-                <p>The spec for this operation function.</p>
+                <p>The spec for wrapping the middleware.</p>
                 
             </td>
         </tr>
@@ -7217,20 +7235,18 @@ the recorded metric.</p>
 
     
 
-    <h4 class="name" id="recordQuery"><span class="type-signature"></span>recordQuery<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, querySpec)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
+    <h4 class="name" id="recordRender"><span class="type-signature"></span>recordRender<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, spec<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Wraps the given properties as datastore query that should be recorded.</p>
+    <p>Records calls to methods used for rendering views.</p>
 <ul>
-<li><code>recordQuery(nodule, properties, querySpec)</code></li>
-<li><code>recordQuery(func, querySpec)</code></li>
+<li><code>recordRender(nodule, properties [, spec])</code></li>
+<li><code>recordRender(func [, spec])</code></li>
 </ul>
-<p>The resulting wrapped methods will record their actions using the datastore
-<code>STATEMENT</code> metric.</p>
 </div>
 
 
@@ -7266,27 +7282,12 @@ the recorded metric.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line491">line 491</a>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line370">line 370</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="Shim.html#wrap">Shim#wrap</a></li>
-        
-            <li><a href="Shim.html#record">Shim#record</a></li>
-        
-            <li><a href="DatastoreShim.html#recordBatchQuery">DatastoreShim#recordBatchQuery</a></li>
-        
-            <li><a href="QuerySpec.html">QuerySpec</a></li>
-        
-            <li><a href="global.html#QuerySpecFunction">QuerySpecFunction</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -7404,16 +7405,13 @@ the recorded metric.</p>
 
         <tr>
             
-                <td class="name"><code>querySpec</code></td>
+                <td class="name"><code>spec</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code><a href="QuerySpec.html">QuerySpec</a></code></span>
-|
-
-<span class="param-type"><code><a href="global.html#QuerySpecFunction">QuerySpecFunction</a></code></span>
+<span class="param-type"><code><a href="RenderSpec.html">RenderSpec</a></code></span>
 
 
             
@@ -7421,6 +7419,8 @@ the recorded metric.</p>
 
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
                 
@@ -7432,7 +7432,7 @@ the recorded metric.</p>
             
 
             <td class="description last">
-                <p>The spec for this query function.</p>
+                <p>The spec for wrapping the render method.</p>
                 
             </td>
         </tr>
@@ -7482,151 +7482,6 @@ the recorded metric.</p>
 
     
 </div>
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="setDatastore"><span class="type-signature"></span>setDatastore<span class="signature">(datastore)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Sets the vendor the module implements.</p>
-<p>This is used to determine the names for metrics and segments. If a string is
-passed, metric names will be generated using that name.</p>
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line342">line 342</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="DatastoreShim.html#.DATASTORE_NAMES">DatastoreShim.DATASTORE_NAMES</a></li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>datastore</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>The name of this datastore. Use one of the well-known constants listed in
- <a href="DatastoreShim.html#.DATASTORE_NAMES"><code>DatastoreShim.DATASTORE_NAMES</code></a> if available for the datastore.</p>
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -7841,6 +7696,301 @@ not already have that property.</p>
 
     
 </div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="setErrorPredicate"><span class="type-signature"></span>setErrorPredicate<span class="signature">(pred)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Sets a function to call when an error is noticed to determine if it is really
+an error.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line641">line 641</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="WebFrameworkShim.html#noticeError">WebFrameworkShim#noticeError</a></li>
+        
+            <li><a href="WebFrameworkShim.html#errorHandled">WebFrameworkShim#errorHandled</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pred</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>Function which should return true if the object passed to it is considered
+ an error.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="setFramework"><span class="type-signature"></span>setFramework<span class="signature">(framework)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Sets the name of the web framework in use by the server to the one given.</p>
+<ul>
+<li><code>setFramework(framework)</code></li>
+</ul>
+<p>This should be the first thing the instrumentation does.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line316">line 316</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="WebFrameworkShim.html#.FRAMEWORK_NAMES">WebFrameworkShim.FRAMEWORK_NAMES</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>framework</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="WebFrameworkShim.html#.FRAMEWORK_NAMES">WebFrameworkShim.FRAMEWORK_NAMES</a></code></span>
+|
+
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name of the framework.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -8069,14 +8219,18 @@ be made writable and non-enumerable.</p>
 
     
 
-    <h4 class="name" id="setParser"><span class="type-signature"></span>setParser<span class="signature">(parser)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="setRouteParser"><span class="type-signature"></span>setRouteParser<span class="signature">(parser)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Sets the query parser used by this shim instance.</p>
+    <p>Sets the function used to convert the route handed to middleware-adding
+methods into a string.</p>
+<ul>
+<li><code>setRouteParser(parser)</code></li>
+</ul>
 </div>
 
 
@@ -8112,23 +8266,12 @@ be made writable and non-enumerable.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line369">line 369</a>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line295">line 295</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="DatastoreShim.html#.QUERY_PARSERS">DatastoreShim.QUERY_PARSERS</a></li>
-        
-            <li><a href="global.html#QueryParserFunction">QueryParserFunction</a></li>
-        
-            <li><a href="global.html#ParsedQueryData">ParsedQueryData</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -8173,10 +8316,7 @@ be made writable and non-enumerable.</p>
             <td class="type">
             
                 
-<span class="param-type"><code>string</code></span>
-|
-
-<span class="param-type"><code><a href="global.html#QueryParserFunction">QueryParserFunction</a></code></span>
+<span class="param-type"><code><a href="global.html#RouteParserFunction">RouteParserFunction</a></code></span>
 
 
             
@@ -8187,9 +8327,283 @@ be made writable and non-enumerable.</p>
             
 
             <td class="description last">
-                <p>The string used to look up a default parser or the function used to parse
- queries. It is recommended that you use one of the well-known constants if
- available in the <a href="DatastoreShim.html#.QUERY_PARSERS"><code>DatastoreShim.QUERY_PARSERS</code></a>.</p>
+                <p>The parser function to use.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="setTransactionName"><span class="type-signature"></span>setTransactionName<span class="signature">(name)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Sets the name to be used for this transaction.</p>
+<p>Either this <em>or</em> the naming stack should be used. Do not use them together.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TransactionShim.html#setTransactionName">TransactionShim#setTransactionName</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line85">line 85</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name to use for the transaction.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="setTransactionUri"><span class="type-signature"></span>setTransactionUri<span class="signature">(uri)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Sets the URI path to be used for naming the transaction currenty in scope.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line335">line 335</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>uri</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The URI path to use for the transaction.</p>
                 
             </td>
         </tr>
@@ -9723,6 +10137,271 @@ hooks.</p>
 
 <div class="param-desc">
     <p>The return value from <code>spec</code>.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="wrapMiddlewareMounter"><span class="type-signature"></span>wrapMiddlewareMounter<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, spec<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Wraps a method that is used to add middleware to a server. The middleware
+can then be recorded as metrics.</p>
+<ul>
+<li><code>wrapMiddlewareMounter(nodule, properties [, spec])</code></li>
+<li><code>wrapMiddlewareMounter(func [, spec])</code></li>
+</ul>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line431">line 431</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="WebFrameworkShim.html#recordMiddleware">WebFrameworkShim#recordMiddleware</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The source for the properties to wrap, or a single function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>Array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>One or more properties to wrap. If omitted, the <code>nodule</code> parameter is
+ assumed to be the function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>spec</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>Spec describing the parameters for this middleware mount point.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>Object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The first parameter to this function, after
+ wrapping it or its properties.</p>
 </div>
 
     

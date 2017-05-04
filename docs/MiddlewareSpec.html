@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>TransactionSpec - Documentation</title>
+    <title>MiddlewareSpec - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">TransactionSpec</h1>
+    <h1 class="page-title">MiddlewareSpec</h1>
     
 
     
@@ -42,7 +42,7 @@
 <header>
     
         <h2>
-        TransactionSpec
+        MiddlewareSpec
         </h2>
         
     
@@ -52,8 +52,7 @@
     <div class="container-overview">
     
         
-            <div class="description"><p>Describes the type of transaction to be created by the function being
- wrapped by <a href="Shim.html#bindCreateTransaction"><code>Shim#bindCreateTransaction</code></a>.</p></div>
+            <div class="description"><p>Describes the interface for middleware functions with this instrumentation.</p></div>
         
 
         
@@ -89,49 +88,16 @@
 
         <tr>
             
-                <td class="name"><code>type</code></td>
+                <td class="name"><code>req</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code>string</code></span>
+<span class="param-type"><code>number</code></span>
+|
 
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>The type of transaction to create. Must be one of the values from
- <a href="Shim.html#TRANSACTION_TYPES"><code>Shim#TRANSACTION_TYPES</code></a>.</p></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>nest</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
+<span class="param-type"><code><a href="global.html#RouteRequestFunction">RouteRequestFunction</a></code></span>
 
 
             
@@ -150,16 +116,171 @@
             
                 <td class="default">
                 
-                    false
+                    shim.FIRST
                 
                 </td>
             
 
-            <td class="description last"><p>Indicates if the transaction being created is allowed to be nested within
- another transaction of the same type. If <code>false</code>, the default, the transaction
- will only be created if there is no existing transaction, or the current
- transaction is of a different type. If <code>true</code>, the transaction will be
- created regardless of the current transaction's type.</p></td>
+            <td class="description last"><p>Indicates which argument to the middleware is the request object. It can also be
+ a function to extract the request object from the middleware arguments.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>res</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    shim.SECOND
+                
+                </td>
+            
+
+            <td class="description last"><p>Indicates which argument to the middleware is the response object.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>next</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+|
+
+<span class="param-type"><code><a href="global.html#RouteNextFunction">RouteNextFunction</a></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    shim.THIRD
+                
+                </td>
+            
+
+            <td class="description last"><p>Indicates which argument to the middleware function is the callback.  When it is
+ a function, it will be called with the arguments of the middleware and a function
+ for wrapping calls that represent continuation from the current middleware.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The name to use for this middleware. Defaults to <code>middleware.name</code>.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="global.html#RouteParameterFunction">RouteParameterFunction</a></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>A function to extract the route parameters from the middleware arguments.
+ Defaults to using <code>req.params</code>.</p></td>
         </tr>
 
         
@@ -200,21 +321,12 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line512">line 512</a>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line226">line 226</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="Shim.html#bindCreateTransaction">Shim#bindCreateTransaction</a></li>
-        
-            <li><a href="Shim.html#TRANSACTION_TYPES">Shim#TRANSACTION_TYPES</a></li>
-        </ul>
-    </dd>
     
 
     

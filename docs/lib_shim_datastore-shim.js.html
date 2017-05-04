@@ -2,22 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/shim/datastore-shim.js</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>lib/shim/datastore-shim.js - Documentation</title>
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
     <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
 </head>
-
 <body>
 
-<div id="main">
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
 
-    <h1 class="page-title">Source: lib/shim/datastore-shim.js</h1>
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-Context-Preservation.html">Transaction State Preservation</a></li><li class="nav-item"><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li><li class="nav-item"><a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a></li><li class="nav-item"><a href="tutorial-Webframework-Simple.html">Intro to Web Framework Instrumentation</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="API.html">API</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameter">addCustomParameter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameters">addCustomParameters</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addIgnoringRule">addIgnoringRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addNamingRule">addNamingRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createTracer">createTracer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createWebTransaction">createWebTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getBrowserTimingHeader">getBrowserTimingHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrument">instrument</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentDatastore">instrumentDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentWebframework">instrumentWebframework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setControllerName">setControllerName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setDispatcher">setDispatcher</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setIgnoreTransaction">setIgnoreTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setTransactionName">setTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#shutdown">shutdown</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="DatastoreShim.html">DatastoreShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#bindRowCallbackSegment">bindRowCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#captureInstanceAttributes">captureInstanceAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#parseQuery">parseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordBatchQuery">recordBatchQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordOperation">recordOperation</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordQuery">recordQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setDatastore">setDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setParser">setParser</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Shim.html">Shim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#applySegment">applySegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#argsToArray">argsToArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCallbackSegment">bindCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCreateTransaction">bindCreateTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindSegment">bindSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#createSegment">createSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperties">defineProperties</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperty">defineProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#execute">execute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getName">getName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getSegment">getSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isArray">isArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isBoolean">isBoolean</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isFunction">isFunction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNumber">isNumber</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isObject">isObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isPromise">isPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isString">isString</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isWrapped">isWrapped</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#listenerCount">listenerCount</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#normalizeIndex">normalizeIndex</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#once">once</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#proxy">proxy</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#record">record</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setDefaults">setDefaults</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setInternalProperty">setInternalProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#storeSegment">storeSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#toArray">toArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrap">unwrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrap">wrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapClass">wrapClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapExport">wrapExport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapReturn">wrapReturn</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionShim.html">TransactionShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#popTransactionName">popTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#pushTransactionName">pushTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#setTransactionName">setTransactionName</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="WebFrameworkShim.html">WebFrameworkShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#captureUrlParams">captureUrlParams</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#errorHandled">errorHandled</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordMiddleware">recordMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordParamware">recordParamware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordRender">recordRender</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setErrorPredicate">setErrorPredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setFramework">setFramework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setRouteParser">setRouteParser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setTransactionUri">setTransactionUri</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#wrapMiddlewareMounter">wrapMiddlewareMounter</a></span></li><li class="nav-heading">Interfaces</li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="DatastoreExtras.html">DatastoreExtras</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareSpec.html">MiddlewareSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="OperationSpec.html">OperationSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="global.html#ParsedQueryData">ParsedQueryData</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="QuerySpec.html">QuerySpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RecorderSpec.html">RecorderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RenderSpec.html">RenderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="SegmentSpec.html">SegmentSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="TransactionSpec.html">TransactionSpec</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#shimRequire">shimRequire</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">lib/shim/datastore-shim.js</h1>
+    
 
     
 
@@ -30,9 +43,10 @@
 
 var logger = require('../logger.js').child({component: 'DatastoreShim'})
 var metrics = require('../metrics/names')
-var parseSql = require('../db/query-parsers/sql.js')
+var parseSql = require('../db/query-parsers/sql')
 var ParsedStatement = require('../db/parsed-statement')
 var Shim = require('./shim')
+var urltils = require('../util/urltils')
 var util = require('util')
 
 /**
@@ -48,10 +62,20 @@ var util = require('util')
  */
 var DATASTORE_NAMES = {
   CASSANDRA: 'Cassandra',
+  MEMCACHED: 'Memcache',
   MONGODB: 'MongoDB',
   MYSQL: 'MySQL',
-  REDIS: 'Redis'
+  REDIS: 'Redis',
+  POSTGRES: 'Postgres'
 }
+
+/**
+ * Default value for unknown instance parameters.
+ *
+ * @readonly
+ * @private
+ */
+var INSTANCE_UNKNOWN = 'unknown'
 
 var defaultParsers = {
   'SQL': parseSql
@@ -86,6 +110,9 @@ var QUERY_PARSERS = {
  * @param {string} moduleName
  *  The name of the module being instrumented.
  *
+ * @param {string} resolvedName
+ *  The full path to the loaded module.
+ *
  * @param {string} [datastoreId]
  *  The name of the datastore being instrumented. If available, use one of the
  *  values from {@link DatastoreShim.DATASTORE_NAMES}.
@@ -93,8 +120,8 @@ var QUERY_PARSERS = {
  * @see Shim
  * @see DatastoreShim.DATASTORE_NAMES
  */
-function DatastoreShim(agent, moduleName, datastoreId) {
-  Shim.call(this, agent, moduleName)
+function DatastoreShim(agent, moduleName, resolvedName, datastoreId) {
+  Shim.call(this, agent, moduleName, resolvedName)
   this._logger = logger.child({module: moduleName})
   if (datastoreId) {
     this.setDatastore(datastoreId)
@@ -126,6 +153,7 @@ DatastoreShim.prototype.recordBatchQuery = recordBatchQuery
 DatastoreShim.prototype.parseQuery = parseQuery
 DatastoreShim.prototype.setParser = setParser
 DatastoreShim.prototype.bindRowCallbackSegment = bindRowCallbackSegment
+DatastoreShim.prototype.captureInstanceAttributes = captureInstanceAttributes
 
 // -------------------------------------------------------------------------- //
 
@@ -195,18 +223,6 @@ DatastoreShim.prototype.bindRowCallbackSegment = bindRowCallbackSegment
  */
 
 /**
- * @callback QueryParserFunction
- *
- * @summary
- *  Used to parse queries to extract the basic information about it.
- *
- * @param {string} query - The query to be parsed.
- *
- * @return {ParsedQueryData} An object containing the basic information about
- *  the query.
- */
-
-/**
  * @interface OperationSpec
  *
  * @description
@@ -219,12 +235,18 @@ DatastoreShim.prototype.bindRowCallbackSegment = bindRowCallbackSegment
  * @property {DatastoreExtras} [extras]
  *  Extra parameters to be set on the metric for the operation.
  *
+ * @property {bool} [record=true]
+ *  Indicates if the operation should be recorded as a metric. A segment will be
+ *  created even if this is `false`.
+ *
  * @property {number|CallbackBindFunction} callback
  *  If a number, it is the offset in the arguments array for the operation's
  *  callback argument. If it is a function, it should perform the segment
  *  binding to the callback.
  *
+ * @see DatastoreShim#recordOperation
  * @see QuerySpec
+ * @see DatastoreExtras
  */
 
 /**
@@ -235,8 +257,16 @@ DatastoreShim.prototype.bindRowCallbackSegment = bindRowCallbackSegment
  *  Describes the interface for a query function. Extends {@link OperationSpec}
  *  with query-specific parameters.
  *
+ * @property {number|CallbackBindFunction} callback
+ *  If a number, it is the offset in the arguments array for the operation's
+ *  callback argument. If it is a function, it should perform the segment
+ *  binding to the callback.
+ *
  * @property {bool} [stream=false]
  *  If `true`, the return value will be wrapped as a stream.
+ *
+ * @property {bool} [promise=false]
+ *  If `true`, the return value will be wrapped as a Promise.
  *
  * @property {number|string|QueryFunction} query
  *  If a number, it is the offset in the arguments array for the query string
@@ -248,6 +278,7 @@ DatastoreShim.prototype.bindRowCallbackSegment = bindRowCallbackSegment
  * @see QuerySpecFunction
  * @see QueryFunction
  * @see OperationSpec
+ * @see DatastoreExtras
  */
 
 /**
@@ -258,15 +289,22 @@ DatastoreShim.prototype.bindRowCallbackSegment = bindRowCallbackSegment
  *  these properties are optional.
  *
  * @property {string} host
- *  The host of the database server being interacted with.
+ *  The host of the database server being interacted with. If provided, along
+ *  with `port_path_or_id`, then an instance metric will also be generated for
+ *  this database.
  *
- * @property {number} port
- *  The port number being connected to.
+ * @property {number|string} port_path_or_id
+ *  The port number or path to domain socket used to connect to the database
+ *  server.
+ *
+ * @property {string} database_name
+ *  The name of the database being queried or operated on.
  *
  * @property {Object} parameters
  *  The query parameters (i.e. placeholder values).
  *
  * @see OperationSpec
+ * @see QuerySpec
  */
 
 /**
@@ -355,38 +393,6 @@ function setDatastore(datastore) {
   this.logger.trace({metrics: this._metrics}, 'Datastore metric names set')
 }
 
-
-/**
- * Sets the query parser used by this shim instance.
- *
- * @memberof DatastoreShim.prototype
- *
- * @param {string|QueryParserFunction} parser
- *  The string used to look up a default parser or the function used to parse
- *  queries. It is recommended that you use one of the well-known constants if
- *  available (i.e. `shim.SQL_PARSER`).
- */
-function setParser(parser) {
-  if (this.isString(parser)) {
-    var newParser = defaultParsers[parser]
-    if (newParser) {
-      this.queryParser = newParser
-    } else {
-      this.logger.debug(
-        'Attempted to set the query parser to invalid parser %s, not setting new parser',
-        parser
-      )
-    }
-  } else if (this.isFunction(parser)) {
-    this.queryParser = parser
-  } else {
-    this.logger.trace(
-      "Received invalid parser (%s)",
-      parser
-    )
-  }
-}
-
 /**
  * Sets the query parser used by this shim instance.
  *
@@ -472,15 +478,21 @@ function recordOperation(nodule, properties, opSpec) {
       segDesc = {
         name: opSpec.name || fnName || 'other',
         extras: opSpec.extras,
-        callback: opSpec.callback
+        callback: opSpec.callback,
+        record: opSpec.record
       }
+    }
+    if (segDesc.hasOwnProperty('extras')) {
+      _normalizeExtras.call(shim, segDesc.extras)
     }
 
     // Adjust the segment name with the metric prefix and add a recorder.
-    segDesc.name = shim._metrics.OPERATION + segDesc.name
-    segDesc.recorder = _recordOperationMetrics.bind(shim)
+    if (!segDesc.hasOwnProperty('record') || segDesc.record !== false) {
+      segDesc.name = shim._metrics.OPERATION + segDesc.name
+      segDesc.recorder = _recordOperationMetrics.bind(shim)
 
-    segDesc.internal = true
+      segDesc.internal = true
+    }
 
     // And done.
     return segDesc
@@ -585,6 +597,8 @@ function parseQuery(query, nodule) {
  *
  * - `bindRowCallbackSegment(args, cbIdx [, parentSegment])`
  *
+ * @memberof DatastoreShim.prototype
+ *
  * @param {Array} args
  *  The arguments array to replace the callback in.
  *
@@ -613,7 +627,7 @@ function bindRowCallbackSegment(args, cbIdx, parentSegment) {
   // We have a little state to maintain through potentially multiple calls.
   var callCounter = 0
   var segment = null
-  var segmentName = ' calls to row callback: ' + this.getName(cb)
+  var segmentName = 'Callback: ' + this.getName(cb)
   var shim = this
 
   var wrapper = this.bindSegment(function rowCallbackWrapper() {
@@ -622,7 +636,7 @@ function bindRowCallbackSegment(args, cbIdx, parentSegment) {
     if (++callCounter === 1) {
       var realParent = parentSegment || shim.getSegment()
       realParent &amp;&amp; realParent.touch()
-      segment = shim.createSegment(callCounter + segmentName, realParent)
+      segment = shim.createSegment(segmentName, realParent)
 
       if (segment) {
         segment.async = false
@@ -631,14 +645,52 @@ function bindRowCallbackSegment(args, cbIdx, parentSegment) {
 
     // Update the segment name and run the actual callback.
     if (segment) {
-      segment.name = callCounter + segmentName
+      segment.setParameter('count', callCounter)
     }
+
     return shim.applySegment(cb, segment, true, this, arguments)
   }, parentSegment)
 
   // Mark this as wrapped and put it in the args array.
   this.setInternalProperty(wrapper, '__NR_original', cb)
   args[idx] = wrapper
+}
+
+/**
+ * Normalizes and adds datastore instance attributes to the current segment.
+ *
+ * If the current segment was not created by this shim then no action is taken.
+ *
+ * @memberof DatastoreShim.prototype
+ *
+ * @param {string}        host      - The name of the database host.
+ * @param {number|string} port      - The port, path, or ID of the database server.
+ * @param {string}        database  - The name of the database in use.
+ */
+function captureInstanceAttributes(host, port, database) {
+  // See if we are currently in a segment created by us.
+  var segment = this.getSegment()
+  if (!segment || segment.shim !== this) {
+    this.logger.trace(
+      'Not adding db instance metric attributes to segment %j',
+      segment &amp;&amp; segment.name
+    )
+    return
+  }
+  this.logger.trace('Adding db instance attributes to segment %j', segment.name)
+
+  // Normalize the instance attributes.
+  var extras = _normalizeExtras.call(this, {
+    host: host,
+    port_path_or_id: port,
+    database_name: database
+  })
+
+  // We do this in a loop instead of explicitly selecting them because the
+  // normalizer may have deleted keys depending on configuration.
+  Object.keys(extras).forEach(function forEachExtraKey(key) {
+    segment.parameters[key] = extras[key]
+  })
 }
 
 // -------------------------------------------------------------------------- //
@@ -697,6 +749,20 @@ function _recordQuery(suffix, nodule, properties, querySpec) {
       queryDesc = querySpec.call(this, shim, fn, fnName, args)
     }
 
+    // If we're not actually recording this, then just return the segment
+    // descriptor now.
+    if (queryDesc.hasOwnProperty('record') &amp;&amp; queryDesc.record === false) {
+      return {
+        name:         queryDesc.name          || fnName,
+        extras: _normalizeExtras.call(shim, queryDesc.extras || {}),
+        callback:     'callback'    in queryDesc ? queryDesc.callback : null,
+        rowCallback:  'rowCallback' in queryDesc ? queryDesc.rowCallback : null,
+        stream:       'stream'      in queryDesc ? queryDesc.stream : null,
+        promise:      'promise'     in queryDesc ? queryDesc.promise : null,
+        internal:     'internal'    in queryDesc ? queryDesc.internal : false
+      }
+    }
+
     // Fetch the query string.
     var queryStr = _extractQueryStr.call(shim, fn, fnName, queryDesc, this, args)
     if (!shim.isString(queryStr)) {
@@ -711,11 +777,12 @@ function _recordQuery(suffix, nodule, properties, querySpec) {
     // Return the segment descriptor.
     return {
       name: shim._metrics.STATEMENT + name,
-      extras:       'extras'      in queryDesc ? queryDesc.extras : null,
+      extras: _normalizeExtras.call(shim, queryDesc.extras || {}),
       callback:     'callback'    in queryDesc ? queryDesc.callback : null,
       rowCallback:  'rowCallback' in queryDesc ? queryDesc.rowCallback : null,
       stream:       'stream'      in queryDesc ? queryDesc.stream : null,
-      internal: true,
+      promise:      'promise'     in queryDesc ? queryDesc.promise : null,
+      internal:     'internal'    in queryDesc ? queryDesc.internal : true,
       recorder: function queryRecorder(segment, scope) {
         if (segment) {
           parsed.recordMetrics(segment, scope)
@@ -765,6 +832,16 @@ function _recordOperationMetrics(segment, scope) {
     duration,
     exclusive
   )
+
+  if (
+    segment.parameters.hasOwnProperty('host') &amp;&amp;
+    segment.parameters.hasOwnProperty('port_path_or_id')
+  ) {
+    var instanceName =
+      metrics.DB.INSTANCE + '/' + this._metrics.PREFIX + '/' +
+      segment.parameters.host + '/' + segment.parameters.port_path_or_id
+    transaction.measure(instanceName, null, duration, exclusive)
+  }
 }
 
 /**
@@ -798,6 +875,59 @@ function _extractQueryStr(fn, fnName, spec, ctx, args) {
 
   return queryStr
 }
+
+/**
+ * Normalizes segment parameter values.
+ *
+ * - `_normalizeExtras([extras])`
+ *
+ * Removes disabled parameters and corrects other values, such as changing host
+ * from `localhost` to the actual host name.
+ *
+ * @private
+ * @this DatastoreShim
+ *
+ * @param {object} [extras={}] - The segment parameters to clean up.
+ *
+ * @return {object} - The normalized segment parameters.
+ */
+function _normalizeExtras(extras) {
+  extras = extras || {}
+  var config = this.agent.config
+  var dsTracerConf = config.datastore_tracer
+
+  // Add database name if provided and enabled.
+  if (!dsTracerConf.database_name_reporting.enabled) {
+    delete extras.database_name
+  } else if (extras.hasOwnProperty('database_name') &amp;&amp; extras.database_name !== false) {
+    extras.database_name = typeof extras.database_name === 'number'
+      ? String(extras.database_name)
+      : (extras.database_name || INSTANCE_UNKNOWN)
+  }
+
+  // Add instance information if enabled.
+  if (!dsTracerConf.instance_reporting.enabled) {
+    delete extras.host
+    delete extras.port_path_or_id
+  } else {
+    // Determine appropriate defaults for host and port.
+    if (extras.hasOwnProperty('port_path_or_id')) {
+      extras.port_path_or_id = String(extras.port_path_or_id || INSTANCE_UNKNOWN)
+    }
+    if (extras.hasOwnProperty('host')) {
+      if (extras.host &amp;&amp; urltils.isLocalhost(extras.host)) {
+        extras.host = config.getHostnameSafe(extras.host)
+      }
+
+      // Config's default name of a host is `UNKNOWN_BOX`.
+      if (!extras.host || extras.host === 'UNKNOWN_BOX') {
+        extras.host = INSTANCE_UNKNOWN
+      }
+    }
+  }
+
+  return extras
+}
 </code></pre>
         </article>
     </section>
@@ -807,17 +937,13 @@ function _extractQueryStr(fn, fnName, spec, ctx, args) {
 
 </div>
 
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="API.html">API</a></li><li><a href="DatastoreShim.html">DatastoreShim</a></li><li><a href="Shim.html">Shim</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li></ul><h3>Interfaces</h3><ul><li><a href="DatastoreExtras.html">DatastoreExtras</a></li><li><a href="OperationSpec.html">OperationSpec</a></li><li><a href="global.html#ParsedQueryData">ParsedQueryData</a></li><li><a href="QuerySpec.html">QuerySpec</a></li><li><a href="RecorderSpec.html">RecorderSpec</a></li><li><a href="SegmentSpec.html">SegmentSpec</a></li><li><a href="TransactionSpec.html">TransactionSpec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_bindAllCallbacks">_bindAllCallbacks</a></li><li><a href="global.html#_bindStream">_bindStream</a></li><li><a href="global.html#bindRowCallbackSegment">bindRowCallbackSegment</a></li></ul>
-</nav>
-
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Aug 04 2016 14:24:47 GMT-0700 (PDT)
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed May 03 2017 17:21:38 GMT-0700 (PDT) using the Minami theme.
 </footer>
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
 </body>
 </html>

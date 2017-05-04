@@ -2,32 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Home - Documentation</title>
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
     <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
 </head>
-
 <body>
 
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-Context-Preservation.html">Transaction State Preservation</a></li><li class="nav-item"><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li><li class="nav-item"><a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a></li><li class="nav-item"><a href="tutorial-Webframework-Simple.html">Intro to Web Framework Instrumentation</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="API.html">API</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameter">addCustomParameter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameters">addCustomParameters</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addIgnoringRule">addIgnoringRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addNamingRule">addNamingRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createTracer">createTracer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createWebTransaction">createWebTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getBrowserTimingHeader">getBrowserTimingHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrument">instrument</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentDatastore">instrumentDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentWebframework">instrumentWebframework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setControllerName">setControllerName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setDispatcher">setDispatcher</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setIgnoreTransaction">setIgnoreTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setTransactionName">setTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#shutdown">shutdown</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="DatastoreShim.html">DatastoreShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#bindRowCallbackSegment">bindRowCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#captureInstanceAttributes">captureInstanceAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#parseQuery">parseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordBatchQuery">recordBatchQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordOperation">recordOperation</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordQuery">recordQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setDatastore">setDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setParser">setParser</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Shim.html">Shim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#applySegment">applySegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#argsToArray">argsToArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCallbackSegment">bindCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCreateTransaction">bindCreateTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindSegment">bindSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#createSegment">createSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperties">defineProperties</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperty">defineProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#execute">execute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getName">getName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getSegment">getSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isArray">isArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isBoolean">isBoolean</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isFunction">isFunction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNumber">isNumber</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isObject">isObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isPromise">isPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isString">isString</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isWrapped">isWrapped</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#listenerCount">listenerCount</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#normalizeIndex">normalizeIndex</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#once">once</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#proxy">proxy</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#record">record</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setDefaults">setDefaults</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setInternalProperty">setInternalProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#storeSegment">storeSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#toArray">toArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrap">unwrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrap">wrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapClass">wrapClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapExport">wrapExport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapReturn">wrapReturn</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionShim.html">TransactionShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#popTransactionName">popTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#pushTransactionName">pushTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#setTransactionName">setTransactionName</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="WebFrameworkShim.html">WebFrameworkShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#captureUrlParams">captureUrlParams</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#errorHandled">errorHandled</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordMiddleware">recordMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordParamware">recordParamware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordRender">recordRender</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setErrorPredicate">setErrorPredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setFramework">setFramework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setRouteParser">setRouteParser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setTransactionUri">setTransactionUri</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#wrapMiddlewareMounter">wrapMiddlewareMounter</a></span></li><li class="nav-heading">Interfaces</li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="DatastoreExtras.html">DatastoreExtras</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareSpec.html">MiddlewareSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="OperationSpec.html">OperationSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="global.html#ParsedQueryData">ParsedQueryData</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="QuerySpec.html">QuerySpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RecorderSpec.html">RecorderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RenderSpec.html">RenderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="SegmentSpec.html">SegmentSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="TransactionSpec.html">TransactionSpec</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#shimRequire">shimRequire</a></span></li>
+</nav>
+
 <div id="main">
-
-    <h1 class="page-title">Home</h1>
+    
 
     
 
 
 
     
-
-
-    <h3> </h3>
-
 
 
 
@@ -40,15 +47,13 @@
     
 
 
-
-
-    <section>
+    <section class="readme">
         <article><p><a href="https://nodei.co/npm/@newrelic/beta-agent"><img src="https://nodei.co/npm/@newrelic/beta-agent.png" alt="npm status badge"></a></p>
 <h1>WARNING - Beta</h1><p><strong>This is beta software. For critical systems you should use the
 <a href="https://www.npmjs.com/package/newrelic">stable New Relic package</a></strong>. The beta Node Agent requires a beta token.
 Getting a token is easy!</p>
 <ol>
-<li>Agree to the click-through <a href="https://docs.google.com/a/newrelic.com/forms/d/e/1FAIpQLSfBerTfWGWkpJRgCk343Zd8wvPXDspXpEnzvCIRR63XplhJAw/viewform">Beta Agreement</a>.</li>
+<li>Agree to the click-through <a href="https://docs.google.com/a/newrelic.com/forms/d/e/1FAIpQLSfI7wMEaBgP6ywZ4m9bBiNWiCwPbO6wGLoiXh62HI8RIqhTlA/viewform">Beta Agreement</a>.</li>
 <li>Once your account is approved, we will email you a beta token, usually
 within the same business day.</li>
 <li>Add the beta token to your config <a href="#getting-started">(see below for details)</a>.</li>
@@ -332,7 +337,7 @@ in your configuration are applied. <strong>NOTE:</strong> Older versions of the 
 only applied these rules if nothing else had named the transaction, which
 made using rules with router-based automatic naming impossible. You must be
 using the latest version of New Relic to combine naming and ignoring rules
-with naming set by the router.</li>
+with naming set by the router instrumentation.</li>
 <li>Finally, New Relic may have its own rules that it applies to the transaction
 name, either because the request is for something New Relic rolls up by
 default (i.e. static assets like images or CSS files), or because New Relic
@@ -410,20 +415,70 @@ exports.config = {
   }
 };</code></pre><p>This will keep socket.io long-polling from dominating your response-time
 metrics and blowing out the apdex metrics for your application.</p>
-<h4>rules.name</h4><p>A list of rules of the format <code>{pattern : &quot;pattern&quot;, name : &quot;name&quot;}</code> for
-matching incoming request URLs to <code>pattern</code> and naming the matching New Relic
-transactions <code>name</code>. When automatically naming rules from the router
-configuration, the patterns are still applied to the URL path, and not the name
-returned by the router. The pattern can be set as either a string or a
-JavaScript regular expression literal. Both pattern and name are required.
-Additional attributes are ignored.</p>
+<h4>rules.name</h4><p>A list of rules used to set the name of the transaction to <code>name</code> when the URL
+matches <code>pattern</code>.</p>
 <p>Can also be set via the environment variable <code>NEW_RELIC_NAMING_RULES</code>, with
 multiple rules passed in as a list of comma-delimited JSON object literals:
 <code>NEW_RELIC_NAMING_RULES='{&quot;pattern&quot;:&quot;^t&quot;,&quot;name&quot;:&quot;u&quot;},{&quot;pattern&quot;:&quot;^u&quot;,&quot;name&quot;:&quot;t&quot;}'</code></p>
+<p>Each rule is defined using the following format:</p>
+<pre class="prettyprint source"><code>{
+  // required
+  pattern : &quot;pattern&quot;,
+  name : &quot;name&quot;,
+
+  // optional
+  precedence: 1,
+  terminate_chain: true,
+  replace_all: false
+}</code></pre><p>Additional attributes are ignored.</p>
+<p>Note: these rules take precedence over automatic naming from router instrumentations and
+are applied to the URL path, not the name returned by the router instrumentation.</p>
+<h5>pattern (required)</h5><p>The pattern used to match the URL.  It can be set as either a string or a JavaScript
+regular expression literal.  For example, <code>&quot;^/abc/123$&quot;</code> is equivalent to <code>/^\/abc\/123$/</code>.</p>
+<p>The pattern can be written to match the complete URL, or just a part of it.</p>
+<h5>name (required)</h5><p>The value that is used to replace the URL (or part of it) that matches the pattern.
+It is also possible to use regular expression group references.  See examples below.</p>
+<h5>rules.precedence (optional)</h5><p>By default the rules are evaluated in reverse order (from last to first).  If you find
+this behavior counterintuitive, the execution order can be reversed by setting the feature
+flag <code>reverse_naming_rules</code> to false.  Furthermore, if you prefer to have complete
+control over the order, each rule can be given a <code>precedence</code> attribute.  The precedence
+is an integer number, and rules are evaluated in ascending order.  If precedence is not
+explicitly defined, it will be set to 500 by default.</p>
+<h5>rules.terminate_chain (optional)</h5><p>When set to true, no further rules will be evaluated if this rule is a match.  The default
+is true.</p>
+<p>Setting this to false is useful when multiple rules should be used together.  For example,
+one rule could be replacing a common pattern in many different URLs, while subsequent
+rule(s) would be more specific.</p>
+<h5>rules.replace_all (optional)</h5><p>When set to true, all matches of the pattern will be replaced.  Otherwise, only the first
+match will be replaced.  The default is false.  Using the <code>g</code> flag with regular expression
+literal will have the same effect.  For example:</p>
+<pre class="prettyprint source"><code>  pattern: '[0-9]+',
+  replace_all: true</code></pre><p>will have the same effect as</p>
+<pre class="prettyprint source"><code>  pattern: /[0-9]+/g</code></pre><h5>Testing</h5><p>The agent comes with a command-line tool for testing naming rules.  For more information
+run the following command in terminal window in a directory where your app is installed.</p>
+<p><code>node node_modules/.bin/newrelic-naming-rules</code></p>
+<h5>Examples</h5><p>Match full URL:</p>
+<pre class="prettyprint source"><code>  pattern: &quot;^/items/[0-9]+$&quot;,
+  name: &quot;/items/:id&quot;</code></pre><p>Replace the first match in any URL:</p>
+<pre class="prettyprint source"><code>  pattern: &quot;[0-9]+&quot;,
+  name: &quot;:id&quot;</code></pre><p>will result in:</p>
+<p><code>/orders/123</code> =&gt; <code>/orders/:id</code></p>
+<p><code>/items/123</code> =&gt; <code>/items/:id</code></p>
+<p><code>/orders/123/items/123</code> =&gt; <code>/orders/:id/items/123</code></p>
+<p>Replace all matches in any URL:</p>
+<pre class="prettyprint source"><code>  pattern: &quot;[0-9]+&quot;,
+  name: &quot;:id&quot;,
+  replace_all: true</code></pre><p>will result in:</p>
+<p><code>/orders/123/items/123</code> =&gt; <code>/orders/:id/items/:id</code></p>
+<p>Using regular expression match group references:</p>
+<pre class="prettyprint source"><code>  pattern: '^/(items|orders)/[0-9]+$',
+  name: '/\\1/:id'</code></pre><p>will result in:</p>
+<p><code>/orders/123</code> =&gt; <code>/orders/:id</code></p>
+<p><code>/items/123</code> =&gt; <code>/items/:id</code></p>
 <h4>rules.ignore</h4><p>A list of patterns for matching incoming request URLs to be ignored. When using
 ignoring rules with instrumented routers, the matches are still made against
-the URL paths, not the name returned by the router. Patterns may be strings or
-regular expressions.</p>
+the URL paths, not the name returned by the router instrumentation. Patterns may be
+strings or regular expressions.</p>
 <p>Can also be set via the environment variable <code>NEW_RELIC_IGNORING_RULES</code>, with
 multiple rules passed in as a list of comma-delimited patterns:
 <code>NEW_RELIC_IGNORING_RULES='^/socket\.io/\*/xhr-polling,ignore_me'</code> Note that
@@ -437,7 +492,11 @@ configuration. The pattern is mandatory.</p>
 <h3>Other API calls</h3><h4>newrelic.addCustomParameter(name, value)</h4><p>Set a custom parameter value to be attached to a transaction trace and/or error
 in the New Relic UI. This must be called within the context of a transaction,
 so it has a place to set the custom parameters.</p>
-<h4>newrelic.setIgnoreTransaction(ignored)</h4><p>Tell the module explicitly whether or not a given request should be ignored.
+<h4>newrelic.addCustomParameters(params)</h4><p>Set multiple custom parameter values to be attached to a transaction trace and/or
+error in the New Relic UI. This must be called within the context of a transaction,
+so it has a place to set the custom parameters.</p>
+<p>Example of setting multiple custom parameters at once:</p>
+<pre class="prettyprint source lang-javascript"><code>newrelic.addCustomParameters({test: 'value', test2: 'value2'});</code></pre><h4>newrelic.setIgnoreTransaction(ignored)</h4><p>Tell the module explicitly whether or not a given request should be ignored.
 Allows you to explicitly filter out long-polling routes or requests you know
 are going to be time-consuming in an uninteresting way, and also allows you
 to gather metrics for requests that would otherwise be ignored. Note that
@@ -575,17 +634,13 @@ the licenses of its dependencies.</p></article>
 
 </div>
 
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="API.html">API</a></li><li><a href="DatastoreShim.html">DatastoreShim</a></li><li><a href="Shim.html">Shim</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li></ul><h3>Interfaces</h3><ul><li><a href="DatastoreExtras.html">DatastoreExtras</a></li><li><a href="OperationSpec.html">OperationSpec</a></li><li><a href="global.html#ParsedQueryData">ParsedQueryData</a></li><li><a href="QuerySpec.html">QuerySpec</a></li><li><a href="RecorderSpec.html">RecorderSpec</a></li><li><a href="SegmentSpec.html">SegmentSpec</a></li><li><a href="TransactionSpec.html">TransactionSpec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_bindAllCallbacks">_bindAllCallbacks</a></li><li><a href="global.html#_bindStream">_bindStream</a></li><li><a href="global.html#bindRowCallbackSegment">bindRowCallbackSegment</a></li></ul>
-</nav>
-
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Aug 04 2016 14:24:47 GMT-0700 (PDT)
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed May 03 2017 17:21:38 GMT-0700 (PDT) using the Minami theme.
 </footer>
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
 </body>
 </html>

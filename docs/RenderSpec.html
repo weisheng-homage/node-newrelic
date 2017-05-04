@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>TransactionSpec - Documentation</title>
+    <title>RenderSpec - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">TransactionSpec</h1>
+    <h1 class="page-title">RenderSpec</h1>
     
 
     
@@ -42,7 +42,7 @@
 <header>
     
         <h2>
-        TransactionSpec
+        RenderSpec
         </h2>
         
     
@@ -52,8 +52,7 @@
     <div class="container-overview">
     
         
-            <div class="description"><p>Describes the type of transaction to be created by the function being
- wrapped by <a href="Shim.html#bindCreateTransaction"><code>Shim#bindCreateTransaction</code></a>.</p></div>
+            <div class="description"><p>Describes the interface for render methods.</p></div>
         
 
         
@@ -77,8 +76,6 @@
         
 
         
-        <th>Default</th>
-        
 
         <th class="last">Description</th>
     </tr>
@@ -89,49 +86,13 @@
 
         <tr>
             
-                <td class="name"><code>type</code></td>
+                <td class="name"><code>view</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>The type of transaction to create. Must be one of the values from
- <a href="Shim.html#TRANSACTION_TYPES"><code>Shim#TRANSACTION_TYPES</code></a>.</p></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>nest</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
+<span class="param-type"><code>number</code></span>
 
 
             
@@ -148,18 +109,9 @@
             
 
             
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
 
-            <td class="description last"><p>Indicates if the transaction being created is allowed to be nested within
- another transaction of the same type. If <code>false</code>, the default, the transaction
- will only be created if there is no existing transaction, or the current
- transaction is of a different type. If <code>true</code>, the transaction will be
- created regardless of the current transaction's type.</p></td>
+            <td class="description last"><p>Identifies which argument is the name of the view being rendered. Defaults
+ to <a href="Shim.html#ARG_INDEXES"><code>shim.FIRST</code></a>.</p></td>
         </tr>
 
         
@@ -200,7 +152,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line512">line 512</a>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line268">line 268</a>
     </li></ul></dd>
     
 
@@ -210,9 +162,9 @@
     <dt class="tag-see">See:</dt>
     <dd class="tag-see">
         <ul>
-            <li><a href="Shim.html#bindCreateTransaction">Shim#bindCreateTransaction</a></li>
+            <li><a href="SegmentSpec.html">SegmentSpec</a></li>
         
-            <li><a href="Shim.html#TRANSACTION_TYPES">Shim#TRANSACTION_TYPES</a></li>
+            <li><a href="RecorderSpec.html">RecorderSpec</a></li>
         </ul>
     </dd>
     
@@ -224,6 +176,17 @@
         
     
     </div>
+
+    
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="RecorderSpec.html">RecorderSpec</a></li>
+    </ul>
+
 
     
 

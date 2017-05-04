@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>TransactionSpec - Documentation</title>
+    <title>Instrumentation Basics - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,225 +29,71 @@
 
 <div id="main">
     
-    <h1 class="page-title">TransactionSpec</h1>
+    <h1 class="page-title">Instrumentation Basics</h1>
     
 
-    
-
-
-
-
-<section>
+    <section>
 
 <header>
-    
-        <h2>
-        TransactionSpec
-        </h2>
-        
     
 </header>
 
 <article>
-    <div class="container-overview">
-    
-        
-            <div class="description"><p>Describes the type of transaction to be created by the function being
- wrapped by <a href="Shim.html#bindCreateTransaction"><code>Shim#bindCreateTransaction</code></a>.</p></div>
-        
+    <h3>Purpose of Instrumentation</h3><p>Instrumentation for Node.js holds two purposes. The first is to give users
+detailed information about what happens on their server. The more things
+instrumented, the more detailed this graph can be.</p>
+<div style="text-align:center">
+  <img src="./overview.png" alt="application overview">
+</div>
 
-        
+<p>The second purpose is to maintain the transaction context. In order to properly
+associate chunks of work with the correct transactions we must link the context
+through asynchronous boundaries. This is a broad topic that is discussed in more details
+in this separate tutorial <a href="tutorial-Context-Preservation.html">Transaction State Preservation</a>.</p>
+<h3>Adding Custom Instrumentation to the New Relic Agent</h3><p>Calling <code>require('newrelic')</code> will return an API object, which contains the following
+methods for registering custom instrumentation:</p>
+<ul>
+<li>instrument</li>
+<li>instrumentDatastore</li>
+<li>instrumentWebframework</li>
+</ul>
+<p>These methods are used to tell the New Relic agent to use the provided instrumentation
+function when the specified module is loaded by Node. It is critically important that we
+register our instrumentation <em>before</em> the module is loaded anywhere.  For example:</p>
+<pre class="prettyprint source lang-js"><code>var newrelic = require('newrelic')
+newrelic.instrument('my-module', instrumentMyModule)
+var myModule = require('my-module')</code></pre><p>All three methods have the same signature. The difference between them is in what type
+of shim they provide when the instrumentation function is called. The <code>instrument</code>
+method provides only the base shim <a href="Shim.html"><code>Shim</code></a>, while <code>instrumentDatastore</code> and
+<code>instrumentWebframework</code> provide shims specific to the type of instrumentation
+(<a href="DatastoreShim.html"><code>DatastoreShim</code></a> and <a href="WebFrameworkShim.html"><code>WebFrameworkShim</code></a> respectively).</p>
+<p>The <code>instrument</code> call could have also been written using named
+parameters like this:</p>
+<pre class="prettyprint source lang-js"><code>newrelic.instrument({
+  moduleName: 'my-module',
+  onRequire: instrumentMyModule
+})</code></pre><p>This call is equivalent to the first one, it just depends on your preferred
+style.</p>
+<h3>Handling Errors</h3><p>While debugging your instrumentation it can be useful to get a handle on any
+errors happening within it. Normally, the agent swallows errors and disables the
+instrumentation. In order to get the error for your debugging purposes you can
+provide a third argument to <code>instrument</code> that receives the error.</p>
+<pre class="prettyprint source lang-js"><code>newrelic.instrument({
+  moduleName: 'my-module',
+  onRequire: instrumentMyCustomModule,
+  onError: function myErrorHandler(err) {
+    // Uh oh! Our instrumentation failed, lets see why:
+    console.error(err.message, err.stack)
 
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>type</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>The type of transaction to create. Must be one of the values from
- <a href="Shim.html#TRANSACTION_TYPES"><code>Shim#TRANSACTION_TYPES</code></a>.</p></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>nest</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last"><p>Indicates if the transaction being created is allowed to be nested within
- another transaction of the same type. If <code>false</code>, the default, the transaction
- will only be created if there is no existing transaction, or the current
- transaction is of a different type. If <code>true</code>, the transaction will be
- created regardless of the current transaction's type.</p></td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line512">line 512</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="Shim.html#bindCreateTransaction">Shim#bindCreateTransaction</a></li>
-        
-            <li><a href="Shim.html#TRANSACTION_TYPES">Shim#TRANSACTION_TYPES</a></li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-
-     
-
-    
-
-    
-
-    
-
-    
-
-    
+    // Let's kill the application when debugging so we don't miss it.
+    process.exit(-1)
+  }
+})</code></pre><h3>Questions?</h3><p>We have an extensive <a href="https://support.newrelic.com/">help site</a> as well as
+<a href="https://docs.newrelic.com/">documentation</a>. If you can't find your answers
+there, please drop us a line on the <a href="https://discuss.newrelic.com/">community forum</a>.</p>
 </article>
 
 </section>
-
-
-
 
 </div>
 

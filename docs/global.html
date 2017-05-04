@@ -2,22 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Global</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Global - Documentation</title>
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
     <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
 </head>
-
 <body>
 
-<div id="main">
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
 
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-Context-Preservation.html">Transaction State Preservation</a></li><li class="nav-item"><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li><li class="nav-item"><a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a></li><li class="nav-item"><a href="tutorial-Webframework-Simple.html">Intro to Web Framework Instrumentation</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="API.html">API</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameter">addCustomParameter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameters">addCustomParameters</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addIgnoringRule">addIgnoringRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addNamingRule">addNamingRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createTracer">createTracer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createWebTransaction">createWebTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getBrowserTimingHeader">getBrowserTimingHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrument">instrument</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentDatastore">instrumentDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentWebframework">instrumentWebframework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setControllerName">setControllerName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setDispatcher">setDispatcher</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setIgnoreTransaction">setIgnoreTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setTransactionName">setTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#shutdown">shutdown</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="DatastoreShim.html">DatastoreShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#bindRowCallbackSegment">bindRowCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#captureInstanceAttributes">captureInstanceAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#parseQuery">parseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordBatchQuery">recordBatchQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordOperation">recordOperation</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordQuery">recordQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setDatastore">setDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setParser">setParser</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Shim.html">Shim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#applySegment">applySegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#argsToArray">argsToArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCallbackSegment">bindCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCreateTransaction">bindCreateTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindSegment">bindSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#createSegment">createSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperties">defineProperties</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperty">defineProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#execute">execute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getName">getName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getSegment">getSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isArray">isArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isBoolean">isBoolean</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isFunction">isFunction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNumber">isNumber</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isObject">isObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isPromise">isPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isString">isString</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isWrapped">isWrapped</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#listenerCount">listenerCount</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#normalizeIndex">normalizeIndex</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#once">once</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#proxy">proxy</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#record">record</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setDefaults">setDefaults</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setInternalProperty">setInternalProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#storeSegment">storeSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#toArray">toArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrap">unwrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrap">wrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapClass">wrapClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapExport">wrapExport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapReturn">wrapReturn</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionShim.html">TransactionShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#popTransactionName">popTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#pushTransactionName">pushTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#setTransactionName">setTransactionName</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="WebFrameworkShim.html">WebFrameworkShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#captureUrlParams">captureUrlParams</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#errorHandled">errorHandled</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordMiddleware">recordMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordParamware">recordParamware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordRender">recordRender</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setErrorPredicate">setErrorPredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setFramework">setFramework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setRouteParser">setRouteParser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setTransactionUri">setTransactionUri</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#wrapMiddlewareMounter">wrapMiddlewareMounter</a></span></li><li class="nav-heading">Interfaces</li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="DatastoreExtras.html">DatastoreExtras</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareSpec.html">MiddlewareSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="OperationSpec.html">OperationSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="global.html#ParsedQueryData">ParsedQueryData</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="QuerySpec.html">QuerySpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RecorderSpec.html">RecorderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RenderSpec.html">RenderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="SegmentSpec.html">SegmentSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="TransactionSpec.html">TransactionSpec</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#shimRequire">shimRequire</a></span></li>
+</nav>
+
+<div id="main">
+    
     <h1 class="page-title">Global</h1>
+    
 
     
 
@@ -28,7 +41,9 @@
 
 <header>
     
-        <h2></h2>
+        <h2>
+        
+        </h2>
         
     
 </header>
@@ -98,270 +113,19 @@
 
         
             
+<div class="section-method">
 
     
 
-    <h4 class="name" id="_bindAllCallbacks"><span class="type-signature"></span>_bindAllCallbacks<span class="signature">(shim, fn, name, args, spec)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="shimRequire"><span class="type-signature"></span>shimRequire<span class="signature">(filePath)</span><span class="type-signature"> &rarr; (nullable) {*}</span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Binds all callbacks identified in the given spec.</p>
-<p>The callbacks are bound using the method meant for that type if available
-(i.e. <code>bindRowCallbackSegment</code> for <code>rowCallback</code>), but will fall back to the
-generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p>
+    <p>Loads a node module from the instrumented library's own root directory.</p>
 </div>
-
-
-
-
-
-
-
-    <h5>This:</h5>
-    <ul><li>*</li></ul>
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>shim</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Shim.html">Shim</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The shim performing this binding.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>fn</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The function the spec describes.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The name of the function the spec describes.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The arguments to be passed into <code>fn</code>.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>spec</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The specification for bind the callbacks.</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>spec</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="SegmentSpec.html">SegmentSpec</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The segment specification for the function we're pulling callbacks out of.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>segment</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">TraceSegment</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The segment measuring the function which will be the parent of any callback
- segments that may be created.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>shouldCreateSegment</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">bool</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Flag indicating if we should create segments for the callbacks. We almost
- always do, but in the special case of nested internal methods we do not.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
 
 
 
@@ -396,7 +160,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line1645">line 1645</a>
+        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line1735">line 1735</a>
     </li></ul></dd>
     
 
@@ -406,36 +170,6 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
     
 </dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="_bindStream"><span class="type-signature"></span>_bindStream<span class="signature">(shim, stream, segment<span class="signature-attributes">nullable</span>, spec<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Binds the given segment to the lifetime of the stream.</p>
-</div>
 
 
 
@@ -458,8 +192,6 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -472,223 +204,25 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
         <tr>
             
-                <td class="name"><code>shim</code></td>
+                <td class="name"><code>filePath</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="Shim.html">Shim</a></span>
+<span class="param-type"><code>string</code></span>
 
 
             
             </td>
 
             
-                <td class="attributes">
+
+            
+
+            <td class="description last">
+                <p>A relative path inside the module's directory.</p>
                 
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The shim performing the wrapping/binding.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>stream</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">EventEmitter</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The stream to bind.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>segment</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">TraceSegment</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                    &lt;nullable><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The segment to bind to the stream.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>spec</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Specification for how to bind the stream. The <code>end</code> and <code>error</code> events will
- always be bound, so if no functionality is desired beyond that, then this
- parameter may be omitted.</p>
-                <h6>Properties</h6>
-                
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>event</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The name of an event to record. If provided, a new segment will be created
- for this event and will measure each time the event is emitted.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>shouldCreateSegment</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">bool</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Indicates if any child segments should be created. This should always be
- true unless this segment and its parent are both internal segments.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
             </td>
         </tr>
 
@@ -701,270 +235,43 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
-<dl class="details">
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+<div class="section-returns">
+<h5>Returns:</h5>
 
-    
+        
 
-    
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>*</code></span>
 
-    
 
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line1705">line 1705</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
+    </dd>
 </dl>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
+<div class="param-desc">
+    <p>The result of loading the given module. If the module fails to
+ load, <code>null</code> is returned instead.</p>
+</div>
 
     
-
-    <h4 class="name" id="bindRowCallbackSegment"><span class="type-signature"></span>bindRowCallbackSegment<span class="signature">(args, cbIdx, parentSegment<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Wraps the callback in an arguments array with one that is bound to a segment.</p>
-<ul>
-<li><code>bindRowCallbackSegment(args, cbIdx [, parentSegment])</code></li>
-</ul>
 </div>
 
 
 
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The arguments array to replace the callback in.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>cbIdx</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The index of the callback in the arguments array.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>parentSegment</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">TraceSegment</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Optional. The segment to be the parent row callback's segment. Defaults to
- the segment active when the row callback is first called.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line570">line 570</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+</div>
         
     
 
@@ -973,6 +280,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
         
                 
+<div class="section-method">
 
     
 
@@ -989,6 +297,50 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line277">line 277</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
 
 
 
@@ -1024,7 +376,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type"><a href="Shim.html">Shim</a></span>
+<span class="param-type"><code><a href="Shim.html">Shim</a></code></span>
 
 
             
@@ -1034,7 +386,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The shim this function was passed to.</p></td>
+            <td class="description last">
+                <p>The shim this function was passed to.</p>
+                
+            </td>
         </tr>
 
     
@@ -1047,7 +402,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type"><code>function</code></span>
 
 
             
@@ -1057,7 +412,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The function being recorded.</p></td>
+            <td class="description last">
+                <p>The function being recorded.</p>
+                
+            </td>
         </tr>
 
     
@@ -1070,7 +428,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -1080,7 +438,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The name of the function.</p></td>
+            <td class="description last">
+                <p>The name of the function.</p>
+                
+            </td>
         </tr>
 
     
@@ -1093,7 +454,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">TraceSegment</span>
+<span class="param-type"><code>TraceSegment</code></span>
 
 
             
@@ -1103,7 +464,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The segment that the callback should be bound to.</p></td>
+            <td class="description last">
+                <p>The segment that the callback should be bound to.</p>
+                
+            </td>
         </tr>
 
     
@@ -1116,7 +480,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;*></span>
+<span class="param-type"><code>Array.&lt;*></code></span>
 
 
             
@@ -1126,12 +490,45 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The arguments being passed into the function.</p></td>
+            <td class="description last">
+                <p>The arguments being passed into the function.</p>
+                
+            </td>
         </tr>
 
     
     </tbody>
 </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+            
+                
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="MiddlewareWrapperFunction"><span class="type-signature"></span>MiddlewareWrapperFunction<span class="signature">(shim, middleware, fnName, route<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+    <p class="summary">Called for each middleware passed to a mounting method. Should perform the
+ wrapping of the middleware.</p>
+    
+
 
 
 
@@ -1167,12 +564,21 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line245">line 245</a>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line203">line 203</a>
     </li></ul></dd>
     
 
     
 
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="WebFrameworkShim.html#recordMiddleware">WebFrameworkShim#recordMiddleware</a></li>
+        
+            <li><a href="WebFrameworkShim.html#recordParamware">WebFrameworkShim#recordParamware</a></li>
+        </ul>
+    </dd>
     
 
     
@@ -1186,15 +592,210 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
+    <h5>Parameters:</h5>
+    
 
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
 
+        <th>Type</th>
 
+        
+        <th>Attributes</th>
+        
 
+        
+        <th>Default</th>
+        
 
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>shim</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="WebFrameworkShim.html">WebFrameworkShim</a></code></span>
 
 
             
+            </td>
+
+            
+                <td class="attributes">
                 
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">
+                <p>The shim used for instrumentation.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>middleware</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">
+                <p>The middleware function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fnName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">
+                <p>The name of the middleware function.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>route</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">
+                <p>The route the middleware is mounted on if one was found.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+            
+                
+<div class="section-members">
 <h4 class="name" id="ParsedQueryData">ParsedQueryData</h4>
 
 
@@ -1204,18 +805,6 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
     <p>Returned by a <code>QueryParserFunction</code>, this information is used to generate
  the name for recording datastore queries.</p>
 </div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Object</span>
-
-
-        </li>
-    </ul>
 
 
 
@@ -1253,7 +842,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -1266,6 +855,8 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="description last"><p>The datastore operation such as <code>SELECT</code> or <code>UPDATE</code>.</p></td>
         </tr>
 
+        
+
     
 
         <tr>
@@ -1276,7 +867,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -1290,6 +881,8 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
  or the collection name in a MongoDB query.</p></td>
         </tr>
 
+        
+
     
 
         <tr>
@@ -1300,7 +893,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -1312,6 +905,8 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             <td class="description last"><p>The query with any sensitive information redacted and comments removed.</p></td>
         </tr>
+
+        
 
     
     </tbody>
@@ -1349,7 +944,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line283">line 283</a>
+        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line308">line 308</a>
     </li></ul></dd>
     
 
@@ -1362,11 +957,25 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><code>Object</code></span>
 
 
+        </li>
+    </ul>
+
+
+
+
+
+</div>
 
             
                 
+<div class="section-members">
 <h4 class="name" id="ParsedQueryData">ParsedQueryData</h4>
 
 
@@ -1376,18 +985,6 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
     <p>Returned by a <code>QueryParserFunction</code>, this information is used to generate
  the name for recording datastore queries.</p>
 </div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Object</span>
-
-
-        </li>
-    </ul>
 
 
 
@@ -1425,7 +1022,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -1438,6 +1035,8 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="description last"><p>The datastore operation such as <code>SELECT</code> or <code>UPDATE</code>.</p></td>
         </tr>
 
+        
+
     
 
         <tr>
@@ -1448,7 +1047,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -1462,6 +1061,8 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
  or the collection name in a MongoDB query.</p></td>
         </tr>
 
+        
+
     
 
         <tr>
@@ -1472,7 +1073,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -1484,6 +1085,8 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             <td class="description last"><p>The query with any sensitive information redacted and comments removed.</p></td>
         </tr>
+
+        
 
     
     </tbody>
@@ -1521,7 +1124,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line265">line 265</a>
+        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line290">line 290</a>
     </li></ul></dd>
     
 
@@ -1534,11 +1137,25 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><code>Object</code></span>
 
 
+        </li>
+    </ul>
+
+
+
+
+
+</div>
 
             
                 
+<div class="section-method">
 
     
 
@@ -1554,132 +1171,6 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>shim</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Shim.html">Shim</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The shim this function was passed to.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>func</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The function being recorded.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The name of the function.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;*></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The arguments being passed into the function.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
 <dl class="details">
 
     
@@ -1709,7 +1200,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line130">line 130</a>
+        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line145">line 145</a>
     </li></ul></dd>
     
 
@@ -1737,198 +1228,179 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>shim</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="Shim.html">Shim</a></code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The shim this function was passed to.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>func</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The function being recorded.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name of the function.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array.&lt;*></code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The arguments being passed into the function.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
 <h5>Returns:</h5>
 
         
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>string</code></span>
+
+
+    </dd>
+</dl>
+
+
 <div class="param-desc">
     <p>The query string from the arguments list.</p>
 </div>
 
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-
-
-    </dd>
-</dl>
-
     
-
-
-
-            
-                
-
-    
-
-    <h4 class="name" id="QueryParserFunction"><span class="type-signature"></span>QueryParserFunction<span class="signature">(query)</span><span class="type-signature"> &rarr; {<a href="global.html#ParsedQueryData">ParsedQueryData</a>}</span></h4>
-
-    
-    <p class="summary">Used to parse queries to extract the basic information about it.</p>
-    
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>query</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The query to be parsed.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line154">line 154</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="DatastoreShim.html#setParser">DatastoreShim#setParser</a></li>
-        
-            <li><a href="global.html#ParsedQueryData">ParsedQueryData</a></li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>An object containing the basic information about
- the query.</p>
 </div>
 
 
 
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="global.html#ParsedQueryData">ParsedQueryData</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
+</div>
             
                 
+<div class="section-method">
 
     
 
@@ -1938,63 +1410,6 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
     <p class="summary">Used to parse queries to extract the basic information about it.</p>
     
 
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>query</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The query to be parsed.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -2037,61 +1452,18 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
     
 
     
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="DatastoreShim.html#setParser">DatastoreShim#setParser</a></li>
         
-<div class="param-desc">
-    <p>An object containing the basic information about
- the query.</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="global.html#ParsedQueryData">ParsedQueryData</a></span>
-
-
+            <li><a href="global.html#ParsedQueryData">ParsedQueryData</a></li>
+        </ul>
     </dd>
+    
+
+    
 </dl>
-
-    
-
-
-
-            
-                
-
-    
-
-    <h4 class="name" id="QuerySpecFunction"><span class="type-signature"></span>QuerySpecFunction<span class="signature">(shim, func, name, args)</span><span class="type-signature"> &rarr; {<a href="QuerySpec.html">QuerySpec</a>}</span></h4>
-
-    
-    <p class="summary">Used for determining information about a query when it can not be simply
- found in the arguments.</p>
-    
-
-
 
 
 
@@ -2126,13 +1498,13 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
         <tr>
             
-                <td class="name"><code>shim</code></td>
+                <td class="name"><code>query</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="Shim.html">Shim</a></span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -2142,81 +1514,71 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The shim this function was passed to.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>func</code></td>
-            
-
-            <td class="type">
-            
+            <td class="description last">
+                <p>The query to be parsed.</p>
                 
-<span class="param-type">function</span>
-
-
-            
             </td>
-
-            
-
-            
-
-            <td class="description last"><p>The function being recorded.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The name of the function.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;*></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The arguments being passed into the function.</p></td>
         </tr>
 
     
     </tbody>
 </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code><a href="global.html#ParsedQueryData">ParsedQueryData</a></code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>An object containing the basic information about
+ the query.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+            
+                
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="QuerySpecFunction"><span class="type-signature"></span>QuerySpecFunction<span class="signature">(shim, func, name, args)</span><span class="type-signature"> &rarr; {<a href="QuerySpec.html">QuerySpec</a>}</span></h4>
+
+    
+    <p class="summary">Used for determining information about a query when it can not be simply
+ found in the arguments.</p>
+    
+
 
 
 
@@ -2252,7 +1614,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line104">line 104</a>
+        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line119">line 119</a>
     </li></ul></dd>
     
 
@@ -2282,37 +1644,179 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>shim</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="Shim.html">Shim</a></code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The shim this function was passed to.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>func</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The function being recorded.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name of the function.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array.&lt;*></code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The arguments being passed into the function.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
 <h5>Returns:</h5>
 
         
-<div class="param-desc">
-    <p>The spec for how this query should be recorded.</p>
-</div>
 
-
-
-<dl>
+<dl class="param-type">
     <dt>
-        Type
+        Type:
     </dt>
     <dd>
         
-<span class="param-type"><a href="QuerySpec.html">QuerySpec</a></span>
+<span class="param-type"><code><a href="QuerySpec.html">QuerySpec</a></code></span>
 
 
     </dd>
 </dl>
 
+
+<div class="param-desc">
+    <p>The spec for how this query should be recorded.</p>
+</div>
+
     
+</div>
 
 
 
+</div>
             
                 
+<div class="section-method">
 
     
 
@@ -2328,6 +1832,50 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line256">line 256</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
 
 
 
@@ -2363,7 +1911,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type"><a href="Shim.html">Shim</a></span>
+<span class="param-type"><code><a href="Shim.html">Shim</a></code></span>
 
 
             
@@ -2373,7 +1921,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The shim this function was passed to.</p></td>
+            <td class="description last">
+                <p>The shim this function was passed to.</p>
+                
+            </td>
         </tr>
 
     
@@ -2386,7 +1937,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type"><code>function</code></span>
 
 
             
@@ -2396,7 +1947,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The function being recorded.</p></td>
+            <td class="description last">
+                <p>The function being recorded.</p>
+                
+            </td>
         </tr>
 
     
@@ -2409,7 +1963,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -2419,7 +1973,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The name of the function.</p></td>
+            <td class="description last">
+                <p>The name of the function.</p>
+                
+            </td>
         </tr>
 
     
@@ -2432,7 +1989,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;*></span>
+<span class="param-type"><code>Array.&lt;*></code></span>
 
 
             
@@ -2442,12 +1999,72 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The arguments being passed into the function.</p></td>
+            <td class="description last">
+                <p>The arguments being passed into the function.</p>
+                
+            </td>
         </tr>
 
     
     </tbody>
 </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code><a href="RecorderSpec.html">RecorderSpec</a></code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The desired properties for the new segment.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+            
+                
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="RouteNextFunction"><span class="type-signature"></span>RouteNextFunction<span class="signature">(shim, fn, fnName, args, wrap)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+    
+    <p class="summary">Used to wrap functions that users can call to continue to the next middleware.</p>
+    
+
 
 
 
@@ -2483,7 +2100,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line224">line 224</a>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line174">line 174</a>
     </li></ul></dd>
     
 
@@ -2502,40 +2119,920 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>shim</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="WebFrameworkShim.html">WebFrameworkShim</a></code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The shim used for instrumentation.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The middleware function.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fnName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name of the middleware function.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The arguments to the middleware function.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>wrap</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>NextWrapperFunction</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>A function to wrap an individual next function.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
 <h5>Returns:</h5>
 
         
-<div class="param-desc">
-    <p>The desired properties for the new segment.</p>
-</div>
 
-
-
-<dl>
+<dl class="param-type">
     <dt>
-        Type
+        Type:
     </dt>
     <dd>
         
-<span class="param-type">string</span>
-|
-
-<span class="param-type"><a href="RecorderSpec.html">RecorderSpec</a></span>
+<span class="param-type"><code>Object</code></span>
 
 
     </dd>
 </dl>
 
+
+<div class="param-desc">
+    <p>The request object.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+            
+                
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="RouteParameterFunction"><span class="type-signature"></span>RouteParameterFunction<span class="signature">(shim, fn, fnName, args)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+    
+    <p class="summary">Extracts the route parameters from the arguments to the middleware function.</p>
     
 
 
 
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line189">line 189</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>shim</code></td>
+            
+
+            <td class="type">
             
                 
+<span class="param-type"><code><a href="WebFrameworkShim.html">WebFrameworkShim</a></code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The shim used for instrumentation.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The middleware function.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fnName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name of the middleware function.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The arguments to the middleware function.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>Object</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>A map of route parameter names to values.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+            
+                
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="RouteParserFunction"><span class="type-signature"></span>RouteParserFunction<span class="signature">(shim, fn, fnName, route)</span><span class="type-signature"> &rarr; {string|RegExp}</span></h4>
+
+    
+    <p class="summary">Called whenever new middleware are mounted using the instrumented framework,
+ this method should pull out a representation of the mounted path.</p>
+    
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line138">line 138</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>shim</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="WebFrameworkShim.html">WebFrameworkShim</a></code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The shim in use for this instrumentation.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The function which received this route string/RegExp.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fnName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name of the function to which this route was given.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>route</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>RegExp</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The route that was given to the function.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>RegExp</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The mount point from the given route.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+            
+                
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="RouteRequestFunction"><span class="type-signature"></span>RouteRequestFunction<span class="signature">(shim, fn, fnName, args)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+    
+    <p class="summary">Extracts the request object from the arguments to the middleware function.</p>
+    
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line160">line 160</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>shim</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="WebFrameworkShim.html">WebFrameworkShim</a></code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The shim used for instrumentation.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The middleware function.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fnName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name of the middleware function.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Array</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The arguments to the middleware function.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>Object</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The request object.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+            
+                
+<div class="section-method">
 
     
 
@@ -2551,6 +3048,50 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line235">line 235</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
 
 
 
@@ -2586,7 +3127,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type"><a href="Shim.html">Shim</a></span>
+<span class="param-type"><code><a href="Shim.html">Shim</a></code></span>
 
 
             
@@ -2596,7 +3137,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The shim this function was passed to.</p></td>
+            <td class="description last">
+                <p>The shim this function was passed to.</p>
+                
+            </td>
         </tr>
 
     
@@ -2609,7 +3153,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type"><code>function</code></span>
 
 
             
@@ -2619,7 +3163,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The function the segment is created for.</p></td>
+            <td class="description last">
+                <p>The function the segment is created for.</p>
+                
+            </td>
         </tr>
 
     
@@ -2632,7 +3179,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -2642,7 +3189,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The name of the function.</p></td>
+            <td class="description last">
+                <p>The name of the function.</p>
+                
+            </td>
         </tr>
 
     
@@ -2655,7 +3205,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;*></span>
+<span class="param-type"><code>Array.&lt;*></code></span>
 
 
             
@@ -2665,7 +3215,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The arguments being passed into the function.</p></td>
+            <td class="description last">
+                <p>The arguments being passed into the function.</p>
+                
+            </td>
         </tr>
 
     
@@ -2677,45 +3230,6 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line203">line 203</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
 
 
 
@@ -2724,41 +3238,40 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
-
-
-
-
-
+<div class="section-returns">
 <h5>Returns:</h5>
 
         
-<div class="param-desc">
-    <p>The desired properties for the new segment.</p>
-</div>
 
-
-
-<dl>
+<dl class="param-type">
     <dt>
-        Type
+        Type:
     </dt>
     <dd>
         
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 |
 
-<span class="param-type"><a href="SegmentSpec.html">SegmentSpec</a></span>
+<span class="param-type"><code><a href="SegmentSpec.html">SegmentSpec</a></code></span>
 
 
     </dd>
 </dl>
 
+
+<div class="param-desc">
+    <p>The desired properties for the new segment.</p>
+</div>
+
     
+</div>
 
 
 
+</div>
             
                 
+<div class="section-method">
 
     
 
@@ -2779,6 +3292,50 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line181">line 181</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
 
 
 
@@ -2814,7 +3371,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type"><a href="Shim.html">Shim</a></span>
+<span class="param-type"><code><a href="Shim.html">Shim</a></code></span>
 
 
             
@@ -2824,7 +3381,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The shim this function was passed to.</p></td>
+            <td class="description last">
+                <p>The shim this function was passed to.</p>
+                
+            </td>
         </tr>
 
     
@@ -2837,10 +3397,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><code>Object</code></span>
 |
 
-<span class="param-type">function</span>
+<span class="param-type"><code>function</code></span>
 
 
             
@@ -2850,7 +3410,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The item which needs wrapping. Most of the time this will be a function.</p></td>
+            <td class="description last">
+                <p>The item which needs wrapping. Most of the time this will be a function.</p>
+                
+            </td>
         </tr>
 
     
@@ -2863,7 +3426,7 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -2873,7 +3436,10 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
             
 
-            <td class="description last"><p>The name of <code>original</code> if it can be determined, otherwise <code>'&lt;anonymous&gt;'</code>.</p></td>
+            <td class="description last">
+                <p>The name of <code>original</code> if it can be determined, otherwise <code>'&lt;anonymous&gt;'</code>.</p>
+                
+            </td>
         </tr>
 
     
@@ -2885,45 +3451,6 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line149">line 149</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
 
 
 
@@ -2932,36 +3459,34 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 
 
-
-
-
-
-
+<div class="section-returns">
 <h5>Returns:</h5>
 
         
-<div class="param-desc">
-    <p>The wrapper for the original, or the original value itself.</p>
-</div>
 
-
-
-<dl>
+<dl class="param-type">
     <dt>
-        Type
+        Type:
     </dt>
     <dd>
         
-<span class="param-type">*</span>
+<span class="param-type"><code>*</code></span>
 
 
     </dd>
 </dl>
 
+
+<div class="param-desc">
+    <p>The wrapper for the original, or the original value itself.</p>
+</div>
+
     
+</div>
 
 
 
+</div>
             
     
 
@@ -2975,17 +3500,13 @@ generic callback binding method, <code>bindCallbackSegment</code>, otherwise.</p
 
 </div>
 
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="API.html">API</a></li><li><a href="DatastoreShim.html">DatastoreShim</a></li><li><a href="Shim.html">Shim</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li></ul><h3>Interfaces</h3><ul><li><a href="DatastoreExtras.html">DatastoreExtras</a></li><li><a href="OperationSpec.html">OperationSpec</a></li><li><a href="global.html#ParsedQueryData">ParsedQueryData</a></li><li><a href="QuerySpec.html">QuerySpec</a></li><li><a href="RecorderSpec.html">RecorderSpec</a></li><li><a href="SegmentSpec.html">SegmentSpec</a></li><li><a href="TransactionSpec.html">TransactionSpec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_bindAllCallbacks">_bindAllCallbacks</a></li><li><a href="global.html#_bindStream">_bindStream</a></li><li><a href="global.html#bindRowCallbackSegment">bindRowCallbackSegment</a></li></ul>
-</nav>
-
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Aug 04 2016 14:24:47 GMT-0700 (PDT)
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed May 03 2017 17:21:38 GMT-0700 (PDT) using the Minami theme.
 </footer>
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
 </body>
 </html>

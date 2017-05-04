@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>TransactionSpec - Documentation</title>
+    <title>lib/shim/transaction-shim.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,222 +29,109 @@
 
 <div id="main">
     
-    <h1 class="page-title">TransactionSpec</h1>
+    <h1 class="page-title">lib/shim/transaction-shim.js</h1>
     
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2>
-        TransactionSpec
-        </h2>
-        
-    
-</header>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict'
 
-<article>
-    <div class="container-overview">
-    
-        
-            <div class="description"><p>Describes the type of transaction to be created by the function being
- wrapped by <a href="Shim.html#bindCreateTransaction"><code>Shim#bindCreateTransaction</code></a>.</p></div>
-        
-
-        
+var logger = require('../logger.js').child({component: 'TransactionShim'})
+var Shim = require('./shim')
+var util = require('util')
 
 
-    <h5 class="subsection-title">Properties:</h5>
+/**
+ * Constructs a transaction managing shim.
+ *
+ * @constructor
+ * @extends Shim
+ * @classdesc
+ *  A helper class for working with transactions.
+ *
+ * @param {Agent}   agent         - The agent the shim will use.
+ * @param {string}  moduleName    - The name of the module being instrumented.
+ * @param {string}  resolvedName  - The full path to the loaded module.
+ *
+ * @see Shim
+ * @see WebFrameworkShim
+ */
+function TransactionShim(agent, moduleName, resolvedName) {
+  Shim.call(this, agent, moduleName, resolvedName)
+  this._logger = logger.child({module: moduleName})
+}
+module.exports = TransactionShim
+util.inherits(TransactionShim, Shim)
 
-    
+TransactionShim.prototype.pushTransactionName = pushTransactionName
+TransactionShim.prototype.popTransactionName = popTransactionName
+TransactionShim.prototype.setTransactionName = setTransactionName
 
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
+// -------------------------------------------------------------------------- //
 
-        <th>Type</th>
+/**
+ * Pushes a new path segment onto the transaction naming stack.
+ *
+ * Transactions are named for the middlware that sends the reponse. Some web
+ * frameworks are capable of mounting middlware in complex routing stacks. In
+ * order to maintain the correct name, transactions keep a stack of mount points
+ * for each middlware/router/app/whatever. The instrumentation should push on
+ * the mount path for wrapped things when route resolution enters and pop it
+ * back off when resolution exits the item.
+ *
+ * @memberof TransactionShim.prototype
+ *
+ * @param {string} pathSegment - The path segment to add to the naming stack.
+ */
+function pushTransactionName(pathSegment) {
+  var tx = this.tracer.getTransaction()
+  if (tx &amp;&amp; tx.nameState) {
+    tx.nameState.appendPath(pathSegment)
+  }
+}
 
-        
-        <th>Attributes</th>
-        
+/**
+ * Pops one or more elements off the transaction naming stack.
+ *
+ * Ideally it is not necessary to ever provide the `pathSegment` parameter for
+ * this function, but we do not live in an ideal world.
+ *
+ * @memberof TransactionShim.prototype
+ *
+ * @param {string} [pathSegment]
+ *  Optional. Path segment to pop the stack repeatedly until a segment matching
+ *  `pathSegment` is removed.
+ */
+function popTransactionName(pathSegment) {
+  var tx = this.tracer.getTransaction()
+  if (tx &amp;&amp; tx.nameState) {
+    tx.nameState.popPath(pathSegment)
+  }
+}
 
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>type</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>The type of transaction to create. Must be one of the values from
- <a href="Shim.html#TRANSACTION_TYPES"><code>Shim#TRANSACTION_TYPES</code></a>.</p></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>nest</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last"><p>Indicates if the transaction being created is allowed to be nested within
- another transaction of the same type. If <code>false</code>, the default, the transaction
- will only be created if there is no existing transaction, or the current
- transaction is of a different type. If <code>true</code>, the transaction will be
- created regardless of the current transaction's type.</p></td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line512">line 512</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="Shim.html#bindCreateTransaction">Shim#bindCreateTransaction</a></li>
-        
-            <li><a href="Shim.html#TRANSACTION_TYPES">Shim#TRANSACTION_TYPES</a></li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-
-     
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+/**
+ * Sets the name to be used for this transaction.
+ *
+ * Either this _or_ the naming stack should be used. Do not use them together.
+ *
+ * @memberof TransactionShim.prototype
+ *
+ * @param {string} name - The name to use for the transaction.
+ */
+function setTransactionName(name) {
+  var tx = this.tracer.getTransaction()
+  if (tx) {
+    tx.setPartialName(name)
+  }
+}
+</code></pre>
+        </article>
+    </section>
 
 
 

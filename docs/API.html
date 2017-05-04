@@ -2,22 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: API</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>API - Documentation</title>
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
     <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
 </head>
-
 <body>
 
-<div id="main">
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
 
-    <h1 class="page-title">Class: API</h1>
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-Context-Preservation.html">Transaction State Preservation</a></li><li class="nav-item"><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li><li class="nav-item"><a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a></li><li class="nav-item"><a href="tutorial-Webframework-Simple.html">Intro to Web Framework Instrumentation</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="API.html">API</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameter">addCustomParameter</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomParameters">addCustomParameters</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addIgnoringRule">addIgnoringRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addNamingRule">addNamingRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createTracer">createTracer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#createWebTransaction">createWebTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getBrowserTimingHeader">getBrowserTimingHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrument">instrument</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentDatastore">instrumentDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentWebframework">instrumentWebframework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setControllerName">setControllerName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setDispatcher">setDispatcher</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setIgnoreTransaction">setIgnoreTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setTransactionName">setTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#shutdown">shutdown</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="DatastoreShim.html">DatastoreShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#bindRowCallbackSegment">bindRowCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#captureInstanceAttributes">captureInstanceAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#parseQuery">parseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordBatchQuery">recordBatchQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordOperation">recordOperation</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordQuery">recordQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setDatastore">setDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setParser">setParser</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Shim.html">Shim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#applySegment">applySegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#argsToArray">argsToArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCallbackSegment">bindCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCreateTransaction">bindCreateTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindSegment">bindSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#createSegment">createSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperties">defineProperties</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperty">defineProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#execute">execute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getName">getName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getSegment">getSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isArray">isArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isBoolean">isBoolean</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isFunction">isFunction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNumber">isNumber</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isObject">isObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isPromise">isPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isString">isString</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isWrapped">isWrapped</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#listenerCount">listenerCount</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#normalizeIndex">normalizeIndex</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#once">once</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#proxy">proxy</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#record">record</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setDefaults">setDefaults</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setInternalProperty">setInternalProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#storeSegment">storeSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#toArray">toArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrap">unwrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrap">wrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapClass">wrapClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapExport">wrapExport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapReturn">wrapReturn</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionShim.html">TransactionShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#popTransactionName">popTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#pushTransactionName">pushTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#setTransactionName">setTransactionName</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="WebFrameworkShim.html">WebFrameworkShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#captureUrlParams">captureUrlParams</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#errorHandled">errorHandled</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordMiddleware">recordMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordParamware">recordParamware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordRender">recordRender</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setErrorPredicate">setErrorPredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setFramework">setFramework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setRouteParser">setRouteParser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setTransactionUri">setTransactionUri</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#wrapMiddlewareMounter">wrapMiddlewareMounter</a></span></li><li class="nav-heading">Interfaces</li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="DatastoreExtras.html">DatastoreExtras</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareSpec.html">MiddlewareSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="OperationSpec.html">OperationSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="global.html#ParsedQueryData">ParsedQueryData</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="QuerySpec.html">QuerySpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RecorderSpec.html">RecorderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RenderSpec.html">RenderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="SegmentSpec.html">SegmentSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="TransactionSpec.html">TransactionSpec</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#shimRequire">shimRequire</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">API</h1>
+    
 
     
 
@@ -28,7 +41,9 @@
 
 <header>
     
-        <h2>API</h2>
+        <h2>
+        API
+        </h2>
         
     
 </header>
@@ -37,6 +52,7 @@
     <div class="container-overview">
     
         
+<div class="section-method">
 
     
 
@@ -57,14 +73,6 @@ the return from <code>require('newrelic')</code>.</p>
 
 
 
-
-
-
-
-
-
-
-
 <dl class="details">
 
     
@@ -94,7 +102,7 @@ the return from <code>require('newrelic')</code>.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line51">line 51</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line52">line 52</a>
     </li></ul></dd>
     
 
@@ -120,6 +128,14 @@ the return from <code>require('newrelic')</code>.</p>
 
 
 
+
+
+
+
+
+
+
+</div>
     
     </div>
 
@@ -138,6 +154,7 @@ the return from <code>require('newrelic')</code>.</p>
 
         
             
+<div class="section-members">
 <h4 class="name" id="createBackgroundTransaction"><span class="type-signature"></span>createBackgroundTransaction<span class="type-signature"></span></h4>
 
 
@@ -148,8 +165,6 @@ the return from <code>require('newrelic')</code>.</p>
 transaction automatically - the returned function needs to be invoked to start it.
 Inside the handler function, the transaction must be ended by calling endTransaction().</p>
 </div>
-
-
 
 
 
@@ -184,7 +199,7 @@ Inside the handler function, the transaction must be ended by calling endTransac
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line588">line 588</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line668">line 668</a>
     </li></ul></dd>
     
 
@@ -199,6 +214,8 @@ Inside the handler function, the transaction must be ended by calling endTransac
 
 
 
+
+
     <h5>Example</h5>
     
     <pre class="prettyprint"><code>var newrelic = require('newrelic')
@@ -208,6 +225,7 @@ var transaction = newrelic.createBackgroundTransaction('myTransaction', function
 })</code></pre>
 
 
+</div>
 
         
     
@@ -217,6 +235,7 @@ var transaction = newrelic.createBackgroundTransaction('myTransaction', function
 
         
             
+<div class="section-method">
 
     
 
@@ -232,6 +251,50 @@ reserved (see CUSTOM_BLACKLIST for the current, very short list), and
 as with most API methods, this must be called in the context of an
 active transaction. Most recently set value wins.</p>
 </div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line182">line 182</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
 
 
 
@@ -272,7 +335,7 @@ active transaction. Most recently set value wins.</p>
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -282,7 +345,10 @@ active transaction. Most recently set value wins.</p>
 
             
 
-            <td class="description last"><p>The name you want displayed in the RPM UI.</p></td>
+            <td class="description last">
+                <p>The name you want displayed in the RPM UI.</p>
+                
+            </td>
         </tr>
 
     
@@ -295,7 +361,7 @@ active transaction. Most recently set value wins.</p>
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -305,13 +371,51 @@ active transaction. Most recently set value wins.</p>
 
             
 
-            <td class="description last"><p>The value you want displayed. Must be serializable.</p></td>
+            <td class="description last">
+                <p>The value you want displayed. Must be serializable.</p>
+                
+            </td>
         </tr>
 
     
     </tbody>
 </table>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="addCustomParameters"><span class="type-signature"></span>addCustomParameters<span class="signature">(params<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Adds all custom parameters in an object to the current transaction.</p>
+<p>See documentation for newrelic.addCustomParameter for more information on
+setting custom parameters.</p>
+<p>An example of setting a custom parameter object:</p>
+<p>   newrelic.addCustomParameters({test: 'value', test2: 'value2'});</p>
+</div>
 
 
 
@@ -346,7 +450,7 @@ active transaction. Most recently set value wins.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line146">line 146</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line246">line 246</a>
     </li></ul></dd>
     
 
@@ -365,15 +469,214 @@ active transaction. Most recently set value wins.</p>
 
 
 
+    <h5>Parameters:</h5>
+    
 
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
 
-
-
-
-
+        <th>Type</th>
 
         
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
             
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>object</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                
+                
+                    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>KEY</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The name you want displayed in the RPM UI.</p>
+                
+                    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>VALUE</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The value you want displayed. Must be serializable.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
 
     
 
@@ -392,6 +695,50 @@ JavaScript) RegExp or a string.</p>
 <p>Example:</p>
 <p>  newrelic.addIgnoringRule('^/socket\.io/')</p>
 </div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line365">line 365</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
 
 
 
@@ -432,7 +779,7 @@ JavaScript) RegExp or a string.</p>
             <td class="type">
             
                 
-<span class="param-type">RegExp</span>
+<span class="param-type"><code>RegExp</code></span>
 
 
             
@@ -442,7 +789,10 @@ JavaScript) RegExp or a string.</p>
 
             
 
-            <td class="description last"><p>The pattern to ignore.</p></td>
+            <td class="description last">
+                <p>The pattern to ignore.</p>
+                
+            </td>
         </tr>
 
     
@@ -454,45 +804,6 @@ JavaScript) RegExp or a string.</p>
 
 
 
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line300">line 300</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
 
 
 
@@ -503,14 +814,10 @@ JavaScript) RegExp or a string.</p>
 
 
 
-
-
-
-
-
-
+</div>
         
             
+<div class="section-method">
 
     
 
@@ -544,6 +851,50 @@ agent's configuration. See configuration documentation for details.</p>
 
 
 
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line340">line 340</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
 
 
 
@@ -579,7 +930,7 @@ agent's configuration. See configuration documentation for details.</p>
             <td class="type">
             
                 
-<span class="param-type">RegExp</span>
+<span class="param-type"><code>RegExp</code></span>
 
 
             
@@ -589,7 +940,10 @@ agent's configuration. See configuration documentation for details.</p>
 
             
 
-            <td class="description last"><p>The pattern to rename (with capture groups).</p></td>
+            <td class="description last">
+                <p>The pattern to rename (with capture groups).</p>
+                
+            </td>
         </tr>
 
     
@@ -602,7 +956,7 @@ agent's configuration. See configuration documentation for details.</p>
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -612,7 +966,10 @@ agent's configuration. See configuration documentation for details.</p>
 
             
 
-            <td class="description last"><p>The name to use for the transaction.</p></td>
+            <td class="description last">
+                <p>The name to use for the transaction.</p>
+                
+            </td>
         </tr>
 
     
@@ -624,45 +981,6 @@ agent's configuration. See configuration documentation for details.</p>
 
 
 
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line275">line 275</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
 
 
 
@@ -673,14 +991,10 @@ agent's configuration. See configuration documentation for details.</p>
 
 
 
-
-
-
-
-
-
+</div>
         
             
+<div class="section-method">
 
     
 
@@ -701,9 +1015,86 @@ find the current transaction and segment.</p>
 
 
 
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line523">line 523</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="createWebTransaction"><span class="type-signature"></span>createWebTransaction<span class="signature">(url, handle)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Creates a function that represents a web transaction. It does not start the
+transaction automatically - the returned function needs to be invoked to start it.
+Inside the handler function, the transaction must be ended by calling endTransaction().</p>
+</div>
 
 
 
@@ -738,7 +1129,7 @@ find the current transaction and segment.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line444">line 444</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line592">line 592</a>
     </li></ul></dd>
     
 
@@ -748,38 +1139,6 @@ find the current transaction and segment.</p>
 
     
 </dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="createWebTransaction"><span class="type-signature"></span>createWebTransaction<span class="signature">(url, handle)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Creates a function that represents a web transaction. It does not start the
-transaction automatically - the returned function needs to be invoked to start it.
-Inside the handler function, the transaction must be ended by calling endTransaction().</p>
-</div>
 
 
 
@@ -820,7 +1179,7 @@ Inside the handler function, the transaction must be ended by calling endTransac
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -830,9 +1189,12 @@ Inside the handler function, the transaction must be ended by calling endTransac
 
             
 
-            <td class="description last"><p>The URL of the transaction.  It is used to name and group
+            <td class="description last">
+                <p>The URL of the transaction.  It is used to name and group
                                 related transactions in APM, so it should be a generic
-                                name and not iclude any variable parameters.</p></td>
+                                name and not iclude any variable parameters.</p>
+                
+            </td>
         </tr>
 
     
@@ -845,7 +1207,7 @@ Inside the handler function, the transaction must be ended by calling endTransac
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type"><code>function</code></span>
 
 
             
@@ -855,7 +1217,10 @@ Inside the handler function, the transaction must be ended by calling endTransac
 
             
 
-            <td class="description last"><p>Function that represents the transaction work.</p></td>
+            <td class="description last">
+                <p>Function that represents the transaction work.</p>
+                
+            </td>
         </tr>
 
     
@@ -867,45 +1232,6 @@ Inside the handler function, the transaction must be ended by calling endTransac
 
 
 
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line513">line 513</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
 
 
 
@@ -916,23 +1242,21 @@ Inside the handler function, the transaction must be ended by calling endTransac
 
 
 
+<div class="section-examples">
+<h5>Example</h5>
 
-
-
-
-
-    <h5>Example</h5>
-    
     <pre class="prettyprint"><code>var newrelic = require('newrelic')
 var transaction = newrelic.createWebTransaction('/some/url/path', function() {
   // do some work
   newrelic.endTransaction()
 })</code></pre>
 
+</div>
 
-
+</div>
         
             
+<div class="section-method">
 
     
 
@@ -956,14 +1280,6 @@ time you want to generate the headers.</p>
 
 
 
-
-
-
-
-
-
-
-
 <dl class="details">
 
     
@@ -993,7 +1309,7 @@ time you want to generate the headers.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line324">line 324</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line389">line 389</a>
     </li></ul></dd>
     
 
@@ -1016,33 +1332,45 @@ time you want to generate the headers.</p>
 
 
 
+
+
+
+
+
+
+
+
+<div class="section-returns">
 <h5>Returns:</h5>
 
         
-<div class="param-desc">
-    <p>The <code>&lt;script&gt;</code> header to be injected.</p>
-</div>
 
-
-
-<dl>
+<dl class="param-type">
     <dt>
-        Type
+        Type:
     </dt>
     <dd>
         
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
     </dd>
 </dl>
 
+
+<div class="param-desc">
+    <p>The <code>&lt;script&gt;</code> header to be injected.</p>
+</div>
+
     
+</div>
 
 
 
+</div>
         
             
+<div class="section-method">
 
     
 
@@ -1064,6 +1392,50 @@ time you want to generate the headers.</p>
 
 
 
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line923">line 923</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
 
 
 
@@ -1099,7 +1471,7 @@ time you want to generate the headers.</p>
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type"><code>object</code></span>
 
 
             
@@ -1109,9 +1481,10 @@ time you want to generate the headers.</p>
 
             
 
-            <td class="description last"><p>The options for this custom instrumentation.</p>
-                <h6>Properties</h6>
+            <td class="description last">
+                <p>The options for this custom instrumentation.</p>
                 
+                    
 
 <table class="params">
     <thead>
@@ -1143,7 +1516,7 @@ time you want to generate the headers.</p>
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -1161,7 +1534,10 @@ time you want to generate the headers.</p>
 
             
 
-            <td class="description last"><p>The module name given to require to load the module</p></td>
+            <td class="description last">
+                <p>The module name given to require to load the module</p>
+                
+            </td>
         </tr>
 
     
@@ -1174,7 +1550,7 @@ time you want to generate the headers.</p>
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type"><code>function</code></span>
 
 
             
@@ -1192,7 +1568,10 @@ time you want to generate the headers.</p>
 
             
 
-            <td class="description last"><p>The function to call when the module is required</p></td>
+            <td class="description last">
+                <p>The function to call when the module is required</p>
+                
+            </td>
         </tr>
 
     
@@ -1205,7 +1584,7 @@ time you want to generate the headers.</p>
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type"><code>function</code></span>
 
 
             
@@ -1225,14 +1604,18 @@ time you want to generate the headers.</p>
 
             
 
-            <td class="description last"><p>If provided, should <code>onRequire</code> throw an error, the error will be passed to
- this function.</p></td>
+            <td class="description last">
+                <p>If provided, should <code>onRequire</code> throw an error, the error will be passed to
+ this function.</p>
+                
+            </td>
         </tr>
 
     
     </tbody>
 </table>
 
+                
             </td>
         </tr>
 
@@ -1245,45 +1628,6 @@ time you want to generate the headers.</p>
 
 
 
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line842">line 842</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
 
 
 
@@ -1294,14 +1638,10 @@ time you want to generate the headers.</p>
 
 
 
-
-
-
-
-
-
+</div>
         
             
+<div class="section-method">
 
     
 
@@ -1323,6 +1663,50 @@ time you want to generate the headers.</p>
 
 
 
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line961">line 961</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
 
 
 
@@ -1358,7 +1742,7 @@ time you want to generate the headers.</p>
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type"><code>object</code></span>
 
 
             
@@ -1368,9 +1752,10 @@ time you want to generate the headers.</p>
 
             
 
-            <td class="description last"><p>The options for this custom instrumentation.</p>
-                <h6>Properties</h6>
+            <td class="description last">
+                <p>The options for this custom instrumentation.</p>
                 
+                    
 
 <table class="params">
     <thead>
@@ -1402,7 +1787,7 @@ time you want to generate the headers.</p>
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -1420,7 +1805,10 @@ time you want to generate the headers.</p>
 
             
 
-            <td class="description last"><p>The module name given to require to load the module</p></td>
+            <td class="description last">
+                <p>The module name given to require to load the module</p>
+                
+            </td>
         </tr>
 
     
@@ -1433,7 +1821,7 @@ time you want to generate the headers.</p>
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type"><code>function</code></span>
 
 
             
@@ -1451,7 +1839,10 @@ time you want to generate the headers.</p>
 
             
 
-            <td class="description last"><p>The function to call when the module is required</p></td>
+            <td class="description last">
+                <p>The function to call when the module is required</p>
+                
+            </td>
         </tr>
 
     
@@ -1464,7 +1855,7 @@ time you want to generate the headers.</p>
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type"><code>function</code></span>
 
 
             
@@ -1484,48 +1875,10 @@ time you want to generate the headers.</p>
 
             
 
-            <td class="description last"><p>If provided, should <code>onRequire</code> throw an error, the error will be passed to
- this function.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>datastoreName</code></td>
-            
-
-            <td class="type">
-            
+            <td class="description last">
+                <p>If provided, should <code>onRequire</code> throw an error, the error will be passed to
+ this function.</p>
                 
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>If provided, this will be used for naming the metrics. Otherwise the
- instrumentation will need set the datastore name manually.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
             </td>
         </tr>
 
@@ -1533,6 +1886,49 @@ time you want to generate the headers.</p>
     </tbody>
 </table>
 
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="instrumentWebframework"><span class="type-signature"></span>instrumentWebframework<span class="signature">(options)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Registers an instrumentation function.</p>
+<ul>
+<li><code>newrelic.instrumentWebframework(moduleName, onRequire [,onError])</code></li>
+<li><code>newrelic.instrumentWebframework(options)</code></li>
+</ul>
+</div>
 
 
 
@@ -1567,7 +1963,7 @@ time you want to generate the headers.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line884">line 884</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line1000">line 1000</a>
     </li></ul></dd>
     
 
@@ -1577,38 +1973,6 @@ time you want to generate the headers.</p>
 
     
 </dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="noticeError"><span class="type-signature"></span>noticeError<span class="signature">(error, customParameters)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Send errors to New Relic that you've already handled yourself. Should
-be an Error or one of its subtypes, but the API will handle strings
-and objects that have an attached .message or .stack property.</p>
-</div>
 
 
 
@@ -1643,13 +2007,13 @@ and objects that have an attached .message or .stack property.</p>
 
         <tr>
             
-                <td class="name"><code>error</code></td>
+                <td class="name"><code>options</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Error</span>
+<span class="param-type"><code>object</code></span>
 
 
             
@@ -1659,37 +2023,183 @@ and objects that have an attached .message or .stack property.</p>
 
             
 
-            <td class="description last"><p>The error to be traced.</p></td>
+            <td class="description last">
+                <p>The options for this custom instrumentation.</p>
+                
+                    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>moduleName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The module name given to require to load the module</p>
+                
+            </td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>customParameters</code></td>
+                <td class="name"><code>onRequire</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type"><code>function</code></span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>Any custom parameters to be displayed in
-                                 the New Relic UI.</p></td>
+            <td class="description last">
+                <p>The function to call when the module is required</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onError</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>If provided, should <code>onRequire</code> throw an error, the error will be passed to
+ this function.</p>
+                
+            </td>
         </tr>
 
     
     </tbody>
 </table>
 
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="noticeError"><span class="type-signature"></span>noticeError<span class="signature">(error, customParameters<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Send errors to New Relic that you've already handled yourself. Should be an
+<code>Error</code> or one of its subtypes, but the API will handle strings and objects
+that have an attached <code>.message</code> or <code>.stack</code> property.</p>
+<p>NOTE: Errors that are recorded using this method do <em>not</em> obey the
+<code>ignore_status_codes</code> configuration.</p>
+</div>
 
 
 
@@ -1724,7 +2234,7 @@ and objects that have an attached .message or .stack property.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line234">line 234</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line299">line 299</a>
     </li></ul></dd>
     
 
@@ -1743,15 +2253,122 @@ and objects that have an attached .message or .stack property.</p>
 
 
 
+    <h5>Parameters:</h5>
+    
 
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
 
-
-
-
-
+        <th>Type</th>
 
         
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
             
+                <td class="name"><code>error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Error</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The error to be traced.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>customParameters</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>object</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>Optional. Any custom parameters to be displayed in the New Relic UI.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
 
     
 
@@ -1773,6 +2390,50 @@ Relic transactions are tied to web requests, so this method may be called
 from within HTTP or HTTPS listener functions, Express routes, or other
 contexts where a web request or response object are in scope.</p>
 </div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line147">line 147</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
 
 
 
@@ -1813,7 +2474,7 @@ contexts where a web request or response object are in scope.</p>
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -1823,9 +2484,12 @@ contexts where a web request or response object are in scope.</p>
 
             
 
-            <td class="description last"><p>The name you want to give the controller in the New
+            <td class="description last">
+                <p>The name you want to give the controller in the New
                        Relic UI. Will be prefixed with 'Controller/' when
-                       sent.</p></td>
+                       sent.</p>
+                
+            </td>
         </tr>
 
     
@@ -1838,7 +2502,7 @@ contexts where a web request or response object are in scope.</p>
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -1848,14 +2512,52 @@ contexts where a web request or response object are in scope.</p>
 
             
 
-            <td class="description last"><p>The action being invoked on the controller. Defaults
-                       to the HTTP method used for the request.</p></td>
+            <td class="description last">
+                <p>The action being invoked on the controller. Defaults
+                       to the HTTP method used for the request.</p>
+                
+            </td>
         </tr>
 
     
     </tbody>
 </table>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="setDispatcher"><span class="type-signature"></span>setDispatcher<span class="signature">(name, version<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Specify the <code>Dispatcher</code> and <code>Dispatcher Version</code> environment values.
+A dispatcher is typically the service responsible for brokering
+the request with the process responsible for responding to the
+request.  For example Node's <code>http</code> module would be the dispatcher
+for incoming HTTP requests.</p>
+</div>
 
 
 
@@ -1890,7 +2592,7 @@ contexts where a web request or response object are in scope.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line111">line 111</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line106">line 106</a>
     </li></ul></dd>
     
 
@@ -1909,15 +2611,124 @@ contexts where a web request or response object are in scope.</p>
 
 
 
+    <h5>Parameters:</h5>
+    
 
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
 
-
-
-
-
+        <th>Type</th>
 
         
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
             
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The string you would like to report to New Relic
+                     as the dispatcher.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>version</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The dispatcher version you would like to
+                          report to New Relic</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
 
     
 
@@ -1935,6 +2746,50 @@ is slow), but it's also useful when you want a transaction that would
 otherwise be ignored due to URL or transaction name normalization rules
 to <em>not</em> be ignored.</p>
 </div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line271">line 271</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
 
 
 
@@ -1975,7 +2830,7 @@ to <em>not</em> be ignored.</p>
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type"><code>boolean</code></span>
 
 
             
@@ -1985,13 +2840,52 @@ to <em>not</em> be ignored.</p>
 
             
 
-            <td class="description last"><p>Ignore, or don't ignore, the current transaction.</p></td>
+            <td class="description last">
+                <p>Ignore, or don't ignore, the current transaction.</p>
+                
+            </td>
         </tr>
 
     
     </tbody>
 </table>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="setTransactionName"><span class="type-signature"></span>setTransactionName<span class="signature">(name)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Give the current transaction a custom name. Overrides any New Relic naming
+rules set in configuration or from New Relic's servers.</p>
+<p>IMPORTANT: this function must be called when a transaction is active. New
+Relic transactions are tied to web requests, so this method may be called
+from within HTTP or HTTPS listener functions, Express routes, or other
+contexts where a web request or response object are in scope.</p>
+</div>
 
 
 
@@ -2026,7 +2920,7 @@ to <em>not</em> be ignored.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line211">line 211</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line68">line 68</a>
     </li></ul></dd>
     
 
@@ -2036,41 +2930,6 @@ to <em>not</em> be ignored.</p>
 
     
 </dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="setTransactionName"><span class="type-signature"></span>setTransactionName<span class="signature">(name)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Give the current transaction a custom name. Overrides any New Relic naming
-rules set in configuration or from New Relic's servers.</p>
-<p>IMPORTANT: this function must be called when a transaction is active. New
-Relic transactions are tied to web requests, so this method may be called
-from within HTTP or HTTPS listener functions, Express routes, or other
-contexts where a web request or response object are in scope.</p>
-</div>
 
 
 
@@ -2111,7 +2970,7 @@ contexts where a web request or response object are in scope.</p>
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -2121,14 +2980,48 @@ contexts where a web request or response object are in scope.</p>
 
             
 
-            <td class="description last"><p>The name you want to give the web request in the New
-                     Relic UI. Will be prefixed with 'Custom/' when sent.</p></td>
+            <td class="description last">
+                <p>The name you want to give the web request in the New
+                     Relic UI. Will be prefixed with 'Custom/' when sent.</p>
+                
+            </td>
         </tr>
 
     
     </tbody>
 </table>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="shutdown"><span class="type-signature"></span>shutdown<span class="signature">(options<span class="signature-attributes">opt</span>, callback<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Shuts down the agent.</p>
+</div>
 
 
 
@@ -2163,7 +3056,7 @@ contexts where a web request or response object are in scope.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line67">line 67</a>
+        <a href="api.js.html">api.js</a>, <a href="api.js.html#line1032">line 1032</a>
     </li></ul></dd>
     
 
@@ -2173,36 +3066,6 @@ contexts where a web request or response object are in scope.</p>
 
     
 </dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="shutdown"><span class="type-signature"></span>shutdown<span class="signature">(options<span class="signature-attributes">opt</span>, callback<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Shuts down the agent.</p>
-</div>
 
 
 
@@ -2245,7 +3108,7 @@ contexts where a web request or response object are in scope.</p>
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type"><code>object</code></span>
 
 
             
@@ -2265,9 +3128,10 @@ contexts where a web request or response object are in scope.</p>
 
             
 
-            <td class="description last"><p>object with shut down options</p>
-                <h6>Properties</h6>
+            <td class="description last">
+                <p>object with shut down options</p>
                 
+                    
 
 <table class="params">
     <thead>
@@ -2301,7 +3165,7 @@ contexts where a web request or response object are in scope.</p>
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type"><code>boolean</code></span>
 
 
             
@@ -2327,15 +3191,60 @@ contexts where a web request or response object are in scope.</p>
                 </td>
             
 
-            <td class="description last"><p>If true, the agent will send any
+            <td class="description last">
+                <p>If true, the agent will send any
                                                      pending data to the collector
-                                                     before shutting down.</p></td>
+                                                     before shutting down.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>timeout</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>number</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">
+                <p>time in ms to wait before
+                                                     shutting down</p>
+                
+            </td>
         </tr>
 
     
     </tbody>
 </table>
 
+                
             </td>
         </tr>
 
@@ -2349,7 +3258,7 @@ contexts where a web request or response object are in scope.</p>
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type"><code>function</code></span>
 
 
             
@@ -2369,8 +3278,11 @@ contexts where a web request or response object are in scope.</p>
 
             
 
-            <td class="description last"><p>callback function that runs when
-                                                     agent stopped</p></td>
+            <td class="description last">
+                <p>callback function that runs when
+                                                     agent stopped</p>
+                
+            </td>
         </tr>
 
     
@@ -2382,45 +3294,6 @@ contexts where a web request or response object are in scope.</p>
 
 
 
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api.js.html">api.js</a>, <a href="api.js.html#line914">line 914</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
 
 
 
@@ -2431,12 +3304,7 @@ contexts where a web request or response object are in scope.</p>
 
 
 
-
-
-
-
-
-
+</div>
         
     
 
@@ -2452,17 +3320,13 @@ contexts where a web request or response object are in scope.</p>
 
 </div>
 
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="API.html">API</a></li><li><a href="DatastoreShim.html">DatastoreShim</a></li><li><a href="Shim.html">Shim</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li></ul><h3>Interfaces</h3><ul><li><a href="DatastoreExtras.html">DatastoreExtras</a></li><li><a href="OperationSpec.html">OperationSpec</a></li><li><a href="global.html#ParsedQueryData">ParsedQueryData</a></li><li><a href="QuerySpec.html">QuerySpec</a></li><li><a href="RecorderSpec.html">RecorderSpec</a></li><li><a href="SegmentSpec.html">SegmentSpec</a></li><li><a href="TransactionSpec.html">TransactionSpec</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_bindAllCallbacks">_bindAllCallbacks</a></li><li><a href="global.html#_bindStream">_bindStream</a></li><li><a href="global.html#bindRowCallbackSegment">bindRowCallbackSegment</a></li></ul>
-</nav>
-
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Aug 04 2016 14:24:47 GMT-0700 (PDT)
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed May 03 2017 17:21:38 GMT-0700 (PDT) using the Minami theme.
 </footer>
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
 </body>
 </html>

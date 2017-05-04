@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Shim - Documentation</title>
+    <title>TransactionShim - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Shim</h1>
+    <h1 class="page-title">TransactionShim</h1>
     
 
     
@@ -42,10 +42,10 @@
 <header>
     
         <h2>
-        Shim
+        TransactionShim
         </h2>
         
-            <div class="class-description"><p>A helper class for wrapping modules with segments.</p></div>
+            <div class="class-description"><p>A helper class for working with transactions.</p></div>
         
     
 </header>
@@ -60,14 +60,14 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="Shim"><span class="type-signature"></span>new Shim<span class="signature">(agent, moduleName, resolvedName)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="TransactionShim"><span class="type-signature"></span>new TransactionShim<span class="signature">(agent, moduleName, resolvedName)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Constructs a shim associated with the given agent instance.</p>
+    <p>Constructs a transaction managing shim.</p>
 </div>
 
 
@@ -103,12 +103,21 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line73">line 73</a>
+        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line23">line 23</a>
     </li></ul></dd>
     
 
     
 
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Shim.html">Shim</a></li>
+        
+            <li><a href="WebFrameworkShim.html">WebFrameworkShim</a></li>
+        </ul>
+    </dd>
     
 
     
@@ -164,7 +173,7 @@
             
 
             <td class="description last">
-                <p>The agent this shim will use.</p>
+                <p>The agent the shim will use.</p>
                 
             </td>
         </tr>
@@ -245,6 +254,17 @@
     </div>
 
     
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="Shim.html">Shim</a></li>
+    </ul>
+
+
+    
 
     
 
@@ -279,6 +299,11 @@
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#agent">Shim#agent</a>
+    </li></ul></dd>
     
 
     
@@ -512,6 +537,11 @@ static members.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#ARG_INDEXES">Shim#ARG_INDEXES</a>
+    </li></ul></dd>
+    
 
     
 
@@ -586,6 +616,11 @@ static members.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#logger">Shim#logger</a>
+    </li></ul></dd>
+    
 
     
 
@@ -659,6 +694,11 @@ static members.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#tracer">Shim#tracer</a>
+    </li></ul></dd>
     
 
     
@@ -815,6 +855,11 @@ static members.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#TRANSACTION_TYPES">Shim#TRANSACTION_TYPES</a>
+    </li></ul></dd>
+    
 
     
 
@@ -902,6 +947,11 @@ execution.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#applySegment">Shim#applySegment</a>
+    </li></ul></dd>
     
 
     
@@ -1169,6 +1219,11 @@ execution.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#argsToArray">Shim#argsToArray</a>
+    </li></ul></dd>
+    
 
     
 
@@ -1290,6 +1345,11 @@ the given segment.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#bindCallbackSegment">Shim#bindCallbackSegment</a>
+    </li></ul></dd>
     
 
     
@@ -1524,6 +1584,11 @@ invoked.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#bindCreateTransaction">Shim#bindCreateTransaction</a>
+    </li></ul></dd>
     
 
     
@@ -1778,6 +1843,11 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#bindSegment">Shim#bindSegment</a>
+    </li></ul></dd>
     
 
     
@@ -2093,6 +2163,11 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#createSegment">Shim#createSegment</a>
+    </li></ul></dd>
+    
 
     
 
@@ -2356,6 +2431,11 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#defineProperties">Shim#defineProperties</a>
+    </li></ul></dd>
+    
 
     
 
@@ -2523,6 +2603,11 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#defineProperty">Shim#defineProperty</a>
+    </li></ul></dd>
     
 
     
@@ -2715,6 +2800,11 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#execute">Shim#execute</a>
+    </li></ul></dd>
+    
 
     
 
@@ -2797,6 +2887,11 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#getName">Shim#getName</a>
+    </li></ul></dd>
     
 
     
@@ -2961,6 +3056,11 @@ active segment if no object is given.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#getSegment">Shim#getSegment</a>
+    </li></ul></dd>
     
 
     
@@ -3136,6 +3236,11 @@ active segment if no object is given.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#isArray">Shim#isArray</a>
+    </li></ul></dd>
+    
 
     
 
@@ -3295,6 +3400,11 @@ active segment if no object is given.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#isBoolean">Shim#isBoolean</a>
+    </li></ul></dd>
     
 
     
@@ -3456,6 +3566,11 @@ active segment if no object is given.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#isFunction">Shim#isFunction</a>
+    </li></ul></dd>
+    
 
     
 
@@ -3615,6 +3730,11 @@ active segment if no object is given.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#isNumber">Shim#isNumber</a>
+    </li></ul></dd>
     
 
     
@@ -3776,6 +3896,11 @@ active segment if no object is given.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#isObject">Shim#isObject</a>
+    </li></ul></dd>
+    
 
     
 
@@ -3936,6 +4061,11 @@ active segment if no object is given.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#isPromise">Shim#isPromise</a>
+    </li></ul></dd>
+    
 
     
 
@@ -4095,6 +4225,11 @@ active segment if no object is given.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#isString">Shim#isString</a>
+    </li></ul></dd>
     
 
     
@@ -4259,6 +4394,11 @@ active segment if no object is given.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#isWrapped">Shim#isWrapped</a>
+    </li></ul></dd>
     
 
     
@@ -4479,6 +4619,11 @@ active segment if no object is given.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#listenerCount">Shim#listenerCount</a>
+    </li></ul></dd>
+    
 
     
 
@@ -4667,6 +4812,11 @@ array length before checking it.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#normalizeIndex">Shim#normalizeIndex</a>
+    </li></ul></dd>
+    
 
     
 
@@ -4853,6 +5003,11 @@ array length before checking it.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#once">Shim#once</a>
+    </li></ul></dd>
+    
 
     
 
@@ -4992,6 +5147,156 @@ array length before checking it.</p>
 
     
 
+    <h4 class="name" id="popTransactionName"><span class="type-signature"></span>popTransactionName<span class="signature">(pathSegment<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Pops one or more elements off the transaction naming stack.</p>
+<p>Ideally it is not necessary to ever provide the <code>pathSegment</code> parameter for
+this function, but we do not live in an ideal world.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line69">line 69</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pathSegment</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>Optional. Path segment to pop the stack repeatedly until a segment matching
+ <code>pathSegment</code> is removed.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
     <h4 class="name" id="proxy"><span class="type-signature"></span>proxy<span class="signature">(source, properties, dest)</span><span class="type-signature"></span></h4>
 
     
@@ -5012,6 +5317,11 @@ array length before checking it.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#proxy">Shim#proxy</a>
+    </li></ul></dd>
     
 
     
@@ -5182,6 +5492,147 @@ array length before checking it.</p>
 
     
 
+    <h4 class="name" id="pushTransactionName"><span class="type-signature"></span>pushTransactionName<span class="signature">(pathSegment)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Pushes a new path segment onto the transaction naming stack.</p>
+<p>Transactions are named for the middlware that sends the reponse. Some web
+frameworks are capable of mounting middlware in complex routing stacks. In
+order to maintain the correct name, transactions keep a stack of mount points
+for each middlware/router/app/whatever. The instrumentation should push on
+the mount path for wrapped things when route resolution enters and pop it
+back off when resolution exits the item.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line50">line 50</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pathSegment</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The path segment to add to the naming stack.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
     <h4 class="name" id="record"><span class="type-signature"></span>record<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, recordNamer)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
 
     
@@ -5207,6 +5658,11 @@ array length before checking it.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#record">Shim#record</a>
+    </li></ul></dd>
     
 
     
@@ -5471,6 +5927,11 @@ not already have that property.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#setDefaults">Shim#setDefaults</a>
+    </li></ul></dd>
+    
 
     
 
@@ -5680,6 +6141,11 @@ be made writable and non-enumerable.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#setInternalProperty">Shim#setInternalProperty</a>
+    </li></ul></dd>
+    
 
     
 
@@ -5871,6 +6337,142 @@ be made writable and non-enumerable.</p>
 
     
 
+    <h4 class="name" id="setTransactionName"><span class="type-signature"></span>setTransactionName<span class="signature">(name)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Sets the name to be used for this transaction.</p>
+<p>Either this <em>or</em> the naming stack should be used. Do not use them together.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line85">line 85</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name to use for the transaction.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
     <h4 class="name" id="storeSegment"><span class="type-signature"></span>storeSegment<span class="signature">(obj<span class="signature-attributes">non-null</span>, segment<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
@@ -5895,6 +6497,11 @@ be made writable and non-enumerable.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#storeSegment">Shim#storeSegment</a>
+    </li></ul></dd>
     
 
     
@@ -6077,6 +6684,11 @@ be made writable and non-enumerable.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#toArray">Shim#toArray</a>
+    </li></ul></dd>
+    
 
     
 
@@ -6243,6 +6855,11 @@ back on the nodule. Otherwise, the unwrapped function is just returned.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#unwrap">Shim#unwrap</a>
+    </li></ul></dd>
     
 
     
@@ -6470,6 +7087,11 @@ method.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#wrap">Shim#wrap</a>
+    </li></ul></dd>
     
 
     
@@ -6792,6 +7414,11 @@ hooks.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#wrapClass">Shim#wrapClass</a>
+    </li></ul></dd>
     
 
     
@@ -7192,6 +7819,11 @@ hooks.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#wrapExport">Shim#wrapExport</a>
+    </li></ul></dd>
+    
 
     
 
@@ -7386,6 +8018,11 @@ constructors instead.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="Shim.html#wrapReturn">Shim#wrapReturn</a>
+    </li></ul></dd>
     
 
     
