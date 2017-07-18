@@ -1,4 +1,134 @@
 
+### v2.0.0 (2017-07-17):
+* [The New Relic Node Agent v2 is here!](https://blog.newrelic.com/2017/07/18/nodejs-agent-v2-api/)
+
+  This release contains major changes to the agent instrumentation API, making
+  it easier to create and distribute your own instrumentation for third party
+  modules. Check out [Upgrade the Node agent](https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/upgrade-nodejs-agent)
+  or the [Migration Guide](./Migration%20Guide.md) for more information on
+  upgrading your application to this version.
+
+* BREAKING: Reversed naming and ignore rules.
+
+  Naming rules are now applied in the order they are defined.
+
+* BREAKING: De-duplicated HTTP request transactions.
+
+  Only one transaction is created per `request` event emitted by an HTTP server.
+  Previously this was one transaction per listener per event emitted.
+
+* BREAKING: Stopped swallowing outbound request errors.
+
+  Errors emitted by outbound HTTP requests will no longer be swallowed by the
+  agent.
+
+* BREAKING: Node v0.8 is no longer supported. Minimum version is now v0.10.
+
+  The v1 agent will continue to support Node 0.8 but will no longer receive
+  updates.
+
+* BREAKING: npm v1 is no longer supported. Minimum version is now v2.0.0.
+
+* Added API for writing messaging framework instrumentation.
+
+  Introduced new `MessageShim` class for writing instrumentation. This shim
+  can be accessed using the `newrelic.instrumentMessages()` API method.
+
+* Added `amqplib` instrumentation.
+
+  Applications driven by `amqplib` consumers will now have transactions
+  automatically created for consumed messages. See
+  [Troubleshoot message consumers](https://docs.newrelic.com/docs/agents/nodejs-agent/troubleshooting/troubleshoot-message-consumers)
+  for more information on this instrumentation and its limitations.
+
+* Advanced instrumentation API is now generally available.
+
+  New methods for instrumenting common modules were introduced during the Agent
+  v2 beta. These APIs are now available to everyone:
+
+  * `newrelic.instrument()`/`Shim`: This method can be used to instrument
+    generic modules, such as connection pooling libraries, task schedulers, or
+    anything else not covered by a specialized class.
+
+  * `newrelic.instrumentDatastore()`/`DatastoreShim`: This method is good for
+    instrumenting datastore modules such as `mongodb`, `mysql`, or `pg`.
+
+  * `newrelic.instrumentWebframework()`/`WebFrameworkShim`: This method is
+    used for instrumenting web frameworks like `restify` or `express`.
+
+  Documentation and tutorials for the new API can be found on our GitHub
+  documentation page: http://newrelic.github.io/node-newrelic/docs/
+
+* Rewrote built-in instrumentation using the new `Shim` classes.
+
+  The following instrumentations have been rewritten:
+    * Datastores
+      * `cassandra-driver`
+      * `ioredis`
+      * `memcached`
+      * `mongodb`
+      * `mysql`
+      * `node-cassandra-cql`
+      * `pg`
+      * `redis`
+    * Web frameworks
+      * `director`
+      * `express`
+      * `hapi`
+      * `restify`
+
+* The `@newrelic/native-metrics` module is now included as an optional dependency.
+
+  This module will be installed automatically with Agent v2. If it fails to
+  install the agent will still function.
+
+### v1.40.0 (2017-06-07):
+* Node v8 is officially supported with exception of `async`/`await`.
+
+  Support for the new [`async`/`await`][mdn-async-function] keywords is coming
+  in a future release. Until this support is added, using the agent with
+  applications that utilize async/await is unsupported and highly discouraged as
+  it could result in transaction state loss and data being mixed between
+  transactions.
+
+  Fixed issues related to changes in the core networking modules that resulted
+  in transaction state loss. Also instrumented new asynchronous API methods in
+  crypto and [inspector](https://nodejs.org/dist/v8.0.0/docs/api/inspector.html).
+
+### v1.39.1 (2017-05-11):
+* Fixed a transaction state loss introduced in Node 7.10.0 when using
+  `net.createConnection`.
+
+  Added a new segment for `net.connect`, `net.createConnection`, and
+  `http.Agent#createConnection`. Sockets created within a transaction also have
+  their `emit` bound to the segment.
+
+* Fixed a typo about the name of the default configuration file. Thanks Jacob
+  LeGrone (@jlegrone)!
+
+### v1.39.0 (2017-05-01):
+* Updated the default value for `transaction_tracer.record_sql` to `obfuscated`.
+
+  This value was previously `off` by default. This change brings the New Relic
+  Node Agent defaults in line with other New Relic Agents.
+
+* Our when instrumentation better detects when a module is actually `when`.
+
+  Thanks to Pasi Eronen (@pasieronen) for the contribution!
+
+* Quiet a warning in our native promise instrumentation on Node 0.10.
+
+* Error messages are redacted in High Security Mode now.
+
+* New configurations were added for disabling some New Relic API methods. These
+  default to enabled and are all disabled in High Security Mode.
+
+  * `api.custom_parameters_enabled` controls `newrelic.addCustomParameters()`
+  * `api.custom_events_enabled` controls `newrelic.recordCustomEvent()`
+  * `api.notice_error_enabled` controls `newrelic.noticeError()`
+
+* Fixed a bug in the generic pool instrumentation affecting version 3.
+
 ### v2.6.0 / beta-47 (2017-05-03):
 * Incorporated fixes and features from 1.38.0, 1.38.1, and 1.38.2.
 
@@ -2348,3 +2478,5 @@
 * The agent reports error metrics.
 * The agent gathers basic slow transaction trace data.
 * The agent reports transaction trace data.
+
+[mdn-async-function]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function

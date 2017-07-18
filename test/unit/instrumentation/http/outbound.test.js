@@ -5,8 +5,10 @@ var events = require('events')
 var chai = require('chai')
 var expect = chai.expect
 var helper = require('../../../lib/agent_helper')
-var NAMES = require('../../../../lib/metrics/names.js')
-var instrumentOutbound = require('../../../../lib/transaction/tracer/instrumentation/outbound.js')
+var NAMES = require('../../../../lib/metrics/names')
+var instrumentOutbound = require(
+  '../../../../lib/transaction/tracer/instrumentation/outbound'
+)
 var hashes = require('../../../../lib/util/hashes')
 var nock = require('nock')
 
@@ -211,7 +213,7 @@ describe('should add data from cat header to segment', function() {
   var server
   var agent
 
-  var app_data = [
+  var appData = [
     '123#456',
     'abc',
     0,
@@ -221,14 +223,14 @@ describe('should add data from cat header to segment', function() {
   ]
 
   before(function(done) {
-    agent = helper.instrumentMockedAgent(
-      {cat: true},
-      {encoding_key: encKey, trusted_account_ids: [123]}
-    )
+    agent = helper.instrumentMockedAgent(null, {
+      cross_application_tracer: {enabled: true},
+      encoding_key: encKey,
+      trusted_account_ids: [123]
+    })
+    var obfData = hashes.obfuscateNameUsingKey(JSON.stringify(appData), encKey)
     server = http.createServer(function(req, res) {
-      res.writeHead(200, {
-        'x-newrelic-app-data': hashes.obfuscateNameUsingKey(JSON.stringify(app_data), encKey)
-      })
+      res.writeHead(200, {'x-newrelic-app-data': obfData})
       res.end()
       req.resume()
     })
@@ -242,7 +244,8 @@ describe('should add data from cat header to segment', function() {
 
   function addSegment() {
     var transaction = agent.getTransaction()
-    transaction.webSegment = {
+    transaction.type = 'web'
+    transaction.baseSegment = {
       getDurationInMillis: function fake() {
         return 1000
       }
@@ -333,8 +336,6 @@ describe('should add data from cat header to segment', function() {
 
 describe('when working with http.request', function () {
   var agent
-  var HOSTNAME = 'localhost'
-  var PORT = 8890
 
   before(function () {
     agent = helper.instrumentMockedAgent()

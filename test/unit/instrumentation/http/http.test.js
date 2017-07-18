@@ -418,7 +418,10 @@ describe("built-in http module instrumentation", function() {
     var agent
 
     before(function() {
-      agent = helper.instrumentMockedAgent({cat: true}, {encoding_key: encKey})
+      agent = helper.instrumentMockedAgent(null, {
+        cross_application_tracer: {enabled: true},
+        encoding_key: encKey
+      })
     })
 
     after(function() {
@@ -505,7 +508,10 @@ describe("built-in http module instrumentation", function() {
     var agent
 
     before(function() {
-      agent = helper.instrumentMockedAgent({cat: false}, {encoding_key: encKey})
+      agent = helper.instrumentMockedAgent(null, {
+        cross_application_tracer: {enabled: false},
+        encoding_key: encKey
+      })
     })
 
     after(function() {
@@ -551,10 +557,12 @@ describe("built-in http module instrumentation", function() {
     var agent
 
     before(function() {
-      agent = helper.instrumentMockedAgent(
-        {cat: true},
-        {encoding_key: encKey, trusted_account_ids: [123], cross_process_id: '456'}
-      )
+      agent = helper.instrumentMockedAgent(null, {
+        cross_application_tracer: {enabled: true},
+        encoding_key: encKey,
+        trusted_account_ids: [123],
+        cross_process_id: '456'
+      })
     })
 
     after(function() {
@@ -563,7 +571,7 @@ describe("built-in http module instrumentation", function() {
 
     it('should set header correctly when all data is present', function(done) {
       var server = http.createServer(function(req, res) {
-        agent.getTransaction().name = '/abc'
+        agent.getTransaction().setPartialName('/abc')
         agent.getTransaction().id = '789'
         res.writeHead(200, {'Content-Length': 3})
         res.end('hi!')
@@ -655,10 +663,11 @@ describe("built-in http module instrumentation", function() {
     var agent
 
     before(function(done) {
-      agent = helper.instrumentMockedAgent(
-        {cat: true},
-        {encoding_key: encKey, obfuscatedId: 'o123'}
-      )
+      agent = helper.instrumentMockedAgent(null, {
+        cross_application_tracer: {enabled: true},
+        encoding_key: encKey,
+        obfuscatedId: 'o123'
+      })
       http = require('http')
       server = http.createServer(function(req, res) {
         res.end()
@@ -674,16 +683,17 @@ describe("built-in http module instrumentation", function() {
 
     function addSegment() {
       var transaction = agent.getTransaction()
-      transaction.webSegment = {
+      transaction.type = 'web'
+      transaction.baseSegment = {
         getDurationInMillis: function fake() {
-          return 1000;
+          return 1000
         }
       }
     }
 
     it('should use config.obfuscatedId as the x-newrelic-id header', function(done) {
       helper.runInTransaction(agent, function() {
-        addSegment() // Add webSegment so everything works properly
+        addSegment() // Add web segment so everything works properly
         var req = http.request({host : 'localhost', port : 4123}, function(res) {
           expect(req.getHeader(NEWRELIC_ID_HEADER)).equal('o123')
           res.resume()
@@ -696,7 +706,7 @@ describe("built-in http module instrumentation", function() {
 
     it('should use set x-newrelic-transaction', function(done) {
       helper.runInTransaction(agent, function() {
-        addSegment() // Add webSegment so everything works properly
+        addSegment() // Add web segment so everything works properly
         var transaction = agent.getTransaction()
         transaction.name = '/abc'
         transaction.referringPathHash = 'h/def'
@@ -727,7 +737,7 @@ describe("built-in http module instrumentation", function() {
 
     it('should use transaction.id if transaction.tripId is not set', function(done) {
       helper.runInTransaction(agent, function() {
-        addSegment() // Add webSegment so everything works properly
+        addSegment() // Add web segment so everything works properly
         var transaction = agent.getTransaction()
         transaction.id = '456'
         transaction.tripId = null
@@ -748,14 +758,15 @@ describe("built-in http module instrumentation", function() {
 
     it('should use partialName if transaction.name is not set', function(done) {
       helper.runInTransaction(agent, function() {
-        addSegment() // Add webSegment so everything works properly
+        addSegment() // Add web segment so everything works properly
         var transaction = agent.getTransaction()
+        transaction.url = '/xyz'
         transaction.nameState.appendPath('/xyz')
         transaction.name = null
         transaction.referringPathHash = 'h/def'
         var pathHash = hashes.calculatePathHash(
           agent.config.applications()[0],
-          transaction.nameState.getName(),
+          transaction.getFullName(),
           transaction.referringPathHash
         )
 
@@ -774,7 +785,7 @@ describe("built-in http module instrumentation", function() {
     })
     it('should save current pathHash', function(done) {
       helper.runInTransaction(agent, function() {
-        addSegment() // Add webSegment so everything works properly
+        addSegment() // Add web segment so everything works properly
         var transaction = agent.getTransaction()
         transaction.name = '/xyz'
         transaction.referringPathHash = 'h/def'
@@ -799,10 +810,11 @@ describe("built-in http module instrumentation", function() {
     it('should preserve headers regardless of format', function(done) {
       var encKey = 'gringletoes'
 
-      agent = helper.instrumentMockedAgent(
-        {cat: true},
-        {encoding_key: encKey, obfuscatedId: 'o123'}
-      )
+      agent = helper.instrumentMockedAgent(null, {
+        cross_application_tracer: {enabled: true},
+        encoding_key: encKey,
+        obfuscatedId: 'o123'
+      })
 
       var http = require('http')
       var had_expect = 0
@@ -849,13 +861,14 @@ describe("built-in http module instrumentation", function() {
 
       function expect_request() {
         addSegment()
-        var req = http.request(
-          {host : 'localhost', port : 4123, headers: {a: 1, b: 2, expect: '100-continue'}},
-          function(res) {
-            res.resume()
-            end_test()
-          }
-        )
+        var req = http.request({
+          host: 'localhost',
+          port: 4123,
+          headers: {a: 1, b: 2, expect: '100-continue'}
+        }, function(res) {
+          res.resume()
+          end_test()
+        })
         req.end()
       }
 
@@ -869,9 +882,10 @@ describe("built-in http module instrumentation", function() {
 
     function addSegment() {
       var transaction = agent.getTransaction()
-      transaction.webSegment = {
+      transaction.type = 'web'
+      transaction.baseSegment = {
         getDurationInMillis: function fake() {
-          return 1000;
+          return 1000
         }
       }
     }

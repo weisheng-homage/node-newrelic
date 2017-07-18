@@ -66,7 +66,7 @@ test-ci: node_modules sub_node_modules $(CERTIFICATE)
 
 unit: node_modules
 	@rm -f newrelic_agent.log
-	@cd test && npm install
+	@cd test && npm install;
 	@$(MOCHA) -c test/unit --recursive
 
 sub_node_modules:
@@ -86,6 +86,7 @@ docker:
 	  export NR_NODE_TEST_REDIS_HOST=$${HOST}; \
 	  export NR_NODE_TEST_CASSANDRA_HOST=$${HOST}; \
 	  export NR_NODE_TEST_POSTGRES_HOST=$${HOST}; \
+	  export NR_NODE_TEST_RABBIT_HOST=$${HOST}; \
 	fi; \
 
 integration: node_modules ca-gen $(CERTIFICATE) docker
@@ -214,6 +215,11 @@ services:
 	else \
 	  docker run -d --name nr_node_postgres -p 5432:5432 postgres:9.2; \
 	fi
+	if docker ps -a | grep -q "nr_node_rabbit"; then \
+	  docker start nr_node_rabbit; \
+	else \
+	  docker run -d --name nr_node_rabbit -p 5672:5672 rabbitmq:3; \
+	fi
 	if docker ps -a | grep -q "nr_node_oracle"; then \
 	  docker start nr_node_oracle; \
 	else \
@@ -236,7 +242,7 @@ update_npm_global:
 	fi
 
 	if node -v | grep -q "^v0"; then \
-	  npm install -g npm@latest; \
+	  npm install -g npm@3; \
 	fi
 
 	echo "\nUpgrading npm is expected to have many warnings due to tolerance changes over the years.\n"

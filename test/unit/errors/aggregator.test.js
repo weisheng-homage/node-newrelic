@@ -19,10 +19,12 @@ function createTransaction(agent, code, isWeb) {
 
   var transaction = new Transaction(agent)
   if (isWeb) {
+    transaction.type = Transaction.TYPES.WEB
     transaction.name = 'WebTransaction/TestJS/path'
     transaction.url = '/TestJS/path'
     transaction.statusCode = code
   } else {
+    transaction.type = Transaction.TYPES.BG
     transaction.name = 'OtherTransaction'
   }
   return transaction
@@ -143,6 +145,15 @@ describe('agent attribute format', function () {
     params = error.getEvents()[0][1]
 
     expect(params).deep.equals({})
+  })
+
+  it('redacts the error message in high security mode', function () {
+    agent.config.high_security = true
+    error.add(trans, new Error('this should not be here'), {a: 'AA'})
+    agent.errors.onTransactionFinished(trans, agent.metrics)
+
+    expect(error.errors[0][2]).to.equal('')
+    expect(error.errors[0][4].stack_trace[0]).to.equal('Error: <redacted>')
   })
 })
 
@@ -1452,7 +1463,7 @@ describe('traced errors', function() {
       var transaction = createTransaction(agent, 200)
 
       transaction.referringTransactionGuid = '1234'
-      agent.config.cross_process_id = '2345'
+      transaction.incomingCatId = '2345'
 
       var error = new Error('some error')
       aggregator.add(transaction, error)
@@ -1572,6 +1583,15 @@ describe('error events', function() {
     agent._sendErrorEvents(function cb_sendErrorEvents() {
       done()
     })
+  })
+
+  it('should omit the error message when in high security mode', function() {
+    agent.config.high_security = true
+    agent.errors.add(null, new Error('some error'))
+    var events = agent.errors.getEvents()
+    expect(events[0][0]['error.message']).to.equal('')
+    agent.config.high_security = false
+
   })
 
   it('not spill over reservoir size', function() {

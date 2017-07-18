@@ -63,6 +63,7 @@ var helper = module.exports = {
       _agent.config.feature_flag = newFlags
     }
 
+    global.__NR_agent = _agent
     return _agent
   },
 
@@ -116,7 +117,10 @@ var helper = module.exports = {
     // handler needs to be removed on unload.
     removeListenerByName(process, 'unhandledRejection', '__NR_unhandledRejectionHandler')
 
-    if (agent === _agent) _agent = null
+    if (agent === _agent) {
+      global.__NR_agent = null
+      _agent = null
+    }
   },
 
   loadTestAgent: function loadTestAgent(t, flags, conf) {
@@ -144,8 +148,9 @@ var helper = module.exports = {
     if (!(agent && callback)) {
       throw new TypeError("Must include both agent and function!")
     }
+    type = type || 'web'
 
-    return agent.tracer.transactionProxy(function cb_transactionProxy() {
+    return agent.tracer.transactionNestProxy(type, function cb_transactionProxy() {
       var transaction = agent.getTransaction()
       return callback(transaction)
     })() // <-- invoke immediately
@@ -161,12 +166,10 @@ var helper = module.exports = {
       type = undefined
     }
 
-
     return helper.runInTransaction(agent, type, function wrappedCallback(transaction) {
       transaction.name = 'TestTransaction'
       return callback(transaction)
     })
-
   },
 
   /**

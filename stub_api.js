@@ -2,6 +2,7 @@
 
 var logger = require('./lib/logger.js')
 var RealAPI = require('./api.js')
+var TransactionHandle = require('./lib/transaction/handle')
 
 
 /* eslint-disable no-eval */
@@ -29,6 +30,9 @@ for (var i = 0; i < length; i++) {
 Stub.prototype.createTracer = createTracer
 Stub.prototype.createWebTransaction = createWebTransaction
 Stub.prototype.createBackgroundTransaction = createBackgroundTransaction
+Stub.prototype.startWebTransaction = startWebTransaction
+Stub.prototype.startBackgroundTransaction = startBackgroundTransaction
+Stub.prototype.getTransaction = getTransaction
 Stub.prototype.getBrowserTimingHeader = getBrowserTimingHeader
 Stub.prototype.shutdown = shutdown
 
@@ -37,6 +41,10 @@ Stub.prototype.shutdown = shutdown
 function getBrowserTimingHeader() {
   logger.debug('Not calling getBrowserTimingHeader because New Relic is disabled.')
   return ''
+}
+
+function getTransaction() {
+  return TransactionHandle.stub
 }
 
 // Normally the following 3 calls return a wrapped callback, instead we
@@ -54,6 +62,28 @@ function createWebTransaction(url, callback) {
 function createBackgroundTransaction(name, group, callback) {
   logger.debug('Not calling createBackgroundTransaction because New Relic is disabled.')
   return (callback === undefined) ? group : callback
+}
+
+function startWebTransaction(url, callback) {
+  logger.debug('Not calling startWebTransaction because New Relic is disabled.')
+  if (typeof callback === 'function') {
+    return callback()
+  }
+
+  return null
+}
+
+function startBackgroundTransaction(name, group, callback) {
+  logger.debug('Not calling startBackgroundTransaction because New Relic is disabled.')
+  if (typeof callback === 'function') {
+    return callback()
+  }
+
+  if (typeof group === 'function') {
+    return group()
+  }
+
+  return null
 }
 
 // Normally the following call executes callback asynchronously

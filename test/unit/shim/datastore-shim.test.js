@@ -157,7 +157,7 @@ describe('DatastoreShim', function() {
       var query = 'SELECT 1 FROM test'
       var parsed = shim.parseQuery(query)
       expect(parsed.operation).to.equal('select')
-      expect(parsed.model).to.equal('test')
+      expect(parsed.collection).to.equal('test')
       expect(parsed.raw).to.equal(query)
     })
 
@@ -179,7 +179,7 @@ describe('DatastoreShim', function() {
       var query = 'SELECT 1 FROM test'
       var parsed = shim.parseQuery(query)
       expect(parsed.operation).to.equal('select')
-      expect(parsed.model).to.equal('test')
+      expect(parsed.collection).to.equal('test')
       expect(parsed.raw).to.equal(query)
     })
 
@@ -354,18 +354,18 @@ describe('DatastoreShim', function() {
         })
       })
 
-      describe('with `extras`', function() {
+      describe('with `parameters`', function() {
         var localhost = null
         beforeEach(function() {
           localhost = getMetricHostName(agent, 'localhost')
           shim.recordOperation(wrappable, 'getActiveSegment', function(s, fn, n, args) {
-            return {extras: args[0]}
+            return {parameters: args[0]}
           })
         })
 
-        function run(extras, cb) {
+        function run(parameters, cb) {
           helper.runInTransaction(agent, function() {
-            var segment = wrappable.getActiveSegment(extras)
+            var segment = wrappable.getActiveSegment(parameters)
             cb(segment)
           })
         }
@@ -429,7 +429,7 @@ describe('DatastoreShim', function() {
         shim.recordOperation(wrappable, 'getActiveSegment', function() {
           return {
             name: 'op',
-            extras: {
+            parameters: {
               host: 'some_host',
               port_path_or_id: 1234,
               database_name: 'foobar'
@@ -445,9 +445,9 @@ describe('DatastoreShim', function() {
       it('should create datastore metrics', function() {
         var metrics = agent.metrics.unscoped
         expect(metrics).to.have.property('Datastore/all')
-        expect(metrics).to.have.property('Datastore/allOther')
+        expect(metrics).to.have.property('Datastore/allWeb')
         expect(metrics).to.have.property('Datastore/Cassandra/all')
-        expect(metrics).to.have.property('Datastore/Cassandra/allOther')
+        expect(metrics).to.have.property('Datastore/Cassandra/allWeb')
         expect(metrics).to.have.property('Datastore/operation/Cassandra/op')
         expect(metrics).to.have.property('Datastore/instance/Cassandra/some_host/1234')
       })
