@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>RenderSpec - Documentation</title>
+    <title>MessageSpec - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">RenderSpec</h1>
+    <h1 class="page-title">MessageSpec</h1>
     
 
     
@@ -42,7 +42,7 @@
 <header>
     
         <h2>
-        RenderSpec
+        MessageSpec
         </h2>
         
     
@@ -52,7 +52,7 @@
     <div class="container-overview">
     
         
-            <div class="description"><p>Describes the interface for render methods.</p></div>
+            <div class="description"><p>The specification for a message being produced or consumed.</p></div>
         
 
         
@@ -76,6 +76,8 @@
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -86,13 +88,49 @@
 
         <tr>
             
-                <td class="name"><code>view</code></td>
+                <td class="name"><code>destinationName</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code>number</code></span>
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The name of the exchange or queue the message is being produced to or
+ consumed from.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>destinationType</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="MessageShim.html#.DESTINATION_TYPES">MessageShim.DESTINATION_TYPES</a></code></span>
 
 
             
@@ -109,9 +147,250 @@
             
 
             
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
 
-            <td class="description last"><p>Identifies which argument is the name of the view being rendered. Defaults
- to <a href="Shim.html#ARG_INDEXES"><code>shim.FIRST</code></a>.</p></td>
+            <td class="description last"><p>The type of the destination. Defaults to <code>shim.EXCHANGE</code>.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>headers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Object</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last"><p>A reference to the message headers. On produce, more headers will be added
+ to this object which should be sent along with the message. On consume,
+ cross-application headers will be read from this object.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>routingKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last"><p>The routing key for the message. If provided on consume, the routing key
+ will be added to the transaction attributes as <code>message.routingKey</code>.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>queue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last"><p>The name of the queue the message was consumed from. If provided on
+ consume, the queue name will be added to the transaction attributes as
+ <code>message.queueName</code>.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>parameters.correlation_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>In AMQP, this should be the correlation Id of the message, if it has one.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>parameters.reply_to</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>In AMQP, this should be the name of the queue to reply to, if the message
+ has one.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>messageHandler</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="global.html#MessageHandlerFunction">MessageHandlerFunction</a></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>An optional function to extract message properties from a consumed message.
+ This method is only used in the consume case to pull data from the
+ retrieved message.</p></td>
         </tr>
 
         
@@ -152,7 +431,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line268">line 268</a>
+        <a href="lib_shim_message-shim.js.html">lib/shim/message-shim.js</a>, <a href="lib_shim_message-shim.js.html#line167">line 167</a>
     </li></ul></dd>
     
 
@@ -162,9 +441,13 @@
     <dt class="tag-see">See:</dt>
     <dd class="tag-see">
         <ul>
-            <li><a href="SegmentSpec.html">SegmentSpec</a></li>
-        
             <li><a href="RecorderSpec.html">RecorderSpec</a></li>
+        
+            <li><a href="MessageShim.html#recordProduce">MessageShim#recordProduce</a></li>
+        
+            <li><a href="MessageShim.html#recordConsume">MessageShim#recordConsume</a></li>
+        
+            <li><a href="MessageShim.html#.DESTINATION_TYPES">MessageShim.DESTINATION_TYPES</a></li>
         </ul>
     </dd>
     

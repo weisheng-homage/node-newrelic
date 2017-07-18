@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>RenderSpec - Documentation</title>
+    <title>MessageSubscribeSpec - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">RenderSpec</h1>
+    <h1 class="page-title">MessageSubscribeSpec</h1>
     
 
     
@@ -42,7 +42,7 @@
 <header>
     
         <h2>
-        RenderSpec
+        MessageSubscribeSpec
         </h2>
         
     
@@ -52,7 +52,8 @@
     <div class="container-overview">
     
         
-            <div class="description"><p>Describes the interface for render methods.</p></div>
+            <div class="description"><p>Specification for message subscriber methods. That is, methods which
+ register a consumer to start receiving messages.</p></div>
         
 
         
@@ -72,8 +73,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -86,7 +85,7 @@
 
         <tr>
             
-                <td class="name"><code>view</code></td>
+                <td class="name"><code>consumer</code></td>
             
 
             <td class="type">
@@ -99,19 +98,40 @@
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
+            
+
+            <td class="description last"><p>The index of the consumer in the method's arguments. Note that if the
+ consumer and callback indexes point to the same argument, the argument will
+ be wrapped as a consumer.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>messageHandler</code></td>
+            
+
+            <td class="type">
+            
                 
-                </td>
+<span class="param-type"><code><a href="global.html#MessageHandlerFunction">MessageHandlerFunction</a></code></span>
+
+
+            
+            </td>
+
             
 
             
 
-            <td class="description last"><p>Identifies which argument is the name of the view being rendered. Defaults
- to <a href="Shim.html#ARG_INDEXES"><code>shim.FIRST</code></a>.</p></td>
+            <td class="description last"><p>A function to extract message properties from a consumed message.
+ This method is only used in the consume case to pull data from the
+ retrieved message. Its return value is combined with the <code>MessageSubscribeSpec</code>
+ to fully describe the consumed message.</p></td>
         </tr>
 
         
@@ -152,7 +172,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line268">line 268</a>
+        <a href="lib_shim_message-shim.js.html">lib/shim/message-shim.js</a>, <a href="lib_shim_message-shim.js.html#line213">line 213</a>
     </li></ul></dd>
     
 
@@ -162,9 +182,11 @@
     <dt class="tag-see">See:</dt>
     <dd class="tag-see">
         <ul>
-            <li><a href="SegmentSpec.html">SegmentSpec</a></li>
+            <li><a href="MessageSpec.html">MessageSpec</a></li>
         
-            <li><a href="RecorderSpec.html">RecorderSpec</a></li>
+            <li><a href="global.html#MessageConsumerWrapperFunction">MessageConsumerWrapperFunction</a></li>
+        
+            <li><a href="MessageShim.html#recordSubscribedConsume">MessageShim#recordSubscribedConsume</a></li>
         </ul>
     </dd>
     
@@ -184,7 +206,7 @@
 
 
     <ul>
-        <li><a href="RecorderSpec.html">RecorderSpec</a></li>
+        <li><a href="MessageSpec.html">MessageSpec</a></li>
     </ul>
 
 

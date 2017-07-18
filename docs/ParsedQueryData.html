@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>RenderSpec - Documentation</title>
+    <title>ParsedQueryData - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">RenderSpec</h1>
+    <h1 class="page-title">ParsedQueryData</h1>
     
 
     
@@ -42,7 +42,7 @@
 <header>
     
         <h2>
-        RenderSpec
+        ParsedQueryData
         </h2>
         
     
@@ -52,7 +52,8 @@
     <div class="container-overview">
     
         
-            <div class="description"><p>Describes the interface for render methods.</p></div>
+            <div class="description"><p>Returned by a <a href="global.html#QueryParserFunction"><code>QueryParserFunction</code></a>, this information is used to
+ generate the name for recording datastore queries.</p></div>
         
 
         
@@ -86,13 +87,76 @@
 
         <tr>
             
-                <td class="name"><code>view</code></td>
+                <td class="name"><code>operation</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code>number</code></span>
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The datastore operation such as <code>SELECT</code> or <code>UPDATE</code>.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>collection</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The collection being queried. This would be the table name from a SQL
+ statement or the collection name in a MongoDB query.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
 
 
             
@@ -110,8 +174,7 @@
 
             
 
-            <td class="description last"><p>Identifies which argument is the name of the view being rendered. Defaults
- to <a href="Shim.html#ARG_INDEXES"><code>shim.FIRST</code></a>.</p></td>
+            <td class="description last"><p>The query with any sensitive information redacted and comments removed.</p></td>
         </tr>
 
         
@@ -152,7 +215,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line268">line 268</a>
+        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line265">line 265</a>
     </li></ul></dd>
     
 
@@ -162,9 +225,9 @@
     <dt class="tag-see">See:</dt>
     <dd class="tag-see">
         <ul>
-            <li><a href="SegmentSpec.html">SegmentSpec</a></li>
+            <li><a href="DatastoreShim.html#setParser">DatastoreShim#setParser</a></li>
         
-            <li><a href="RecorderSpec.html">RecorderSpec</a></li>
+            <li><a href="global.html#QueryParserFunction">QueryParserFunction</a></li>
         </ul>
     </dd>
     
@@ -176,17 +239,6 @@
         
     
     </div>
-
-    
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li><a href="RecorderSpec.html">RecorderSpec</a></li>
-    </ul>
-
 
     
 

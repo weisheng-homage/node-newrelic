@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>RenderSpec - Documentation</title>
+    <title>DatastoreParameters - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">RenderSpec</h1>
+    <h1 class="page-title">DatastoreParameters</h1>
     
 
     
@@ -42,7 +42,7 @@
 <header>
     
         <h2>
-        RenderSpec
+        DatastoreParameters
         </h2>
         
     
@@ -52,7 +52,8 @@
     <div class="container-overview">
     
         
-            <div class="description"><p>Describes the interface for render methods.</p></div>
+            <div class="description"><p>Extra parameters which may be added to an operation or query segment. All of
+ these properties are optional.</p></div>
         
 
         
@@ -72,8 +73,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -86,32 +85,79 @@
 
         <tr>
             
-                <td class="name"><code>view</code></td>
+                <td class="name"><code>host</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><code>number</code></span>
+<span class="param-type"><code>string</code></span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
+            
+
+            <td class="description last"><p>The host of the database server being interacted with. If provided, along
+ with <code>port_path_or_id</code>, then an instance metric will also be generated for
+ this database.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>port_path_or_id</code></td>
+            
+
+            <td class="type">
+            
                 
-                </td>
+<span class="param-type"><code>number</code></span>
+|
+
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
             
 
             
 
-            <td class="description last"><p>Identifies which argument is the name of the view being rendered. Defaults
- to <a href="Shim.html#ARG_INDEXES"><code>shim.FIRST</code></a>.</p></td>
+            <td class="description last"><p>The port number or path to domain socket used to connect to the database
+ server.</p></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>database_name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of the database being queried or operated on.</p></td>
         </tr>
 
         
@@ -152,7 +198,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_webframework-shim.js.html">lib/shim/webframework-shim.js</a>, <a href="lib_shim_webframework-shim.js.html#line268">line 268</a>
+        <a href="lib_shim_datastore-shim.js.html">lib/shim/datastore-shim.js</a>, <a href="lib_shim_datastore-shim.js.html#line242">line 242</a>
     </li></ul></dd>
     
 
@@ -162,9 +208,9 @@
     <dt class="tag-see">See:</dt>
     <dd class="tag-see">
         <ul>
-            <li><a href="SegmentSpec.html">SegmentSpec</a></li>
+            <li><a href="OperationSpec.html">OperationSpec</a></li>
         
-            <li><a href="RecorderSpec.html">RecorderSpec</a></li>
+            <li><a href="QuerySpec.html">QuerySpec</a></li>
         </ul>
     </dd>
     
@@ -176,17 +222,6 @@
         
     
     </div>
-
-    
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li><a href="RecorderSpec.html">RecorderSpec</a></li>
-    </ul>
-
 
     
 

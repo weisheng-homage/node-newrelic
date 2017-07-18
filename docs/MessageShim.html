@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>TransactionShim - Documentation</title>
+    <title>MessageShim - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">TransactionShim</h1>
+    <h1 class="page-title">MessageShim</h1>
     
 
     
@@ -42,10 +42,10 @@
 <header>
     
         <h2>
-        TransactionShim
+        MessageShim
         </h2>
         
-            <div class="class-description"><p>A helper class for working with transactions.</p></div>
+            <div class="class-description"><p>Used for instrumenting message broker client libraries.</p></div>
         
     
 </header>
@@ -60,14 +60,14 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="TransactionShim"><span class="type-signature"></span>new TransactionShim<span class="signature">(agent, moduleName, resolvedName)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="MessageShim"><span class="type-signature"></span>new MessageShim<span class="signature">(agent, moduleName, resolvedName)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Constructs a transaction managing shim.</p>
+    <p>Constructs a shim specialized for instrumenting message brokers.</p>
 </div>
 
 
@@ -103,7 +103,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line49">line 49</a>
+        <a href="lib_shim_message-shim.js.html">lib/shim/message-shim.js</a>, <a href="lib_shim_message-shim.js.html#line57">line 57</a>
     </li></ul></dd>
     
 
@@ -115,7 +115,7 @@
         <ul>
             <li><a href="Shim.html">Shim</a></li>
         
-            <li><a href="WebFrameworkShim.html">WebFrameworkShim</a></li>
+            <li><a href="TransactionShim.html">TransactionShim</a></li>
         </ul>
     </dd>
     
@@ -173,7 +173,7 @@
             
 
             <td class="description last">
-                <p>The agent the shim will use.</p>
+                <p>The agent this shim will use.</p>
                 
             </td>
         </tr>
@@ -260,7 +260,7 @@
 
 
     <ul>
-        <li><a href="Shim.html">Shim</a></li>
+        <li><a href="TransactionShim.html">TransactionShim</a></li>
     </ul>
 
 
@@ -276,6 +276,312 @@
 
     
         <h3 class="subsection-title">Members</h3>
+
+        
+            
+<div class="section-members">
+<h4 class="name" id=".DESTINATION_TYPES"><span class="type-signature">(static, readonly) </span>DESTINATION_TYPES<span class="type-signature"> :string</span></h4>
+
+
+
+
+<div class="description">
+    <p>Enumeration of possible message broker destination types.</p>
+</div>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>EXCHANGE</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>QUEUE</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+        
+
+    
+
+        <tr>
+            
+                <td class="name"><code>TOPIC</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+        
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_message-shim.js.html">lib/shim/message-shim.js</a>, <a href="lib_shim_message-shim.js.html#line30">line 30</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><code>string</code></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</div>
+
+        
+            
+<div class="section-members">
+<h4 class="name" id=".LIBRARY_NAMES"><span class="type-signature">(static, readonly) </span>LIBRARY_NAMES<span class="type-signature"> :string</span></h4>
+
+
+
+
+<div class="description">
+    <p>Enumeration of well-known message brokers.</p>
+</div>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>RABBITMQ</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+        
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_message-shim.js.html">lib/shim/message-shim.js</a>, <a href="lib_shim_message-shim.js.html#line19">line 19</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><code>string</code></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</div>
 
         
             
@@ -1424,6 +1730,11 @@ invoked.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TransactionShim.html#bindCreateTransaction">TransactionShim#bindCreateTransaction</a>
+    </li></ul></dd>
     
 
     
@@ -3074,6 +3385,11 @@ active segment if no object is given.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TransactionShim.html#insertCATReplyHeader">TransactionShim#insertCATReplyHeader</a>
+    </li></ul></dd>
+    
 
     
 
@@ -3271,6 +3587,11 @@ active segment if no object is given.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TransactionShim.html#insertCATRequestHeaders">TransactionShim#insertCATRequestHeaders</a>
+    </li></ul></dd>
     
 
     
@@ -5596,6 +5917,11 @@ this function, but we do not live in an ideal world.</p>
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TransactionShim.html#popTransactionName">TransactionShim#popTransactionName</a>
+    </li></ul></dd>
+    
 
     
 
@@ -5947,6 +6273,11 @@ back off when resolution exits the item.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TransactionShim.html#pushTransactionName">TransactionShim#pushTransactionName</a>
+    </li></ul></dd>
     
 
     
@@ -6320,6 +6651,1144 @@ back off when resolution exits the item.</p>
 
 <div class="param-desc">
     <p>The first parameter, possibly wrapped.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="recordConsume"><span class="type-signature"></span>recordConsume<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, spec)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Wraps the given properties as message consumers to be recorded.</p>
+<ul>
+<li><code>recordConsume(nodule, properties, spec)</code></li>
+<li><code>recordConsume(func, spec)</code></li>
+</ul>
+<p>The resulting wrapped methods will record their executions using the messaging
+<code>CONSUME</code> metric, possibly also starting a message transaction. Note that
+this should wrap the message <em>consumer</em>, to record methods which subscribe
+consumers see <a href="MessageShim.html#recordSubscribedConsume"><code>MessageShim#recordSubscribedConsume</code></a></p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_message-shim.js.html">lib/shim/message-shim.js</a>, <a href="lib_shim_message-shim.js.html#line366">line 366</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Shim.html#wrap">Shim#wrap</a></li>
+        
+            <li><a href="Shim.html#record">Shim#record</a></li>
+        
+            <li><a href="MessageShim.html#recordSubscribedConsume">MessageShim#recordSubscribedConsume</a></li>
+        
+            <li><a href="MessageSpec.html">MessageSpec</a></li>
+        
+            <li><a href="global.html#MessageFunction">MessageFunction</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The source for the properties to wrap, or a single function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>Array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>One or more properties to wrap. If omitted, the <code>nodule</code> parameter is
+ assumed to be the function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>spec</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="MessageSpec.html">MessageSpec</a></code></span>
+|
+
+<span class="param-type"><code><a href="global.html#MessageFunction">MessageFunction</a></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The spec for the method or a function which returns the details of the
+ method.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>Object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The first parameter to this function, after
+ wrapping it or its properties.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="recordProduce"><span class="type-signature"></span>recordProduce<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, recordNamer)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Wraps the given properties as message producing methods to be recorded.</p>
+<ul>
+<li><code>recordProduce(nodule, properties, recordNamer)</code></li>
+<li><code>recordProduce(func, recordNamer)</code></li>
+</ul>
+<p>The resulting wrapped methods will record their executions using the messaging
+<code>PRODUCE</code> metric.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_message-shim.js.html">lib/shim/message-shim.js</a>, <a href="lib_shim_message-shim.js.html#line297">line 297</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Shim.html#wrap">Shim#wrap</a></li>
+        
+            <li><a href="Shim.html#record">Shim#record</a></li>
+        
+            <li><a href="MessageSpec.html">MessageSpec</a></li>
+        
+            <li><a href="global.html#MessageFunction">MessageFunction</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The source for the properties to wrap, or a single function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>Array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>One or more properties to wrap. If omitted, the <code>nodule</code> parameter is
+ assumed to be the function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>recordNamer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="global.html#MessageFunction">MessageFunction</a></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>A function which specifies details of the message.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>Object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The first parameter to this function, after
+ wrapping it or its properties.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="recordPurgeQueue"><span class="type-signature"></span>recordPurgeQueue<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, spec)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Wraps the given properties as queue purging methods.</p>
+<ul>
+<li><code>recordPurgeQueue(nodule, properties, spec)</code></li>
+<li><code>recordPurgeQueue(func, spec)</code></li>
+</ul>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_message-shim.js.html">lib/shim/message-shim.js</a>, <a href="lib_shim_message-shim.js.html#line495">line 495</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Shim.html#wrap">Shim#wrap</a></li>
+        
+            <li><a href="Shim.html#record">Shim#record</a></li>
+        
+            <li><a href="RecorderSpec.html">RecorderSpec</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The source for the properties to wrap, or a single function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>Array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>One or more properties to wrap. If omitted, the <code>nodule</code> parameter is
+ assumed to be the function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>spec</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="RecorderSpec.html">RecorderSpec</a></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The specification for this queue purge method's interface.</p>
+                
+                    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>queue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name of the queue being purged.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>Object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The first parameter to this function, after
+ wrapping it or its properties.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="recordSubscribedConsume"><span class="type-signature"></span>recordSubscribedConsume<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, spec)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Wraps the given properties as message subscription methods.</p>
+<ul>
+<li><code>recordSubscribedConsume(nodule, properties, spec)</code></li>
+<li><code>recordSubscribedConsume(func, spec)</code></li>
+</ul>
+<p>Message subscriber methods are ones used to register a message consumer with
+the message library. See <a href="MessageShim.html#recordConsume"><code>MessageShim#recordConsume</code></a> for recording
+the consumer itself.</p>
+<p>Note that unlike most <code>shim.recordX</code> methods, this method will call the
+<code>spec.wrapper</code> method even if no transaction is active.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_message-shim.js.html">lib/shim/message-shim.js</a>, <a href="lib_shim_message-shim.js.html#line577">line 577</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Shim.html#wrap">Shim#wrap</a></li>
+        
+            <li><a href="Shim.html#record">Shim#record</a></li>
+        
+            <li><a href="MessageShim.html#recordConsume">MessageShim#recordConsume</a></li>
+        
+            <li><a href="MessageSubscribeSpec.html">MessageSubscribeSpec</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The source for the properties to wrap, or a single function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>Array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>One or more properties to wrap. If omitted, the <code>nodule</code> parameter is
+ assumed to be the function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>spec</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="MessageSubscribeSpec.html">MessageSubscribeSpec</a></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The specification for this subscription method's interface.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>Object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The first parameter to this function, after
+ wrapping it or its properties.</p>
 </div>
 
     
@@ -6766,6 +8235,154 @@ be made writable and non-enumerable.</p>
 
     
 
+    <h4 class="name" id="setLibrary"><span class="type-signature"></span>setLibrary<span class="signature">(library)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Sets the vendor of the message broker being instrumented.</p>
+<p>This is used to generate the names for metrics and segments. If a string is
+passed, metric names will be generated using that.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_message-shim.js.html">lib/shim/message-shim.js</a>, <a href="lib_shim_message-shim.js.html#line253">line 253</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="MessageShim.html#.LIBRARY_NAMES">MessageShim.LIBRARY_NAMES</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>library</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code><a href="MessageShim.html#.LIBRARY_NAMES">MessageShim.LIBRARY_NAMES</a></code></span>
+|
+
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The name of the message broker library. Use one of the well-known constants
+ listed in <a href="MessageShim.html#.LIBRARY_NAMES"><code>MessageShim.LIBRARY_NAMES</code></a> if available for the library.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
     <h4 class="name" id="setTransactionName"><span class="type-signature"></span>setTransactionName<span class="signature">(name)</span><span class="type-signature"></span></h4>
 
     
@@ -6790,6 +8407,11 @@ be made writable and non-enumerable.</p>
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="TransactionShim.html#setTransactionName">TransactionShim#setTransactionName</a>
+    </li></ul></dd>
     
 
     
