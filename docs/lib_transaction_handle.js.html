@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>TransactionSpec - Documentation</title>
+    <title>lib/transaction/handle.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,222 +29,65 @@
 
 <div id="main">
     
-    <h1 class="page-title">TransactionSpec</h1>
+    <h1 class="page-title">lib/transaction/handle.js</h1>
     
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2>
-        TransactionSpec
-        </h2>
-        
-    
-</header>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict'
+var logger = require('../logger').child({component: 'transactionHandle'})
+module.exports = TransactionHandle
+module.exports.stub = {
+  end: function endNoTransaction(callback) {
+    if (callback instanceof Function) {
+      setImmediate(callback)
+    }
+    logger.debug("No transaction found when calling Transaction.end")
+  },
+  ignore: function ignoreNoTransaction() {
+    logger.debug("No transaction found when calling Transaction.ignore")
+  }
+}
 
-<article>
-    <div class="container-overview">
-    
-        
-            <div class="description"><p>Describes the type of transaction to be created by the function being
- wrapped by <code>Shim#bindCreateTransaction</code>.</p></div>
-        
+/**
+ * A light representation of a transaction instance, returned by calling
+ * {@link API#getTransaction}.
+ *
+ * @constructor
+ */
+function TransactionHandle(transaction) {
+  this._transaction = transaction
+}
 
-        
+/**
+ * End the transaction.
+ *
+ * @param  {Function} callback
+ */
+TransactionHandle.prototype.end = function handleEnd(callback) {
+  if (!this._transaction.name) {
+    this._transaction.finalizeName(null) // Use existing partial name.
+  }
+  if (this._transaction.baseSegment) {
+    this._transaction.baseSegment.touch()
+  }
+  this._transaction.end(callback)
+}
 
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>type</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>The type of transaction to create. Must be one of the values from
- <code>Shim#TRANSACTION_TYPES</code>.</p></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>nest</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last"><p>Indicates if the transaction being created is allowed to be nested within
- another transaction of the same type. If <code>false</code>, the default, the transaction
- will only be created if there is no existing transaction, or the current
- transaction is of a different type. If <code>true</code>, the transaction will be
- created regardless of the current transaction's type.</p></td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line82">line 82</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>Shim#bindCreateTransaction</li>
-        
-            <li>Shim#TRANSACTION_TYPES</li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-
-     
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+/**
+ * Mark the transaction to be ignored.
+ */
+TransactionHandle.prototype.ignore = function handleIgnore() {
+  this._transaction.setForceIgnore(true)
+}
+</code></pre>
+        </article>
+    </section>
 
 
 
@@ -254,7 +97,7 @@
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Mon Aug 07 2017 15:04:00 GMT-0700 (PDT) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.4</a> on Mon Aug 07 2017 15:03:59 GMT-0700 (PDT) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

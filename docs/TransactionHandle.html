@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>TransactionSpec - Documentation</title>
+    <title>TransactionHandle - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">TransactionSpec</h1>
+    <h1 class="page-title">TransactionHandle</h1>
     
 
     
@@ -42,7 +42,7 @@
 <header>
     
         <h2>
-        TransactionSpec
+        TransactionHandle
         </h2>
         
     
@@ -52,121 +52,21 @@
     <div class="container-overview">
     
         
-            <div class="description"><p>Describes the type of transaction to be created by the function being
- wrapped by <code>Shim#bindCreateTransaction</code>.</p></div>
-        
-
-        
-
-
-    <h5 class="subsection-title">Properties:</h5>
+<div class="section-method">
 
     
 
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>type</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>The type of transaction to create. Must be one of the values from
- <code>Shim#TRANSACTION_TYPES</code>.</p></td>
-        </tr>
-
-        
+    <h4 class="name" id="TransactionHandle"><span class="type-signature"></span>new TransactionHandle<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
-        <tr>
-            
-                <td class="name"><code>nest</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
 
 
-            
-            </td>
+<div class="description">
+    <p>A light representation of a transaction instance, returned by calling
+<a href="API.html#getTransaction"><code>API#getTransaction</code></a>.</p>
+</div>
 
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last"><p>Indicates if the transaction being created is allowed to be nested within
- another transaction of the same type. If <code>false</code>, the default, the transaction
- will only be created if there is no existing transaction, or the current
- transaction is of a different type. If <code>true</code>, the transaction will be
- created regardless of the current transaction's type.</p></td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
 
 
 
@@ -200,28 +100,40 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line82">line 82</a>
+        <a href="lib_transaction_handle.js.html">lib/transaction/handle.js</a>, <a href="lib_transaction_handle.js.html#line22">line 22</a>
     </li></ul></dd>
     
 
     
 
     
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>Shim#bindCreateTransaction</li>
-        
-            <li>Shim#TRANSACTION_TYPES</li>
-        </ul>
-    </dd>
-    
 
     
 </dl>
 
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
     
     </div>
 
@@ -237,6 +149,228 @@
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="end"><span class="type-signature"></span>end<span class="signature">(callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>End the transaction.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_transaction_handle.js.html">lib/transaction/handle.js</a>, <a href="lib_transaction_handle.js.html#line31">line 31</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="ignore"><span class="type-signature"></span>ignore<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Mark the transaction to be ignored.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_transaction_handle.js.html">lib/transaction/handle.js</a>, <a href="lib_transaction_handle.js.html#line44">line 44</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
     
 
     
