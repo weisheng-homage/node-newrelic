@@ -1,4 +1,34 @@
 
+### v2.0.2 (2017-08-01)
+* Improved documentation for `newrelic.start*Transaction` and `TransactionHandle.`
+
+  Formatting for the `startWebTransaction` and `startBackgroundTransaction`
+  methods was fixed and documentation for the `TransactionHandle` class which
+  `getTransaction` returns was added.
+
+* Fixed parsing the table name from SQL queries.
+
+  Quotes around the table name are now stripped after parsing the query and
+  before constructing the metrics.
+
+* Fixed unhandled rejection error caused by `ioredis` instrumentation.
+
+### v2.0.1 (2017-07-25)
+* Fixed issue with transaction events not including correct duration values.
+
+  This issue was introduced in v2.0.0, and it has affected web transactions histogram
+  and percentile charts.
+
+* Fixed issue with Redis instrumentation causing the agent to crash in some cases.
+
+  Previously, the Redis instrumentation would crash the agent when Redis commands were
+  called without a callback and after the transaction has ended.
+
+* Fixed issue with the agent crashing on Node v4.0-4.4 and v5.0-5.9.
+
+  This issue was caused by incorrect shim for Buffer.from(), and it affected older minor
+  versions of Node v4 and v5.
+
 ### v2.0.0 (2017-07-17):
 * [The New Relic Node Agent v2 is here!](https://blog.newrelic.com/2017/07/18/nodejs-agent-v2-api/)
 
