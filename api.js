@@ -91,6 +91,7 @@ API.prototype.setTransactionName = function setTransactionName(name) {
     return
   }
 
+  logger.trace('Setting transaction %s name to %s', transaction.id, name)
   transaction.forceName = NAMES.CUSTOM + '/' + name
 }
 
@@ -623,8 +624,7 @@ API.prototype.createTracer = function createTracer(name, callback) {
 }
 
 API.prototype.createWebTransaction = util.deprecate(
-  createWebTransaction,
-  [
+  createWebTransaction, [
     'API#createWebTransaction is being deprecated!',
     'Please use API#startWebTransaction for transaction creation',
     'and API#getTransaction for transaction management including',
@@ -884,8 +884,7 @@ function startBackgroundTransaction(name, group, handle) {
 }
 
 API.prototype.createBackgroundTransaction = util.deprecate(
-  createBackgroundTransaction,
-  [
+  createBackgroundTransaction, [
     'API#createBackgroundTransaction is being deprecated!',
     'Please use API#startBackgroundTransaction for transaction creation',
     'and API#getTransaction for transaction management including',
@@ -1074,7 +1073,7 @@ API.prototype.recordMetric = function recordMetric(name, value) {
 
   for (var i = 0, l = required.length; i < l; ++i) {
     if (typeof value[required[i]] !== 'number') {
-      logger.warn('Metric object must include ' + required[i] + ' as a number')
+      logger.warn('Metric object must include %s as a number', required[i])
       return
     }
 
