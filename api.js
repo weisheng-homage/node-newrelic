@@ -4,15 +4,15 @@ var arity = require('./lib/util/arity')
 var util = require('util')
 var logger = require('./lib/logger').child({component: 'api'})
 var NAMES = require('./lib/metrics/names')
-var recordWeb = require('./lib/metrics/recorders/http.js')
-var recordBackground = require('./lib/metrics/recorders/other.js')
+var recordWeb = require('./lib/metrics/recorders/http')
+var recordBackground = require('./lib/metrics/recorders/other')
 var customRecorder = require('./lib/metrics/recorders/custom')
 var hashes = require('./lib/util/hashes')
 var properties = require('./lib/util/properties')
 var stringify = require('json-stringify-safe')
-var shimmer = require('./lib/shimmer.js')
-var Shim = require('./lib/shim/shim.js')
-var TransactionHandle = require('./lib/transaction/handle.js')
+var shimmer = require('./lib/shimmer')
+var Shim = require('./lib/shim/shim')
+var TransactionHandle = require('./lib/transaction/handle')
 
 var MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 
@@ -203,96 +203,158 @@ API.prototype.setControllerName = function setControllerName(name, action) {
   transaction.forceName = NAMES.CONTROLLER + '/' + name + '/' + action
 }
 
+
 /**
- * Add a custom parameter to the current transaction. Some parameters are
- * reserved (see CUSTOM_BLACKLIST for the current, very short list), and
- * as with most API methods, this must be called in the context of an
- * active transaction. Most recently set value wins.
- *
- * @param {string} name  The name you want displayed in the RPM UI.
- * @param {string} value The value you want displayed. Must be serializable.
+ * Deprecated. Please use `addCustomAttribute` instead.
+ * TODO: remove in v4
  */
-API.prototype.addCustomParameter = function addCustomParameter(name, value) {
+API.prototype.addCustomParameter = util.deprecate(
+  addCustomParameter, [
+    'API#addCustomParameter is being deprecated!',
+    'Please use API#addCustomAttribute instead.'
+  ].join(' ')
+)
+function addCustomParameter(key, value) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/addCustomParameter'
   )
   metric.incrementCallCount()
 
-  // If high security mode is on, custom params are disabled.
+  // If high security mode is on, custom attributes are disabled.
   if (this.agent.config.high_security === true) {
     logger.warnOnce(
-      "Custom params",
-      "Custom parameters are disabled by high security mode."
+      'Custom attributes',
+      'Custom attributes are disabled by high security mode.'
     )
     return false
-  } else if (!this.agent.config.api.custom_parameters_enabled) {
+  } else if (!this.agent.config.api.custom_attributes_enabled) {
     logger.debug(
-      "Config.api.custom_parameters_enabled set to false, not collecting value"
+      'Config.api.custom_attributes_enabled set to false, not collecting value'
     )
     return false
   }
 
-  var ignored = this.agent.config.ignored_params || []
-
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
-    return logger.warn("No transaction found for custom parameters.")
+    return logger.warn('No transaction found for custom attributes.')
   }
 
   var trace = transaction.trace
   if (!trace.custom) {
     return logger.warn(
-      "Couldn't add parameter %s to nonexistent custom parameters.",
-      name
+      'Could not add attribute %s to nonexistent custom attributes.',
+      key
     )
   }
 
-  if (CUSTOM_BLACKLIST.indexOf(name) !== -1) {
-    return logger.warn("Not overwriting value of NR-only parameter %s.", name)
+  if (CUSTOM_BLACKLIST.indexOf(key) !== -1) {
+    return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
-  if (ignored.indexOf(name) !== -1) {
-    return logger.warn("Not setting ignored parameter name %s.", name)
-  }
+  trace.addCustomAttribute(key, value, logger)
+}
 
-  if (name in trace.custom) {
+
+/**
+ * Add a custom attribute to the current transaction. Some attributes are
+ * reserved (see CUSTOM_BLACKLIST for the current, very short list), and
+ * as with most API methods, this must be called in the context of an
+ * active transaction. Most recently set value wins.
+ *
+ * @param {string} key  The key you want displayed in the RPM UI.
+ * @param {string} value The value you want displayed. Must be serializable.
+ */
+API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/addCustomAttribute'
+  )
+  metric.incrementCallCount()
+
+  // If high security mode is on, custom attributes are disabled.
+  if (this.agent.config.high_security === true) {
+    logger.warnOnce(
+      'Custom attributes',
+      'Custom attributes are disabled by high security mode.'
+    )
+    return false
+  } else if (!this.agent.config.api.custom_attributes_enabled) {
     logger.debug(
-      "Changing custom parameter %s from %s to %s.",
-      name,
-      trace.custom[name],
-      value
+      'Config.api.custom_attributes_enabled set to false, not collecting value'
+    )
+    return false
+  }
+
+  var transaction = this.agent.tracer.getTransaction()
+  if (!transaction) {
+    return logger.warn('No transaction found for custom attributes.')
+  }
+
+  var trace = transaction.trace
+  if (!trace.custom) {
+    return logger.warn(
+      'Could not add attribute %s to nonexistent custom attributes.',
+      key
     )
   }
 
-  trace.custom[name] = value
+  if (CUSTOM_BLACKLIST.indexOf(key) !== -1) {
+    return logger.warn('Not overwriting value of NR-only attribute %s.', key)
+  }
+
+  trace.addCustomAttribute(key, value)
 }
 
 /**
- * Adds all custom parameters in an object to the current transaction.
- *
- * See documentation for newrelic.addCustomParameter for more information on
- * setting custom parameters.
- *
- * An example of setting a custom parameter object:
- *
- *    newrelic.addCustomParameters({test: 'value', test2: 'value2'});
- *
- * @param {object} [params]
- * @param {string} [params.KEY] The name you want displayed in the RPM UI.
- * @param {string} [params.KEY.VALUE] The value you want displayed. Must be serializable.
+ * Deprecated. Please use `addCustomAttributes` instead.
+ * TODO: remove in v4
  */
-API.prototype.addCustomParameters = function addCustomParameters(params) {
+API.prototype.addCustomParameters = util.deprecate(
+  addCustomParameters, [
+    '`API#addCustomParameters` has been deprecated!',
+    'Please use `API#addCustomAttributes` instead.'
+  ].join(' ')
+)
+function addCustomParameters(atts) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/addCustomParameters'
   )
   metric.incrementCallCount()
 
-  for (var key in params) {
-    if (!properties.hasOwn(params, key)) {
+  for (var key in atts) {
+    if (!properties.hasOwn(atts, key)) {
       continue
     }
 
-    this.addCustomParameter(key, params[key])
+    this.addCustomAttribute(key, atts[key])
+  }
+}
+
+/**
+ * Adds all custom attributes in an object to the current transaction.
+ *
+ * See documentation for newrelic.addCustomAttribute for more information on
+ * setting custom attributes.
+ *
+ * An example of setting a custom attribute object:
+ *
+ *    newrelic.addCustomAttributes({test: 'value', test2: 'value2'});
+ *
+ * @param {object} [atts]
+ * @param {string} [atts.KEY] The name you want displayed in the RPM UI.
+ * @param {string} [atts.KEY.VALUE] The value you want displayed. Must be serializable.
+ */
+API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
+  var metric = this.agent.metrics.getOrCreateMetric(
+    NAMES.SUPPORTABILITY.API + '/addCustomAttributes'
+  )
+  metric.incrementCallCount()
+
+  for (var key in atts) {
+    if (!properties.hasOwn(atts, key)) {
+      continue
+    }
+
+    this.addCustomAttribute(key, atts[key])
   }
 }
 
@@ -331,10 +393,10 @@ API.prototype.setIgnoreTransaction = function setIgnoreTransaction(ignored) {
  * @param {Error} error
  *  The error to be traced.
  *
- * @param {object} [customParameters]
- *  Optional. Any custom parameters to be displayed in the New Relic UI.
+ * @param {object} [customAttributes]
+ *  Optional. Any custom attributes to be displayed in the New Relic UI.
  */
-API.prototype.noticeError = function noticeError(error, customParameters) {
+API.prototype.noticeError = function noticeError(error, customAttributes) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/noticeError'
   )
@@ -343,21 +405,23 @@ API.prototype.noticeError = function noticeError(error, customParameters) {
   // If high security mode is on, noticeError is disabled.
   if (this.agent.config.high_security === true) {
     logger.warnOnce(
-      "Notice Error",
-      "Notice error API are disabled by high security mode."
+      'Notice Error',
+      'Notice error API is disabled by high security mode.'
     )
     return false
   } else if (!this.agent.config.api.notice_error_enabled) {
     logger.debug(
-      "Config.api.notice_error_enabled set to false, not collecting error"
+      'Config.api.notice_error_enabled set to false, not collecting error'
     )
     return false
   }
 
-  if (typeof error === 'string') error = new Error(error)
+  if (typeof error === 'string') {
+    error = new Error(error)
+  }
   var transaction = this.agent.tracer.getTransaction()
 
-  this.agent.errors.addUserError(transaction, error, customParameters)
+  this.agent.errors.addUserError(transaction, error, customAttributes)
 }
 
 /**
@@ -505,7 +569,7 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
 
   /* This is only going to work if the agent has successfully handshaked with
    * the collector. If the networks is bad, or there is no license key set in
-   * newrelis.js, there will be no application_id set.  We bail instead of
+   * newrelic.js, there will be no application_id set.  We bail instead of
    * outputting null/undefined configuration values.
    */
   if (!appid) return _gracefail(4)
@@ -760,9 +824,19 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
 
   var shim = this.shim
   var tracer = this.agent.tracer
+  var parent = tracer.getTransaction()
 
   return tracer.transactionNestProxy('web', function startWebSegment() {
     var tx = tracer.getTransaction()
+
+    if (tx === parent) {
+      logger.debug(
+        'not creating nested transaction %s using transaction %s',
+        url,
+        tx.id
+      )
+      return tracer.addSegment(url, null, null, true, handle)
+    }
 
     logger.debug(
       'creating web transaction %s (%s) with transaction id: %s',
@@ -781,6 +855,7 @@ API.prototype.startWebTransaction = function startWebTransaction(url, handle) {
     if (returnResult && shim.isPromise(returnResult)) {
       returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
     } else if (!tx.handledExternally) {
+      logger.debug('Ending unhandled web transaction immediately.')
       tx.end()
     }
     return returnResult
@@ -855,9 +930,19 @@ function startBackgroundTransaction(name, group, handle) {
   var tracer = this.agent.tracer
   var shim = this.shim
   var txName = group + '/' + name
+  var parent = tracer.getTransaction()
 
   return tracer.transactionNestProxy('bg', function startBackgroundSegment() {
     var tx = tracer.getTransaction()
+
+    if (tx === parent) {
+      logger.debug(
+        'not creating nested transaction %s using transaction %s',
+        txName,
+        tx.id
+      )
+      return tracer.addSegment(txName, null, null, true, handle)
+    }
 
     logger.debug(
       'creating background transaction %s:%s (%s) with transaction id: %s',
@@ -877,6 +962,7 @@ function startBackgroundTransaction(name, group, handle) {
     if (returnResult && shim.isPromise(returnResult)) {
       returnResult = shim.interceptPromise(returnResult, tx.end.bind(tx))
     } else if (!tx.handledExternally) {
+      logger.debug('Ending unhandled background transaction immediately.')
       tx.end()
     }
     return returnResult
@@ -1017,8 +1103,8 @@ API.prototype.endTransaction = function endTransaction() {
       }
       tx.baseSegment.end()
     }
-    logger.debug('ending transaction with id: %s and name: %s', tx.id, tx.name)
     tx.end()
+    logger.debug('ended transaction with id: %s and name: %s', tx.id, tx.name)
   } else {
     logger.debug('endTransaction() called while not in a transaction.')
   }
@@ -1055,6 +1141,7 @@ API.prototype.recordMetric = function recordMetric(name, value) {
     return
   }
 
+  // TODO: In Agent v3 prefix custom metrics with `Custom/`.
   var metric = this.agent.metrics.getOrCreateMetric(name)
 
   if (typeof value === 'number') {

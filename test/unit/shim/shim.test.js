@@ -6,6 +6,7 @@ var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 var Promise = global.Promise || require('bluebird')
 var semver = require('semver')
+var sinon = require('sinon')
 var Shim = require('../../../lib/shim/shim')
 
 
@@ -163,6 +164,20 @@ describe('Shim', function() {
       })
     })
 
+    it('should match the arity and name of the original when specified', function() {
+      function toWrap(a, b) {} // eslint-disable-line no-unused-vars
+      var wrapped = shim.wrap(toWrap, {
+        wrapper: function() {
+          return function wrappedFn() {
+          }
+        },
+        matchArity: true
+      })
+      expect(wrapped).to.not.equal(toWrap)
+      expect(wrapped.length).to.equal(toWrap.length)
+      expect(wrapped.name).to.equal(toWrap.name)
+    })
+
     it('should pass items in the `args` parameter to the spec', function() {
       /* eslint-disable max-params */
       shim.wrap(wrappable, function(_shim, toWrap, name, arg1, arg2, arg3) {
@@ -254,16 +269,16 @@ describe('Shim', function() {
     describe('with a function', function() {
       var wrapper = null
       beforeEach(function() {
-        wrapper = function wrapperFunc() {}
+        wrapper = function wrapperFunc() {return function wrapped() {}}
         shim.wrap(wrappable, 'bar', wrapper)
       })
 
-      it('should maintain the name', function() {
-        expect(wrappable.bar).to.have.property('name', 'barsName')
+      it('should not maintain the name', function() {
+        expect(wrappable.bar).to.have.property('name', 'wrapped')
       })
 
-      it('should maintain the arity', function() {
-        expect(wrappable.bar).to.have.length(2)
+      it('should not maintain the arity', function() {
+        expect(wrappable.bar).to.have.length(0)
       })
     })
   })
@@ -562,9 +577,7 @@ describe('Shim', function() {
         shim.wrapClass(toWrap, 'Foo', {
           pre: function() {
             preExecuted = true
-            expect(this).to.not.have.property('executed')
-            expect(this).to.be.an.instanceOf(toWrap.Foo)
-            expect(this).to.be.an.instanceOf(original)
+            expect(this).to.be.null()
           },
           post: function() {
             postExecuted = true
@@ -705,6 +718,24 @@ describe('Shim', function() {
         toWrap = null
       })
 
+      it('should make the segment translucent when `end` is emitted', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', stream: true, opaque: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.equal(stream)
+        })
+
+        expect(stream.segment.opaque).to.be.true()
+        setTimeout(function() {
+          stream.emit('end')
+          expect(stream.segment.opaque).to.be.false()
+          done()
+        }, 5)
+      })
+
       it('should touch the segment when `end` is emitted', function(done) {
         var wrapped = shim.record(toWrap, function() {
           return {name: 'test segment', stream: true}
@@ -719,6 +750,25 @@ describe('Shim', function() {
         setTimeout(function() {
           stream.emit('end')
           expect(stream.segment.timer.getDurationInMillis()).to.be.above(oldDur)
+          done()
+        }, 5)
+      })
+
+      it('should make the segment translucent when `error` is emitted', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', stream: true, opaque: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.equal(stream)
+        })
+
+        stream.on('error', function() {}) // to prevent the error being thrown
+        expect(stream.segment.opaque).to.be.true()
+        setTimeout(function() {
+          stream.emit('error', 'foobar')
+          expect(stream.segment.opaque).to.be.false()
           done()
         }, 5)
       })
@@ -837,6 +887,29 @@ describe('Shim', function() {
         toWrap = null
       })
 
+      it('should make the segment translucent when promise resolves', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', promise: true, opaque: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
+
+          ret.then(function(val) {
+            expect(result).to.equal(val)
+            expect(promise.segment.opaque).to.be.false()
+            done()
+          }).catch(done)
+        })
+
+        expect(promise.segment.opaque).to.be.true()
+        var result = {}
+        setTimeout(function() {
+          promise.resolve(result)
+        }, 5)
+      })
+
       it('should touch the segment when promise resolves', function(done) {
         var wrapped = shim.record(toWrap, function() {
           return {name: 'test segment', promise: true}
@@ -857,6 +930,31 @@ describe('Shim', function() {
         var result = {}
         setTimeout(function() {
           promise.resolve(result)
+        }, 5)
+      })
+
+      it('should make the segment translucent when promise rejects', function(done) {
+        var wrapped = shim.record(toWrap, function() {
+          return {name: 'test segment', promise: true, opaque: true}
+        })
+
+        helper.runInTransaction(agent, function() {
+          var ret = wrapped()
+          expect(ret).to.be.instanceOf(Object.getPrototypeOf(promise).constructor)
+
+          ret.then(function() {
+            done(new Error('Should not have resolved!'))
+          }, function(err) {
+            expect(err).to.equal(result)
+            expect(promise.segment.opaque).to.be.false()
+            done()
+          }).catch(done)
+        })
+
+        expect(promise.segment.opaque).to.be.true()
+        var result = {}
+        setTimeout(function() {
+          promise.reject(result)
         }, 5)
       })
 
@@ -931,14 +1029,14 @@ describe('Shim', function() {
           expect(executed).to.be.true()
         })
 
-        it('should not invoke the spec', function() {
+        it('should still invoke the spec', function() {
           var executed = false
           shim.record(wrappable, 'bar', function() {
             executed = true
           })
 
           wrappable.bar('a', 'b', 'c')
-          expect(executed).to.be.false()
+          expect(executed).to.be.true()
         })
 
         it('should not bind the callback if there is one', function() {
@@ -1087,7 +1185,7 @@ describe('Shim', function() {
           })
         })
 
-        it('should not invoke the spec', function() {
+        it('should still invoke the spec', function() {
           var executed = false
           shim.record(wrappable, 'bar', function() {
             executed = true
@@ -1096,7 +1194,7 @@ describe('Shim', function() {
           helper.runInTransaction(agent, function(tx) {
             tx.end()
             wrappable.bar('a', 'b', 'c')
-            expect(executed).to.be.false()
+            expect(executed).to.be.true()
           })
         })
 
@@ -1254,6 +1352,82 @@ describe('Shim', function() {
     })
   })
 
+  describe('#unwrapOnce', function() {
+    var original
+    var wrapped
+
+    beforeEach(function() {
+      original = function() {}
+      wrapped = shim.wrap(original, function() { return function() {} })
+      shim.wrap(wrappable, ['bar', 'fiz', 'getActiveSegment'], function() {
+        return function() {}
+      })
+    })
+
+    it('should not error if the item is not wrapped', function() {
+      expect(function() {
+        shim.unwrapOnce(original)
+      }).to.not.throw()
+      expect(shim.unwrapOnce(original)).to.equal(original)
+    })
+
+    it('should not fully unwrap multiple nested wrappers', function() {
+      for (var i = 0; i < 10; ++i) {
+        wrapped = shim.wrap(wrapped, function() { return function() {} })
+      }
+
+      expect(wrapped).to.not.equal(original)
+      expect(wrapped.__NR_original).to.not.equal(original)
+      expect(shim.unwrapOnce(wrapped)).to.not.equal(original)
+    })
+
+    describe('with no properties', function() {
+      it('should unwrap the first parameter', function() {
+        expect(shim.unwrapOnce(wrapped)).to.equal(original)
+      })
+
+      it('should not error if `nodule` is `null`', function() {
+        expect(function() {
+          shim.unwrapOnce(null)
+        }).to.not.throw()
+      })
+    })
+
+    describe('with properties', function() {
+      it('should accept a single property', function() {
+        expect(shim.isWrapped(wrappable.bar)).to.be.true()
+        expect(function() {
+          shim.unwrapOnce(wrappable, 'bar')
+        }).to.not.throw()
+        expect(shim.isWrapped(wrappable.bar)).to.be.false()
+      })
+
+      it('should accept an array of properties', function() {
+        expect(shim.isWrapped(wrappable.bar)).to.be.true()
+        expect(shim.isWrapped(wrappable.fiz)).to.be.true()
+        expect(shim.isWrapped(wrappable.getActiveSegment)).to.be.true()
+        expect(function() {
+          shim.unwrapOnce(wrappable, ['bar', 'fiz', 'getActiveSegment'])
+        }).to.not.throw()
+        expect(shim.isWrapped(wrappable.bar)).to.be.false()
+        expect(shim.isWrapped(wrappable.fiz)).to.be.false()
+        expect(shim.isWrapped(wrappable.getActiveSegment)).to.be.false()
+      })
+
+      it('should not error if a nodule is `null`', function() {
+        expect(function() {
+          shim.unwrapOnce(null, 'bar')
+        }).to.not.throw()
+      })
+
+      it('should not error if a property is `null`', function() {
+        expect(function() {
+          shim.unwrapOnce(wrappable, 'this does not exist')
+        }).to.not.throw()
+      })
+    })
+  })
+
   describe('#getSegment', function() {
     var segment = null
 
@@ -1330,10 +1504,16 @@ describe('Shim', function() {
   })
 
   describe('#storeSegment', function() {
-    it('should set a non-enumerable property on the object', function() {
-      var keys = Object.keys(wrappable)
-      shim.storeSegment(wrappable, {})
-      expect(Object.keys(wrappable)).to.deep.equal(keys)
+    describe('when hide_internals is true', function() {
+      beforeEach(function() {
+        agent.config.transaction_tracer.hide_internals = true
+      })
+
+      it('should set a non-enumerable property on the object', function() {
+        var keys = Object.keys(wrappable)
+        shim.storeSegment(wrappable, {})
+        expect(Object.keys(wrappable)).to.deep.equal(keys)
+      })
     })
 
     it('should store the segment on the object', function() {
@@ -1441,6 +1621,24 @@ describe('Shim', function() {
           expect(parent)
             .to.have.property('children')
             .that.deep.equals([cbSegment])
+        })
+      })
+
+      it('should make the `parentSegment` translucent after running', function() {
+        helper.runInTransaction(agent, function() {
+          var args = [wrappable.getActiveSegment]
+          var segment = wrappable.getActiveSegment()
+          var parent = shim.createSegment('test segment')
+          parent.opaque = true
+          shim.bindCallbackSegment(args, shim.LAST, parent)
+          var cbSegment = args[0]()
+
+          expect(cbSegment)
+            .to.not.equal(parent)
+          expect(parent)
+            .to.have.property('children')
+            .that.deep.equals([cbSegment])
+          expect(parent.opaque).to.be.false()
         })
       })
 
@@ -1570,6 +1768,18 @@ describe('Shim', function() {
       })
     })
 
+    it('should not create children for opaque segments', function() {
+      helper.runInTransaction(agent, function() {
+        var parent = shim.createSegment('parent')
+        parent.opaque = true
+        var child = shim.createSegment('child', parent)
+        expect(child).to.have.property('name', 'parent')
+        expect(parent)
+          .to.have.property('children')
+          .that.deep.equals([])
+      })
+    })
+
     it('should default to the current segment as the parent', function() {
       helper.runInTransaction(agent, function() {
         var parent = shim.getSegment()
@@ -1605,17 +1815,18 @@ describe('Shim', function() {
           ignore_me: 'baz'
         }
 
-        agent.config.ignored_params = [
+        agent.config.attributes.exclude = [
           'ignore_me',
           'host',
           'port_path_or_id',
           'database_name'
         ]
+        agent.config.emit('attributes.exclude')
       })
 
-      describe('and capture_params is true', function() {
+      describe('and attributes.enabled is true', function() {
         beforeEach(function() {
-          agent.config.capture_params = true
+          agent.config.attributes.enabled = true
           helper.runInTransaction(agent, function() {
             segment = shim.createSegment({name: 'child', parameters: parameters})
           })
@@ -1627,12 +1838,12 @@ describe('Shim', function() {
           expect(segment.parameters).to.have.property('fiz', 'bang')
         })
 
-        it('should respect `ignored_params`', function() {
+        it('should not be affected by `attributes.exclude`', function() {
           expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.not.have.property('ignore_me')
+          expect(segment.parameters).to.have.property('ignore_me')
         })
 
-        it('should allow datastore instance attrs despite `ignored_params`', function() {
+        it('allows datastore instance attrs despite `attributes.exclude`', function() {
           expect(segment).to.have.property('parameters')
           expect(segment.parameters).to.have.property('host', 'my awesome host')
           expect(segment.parameters).to.have.property('port_path_or_id', 1234)
@@ -1640,19 +1851,19 @@ describe('Shim', function() {
         })
       })
 
-      describe('and capture_params is false', function() {
+      describe('and attributes.enabled is false', function() {
         beforeEach(function() {
-          agent.config.capture_params = false
+          agent.config.attributes.enabled = false
           helper.runInTransaction(agent, function() {
             segment = shim.createSegment({name: 'child', parameters: parameters})
           })
         })
 
-        it('should not copy parameters provided into `segment.parameters`', function() {
+        it('should still copy parameters provided into `segment.parameters`', function() {
           expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.not.have.property('foo')
-          expect(segment.parameters).to.not.have.property('fiz')
-          expect(segment.parameters).to.not.have.property('ignore_me')
+          expect(segment.parameters).to.have.property('foo')
+          expect(segment.parameters).to.have.property('fiz')
+          expect(segment.parameters).to.have.property('ignore_me')
         })
 
         it('should still allow datastore instance attrs', function() {
@@ -1815,51 +2026,125 @@ describe('Shim', function() {
   })
 
   describe('#setInternalProperty', function() {
-    it('should create a writable, non-enumerable value property', function() {
-      // Non enumerable
-      var obj = {}
-      shim.setInternalProperty(obj, 'foo', 'bar')
-      expect(obj).to.have.property('foo', 'bar')
-      expect(Object.keys(obj)).to.not.include('foo')
-
-      // Writable
-      expect(function() {
-        obj.foo = 'fizbang'
-      }).to.not.throw()
-      expect(obj).to.have.property('foo', 'fizbang')
-      expect(Object.keys(obj)).to.not.include('foo')
+    beforeEach(function() {
+      sinon.spy(Object, 'defineProperty')
     })
 
-    it('should not throw if the object has been frozen', function() {
-      var obj = {}
-      Object.freeze(obj)
-
-      /* eslint-disable strict */
-      expect(function() {
-        'use strict'
-        obj.fiz = 'bang'
-      }).to.throw()
-      /* eslint-enable strict */
-
-      expect(function() {
-        shim.setInternalProperty(obj, 'foo', 'bar')
-      }).to.not.throw()
+    afterEach(function() {
+      Object.defineProperty.restore()
     })
 
-    it('should not throw if the property has been sealed', function() {
-      var obj = {}
-      Object.seal(obj)
+    describe('when hide_internals is true', function() {
+      beforeEach(function() {
+        agent.config.transaction_tracer.hide_internals = true
+      })
 
-      /* eslint-disable strict */
-      expect(function() {
-        'use strict'
-        obj.fiz = 'bang'
-      }).to.throw()
-      /* eslint-enable strict */
-
-      expect(function() {
+      it('should create a writable, non-enumerable value property', function() {
+        // Non enumerable
+        var obj = {}
         shim.setInternalProperty(obj, 'foo', 'bar')
-      }).to.not.throw()
+        expect(obj).to.have.property('foo', 'bar')
+        expect(Object.keys(obj)).to.not.include('foo')
+
+        // Writable
+        expect(function() {
+          obj.foo = 'fizbang'
+        }).to.not.throw()
+        expect(obj).to.have.property('foo', 'fizbang')
+        expect(Object.keys(obj)).to.not.include('foo')
+      })
+
+      it('should not throw if the object has been frozen', function() {
+        var obj = {}
+        Object.freeze(obj)
+
+        /* eslint-disable strict */
+        expect(function() {
+          'use strict'
+          obj.fiz = 'bang'
+        }).to.throw()
+        /* eslint-enable strict */
+
+        expect(function() {
+          shim.setInternalProperty(obj, 'foo', 'bar')
+        }).to.not.throw()
+      })
+
+      it('should not throw if the property has been sealed', function() {
+        var obj = {}
+        Object.seal(obj)
+
+        /* eslint-disable strict */
+        expect(function() {
+          'use strict'
+          obj.fiz = 'bang'
+        }).to.throw()
+        /* eslint-enable strict */
+
+        expect(function() {
+          shim.setInternalProperty(obj, 'foo', 'bar')
+        }).to.not.throw()
+      })
+    })
+
+    describe('when hide_internals is false', function() {
+      beforeEach(function() {
+        agent.config.transaction_tracer.hide_internals = false
+      })
+
+      it('should create a writable, enumerable value property', function() {
+        // Enumerable
+        var obj = {}
+        shim.setInternalProperty(obj, 'foo', 'bar')
+        expect(obj).to.have.property('foo', 'bar')
+        expect(Object.keys(obj)).to.include('foo')
+
+        // Writable
+        expect(function() {
+          obj.foo = 'fizbang'
+        }).to.not.throw()
+        expect(obj).to.have.property('foo', 'fizbang')
+        expect(Object.keys(obj)).to.include('foo')
+      })
+
+      it('should not use defineProperty', function() {
+        var obj = {}
+        shim.setInternalProperty(obj, 'foo', 'bar')
+
+        expect(Object.defineProperty.calledOnce).to.be.false()
+      })
+
+      it('should not throw if the object has been frozen', function() {
+        var obj = {}
+        Object.freeze(obj)
+
+        /* eslint-disable strict */
+        expect(function() {
+          'use strict'
+          obj.fiz = 'bang'
+        }).to.throw()
+        /* eslint-enable strict */
+
+        expect(function() {
+          shim.setInternalProperty(obj, 'foo', 'bar')
+        }).to.not.throw()
+      })
+
+      it('should not throw if the property has been sealed', function() {
+        var obj = {}
+        Object.seal(obj)
+
+        /* eslint-disable strict */
+        expect(function() {
+          'use strict'
+          obj.fiz = 'bang'
+        }).to.throw()
+        /* eslint-enable strict */
+
+        expect(function() {
+          shim.setInternalProperty(obj, 'foo', 'bar')
+        }).to.not.throw()
+      })
     })
   })
 

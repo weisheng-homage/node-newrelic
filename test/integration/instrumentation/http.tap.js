@@ -1,17 +1,18 @@
 'use strict'
 
-var tap        = require('tap')
-var test       = tap.test
-var http       = require('http')
-var helper     = require('../../lib/agent_helper.js')
-var StreamSink = require('../../../lib/util/stream-sink.js')
+var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
+var tap = require('tap')
+var test = tap.test
+var http = require('http')
+var helper = require('../../lib/agent_helper')
+var StreamSink = require('../../../lib/util/stream-sink')
+var HTTP_ATTRS = require('../../lib/fixtures').httpAttributes
 
 
 test("built-in http instrumentation should handle internal & external requests",
      function(t) {
-  t.plan(14)
-
   var agent = helper.instrumentMockedAgent()
+  agent.config.attributes.enabled = true
 
   var TEST_INTERNAL_PORT = 8123
   var TEST_INTERNAL_PATH = '/path'
@@ -93,8 +94,6 @@ test("built-in http instrumentation should handle internal & external requests",
 
       var scope = 'WebTransaction/NormalizedUri/*'
       var stats = agent.metrics.getOrCreateMetric(scope)
-      var found = false
-
 
       t.equals(transaction.type, 'web', 'should be a web transaction')
       t.equals(transaction.name, scope, 'should set transaction name')
@@ -104,45 +103,66 @@ test("built-in http instrumentation should handle internal & external requests",
         'baseSegment name should match transaction name'
       )
 
-      t.equals(stats.callCount, 2,
-               "should record unscoped path stats after a normal request")
+      t.equals(
+        stats.callCount, 2,
+        'should record unscoped path stats after a normal request'
+      )
 
-      agent.environment.toJSON().forEach(function cb_forEach(pair) {
-        if (pair[0] === 'Dispatcher' && pair[1] === 'http') found = true
-      })
-      t.ok(found, "should indicate that the http dispatcher is in play")
+      var isDispatcher = agent.environment.get('Dispatcher').indexOf('http') > -1
+      t.ok(isDispatcher, "should indicate that the http dispatcher is in play")
 
       stats = agent.metrics.getOrCreateMetric('HttpDispatcher')
-      t.equals(stats.callCount, 2,
-               "should have accounted for all the internal http requests")
+      t.equals(
+        stats.callCount, 2,
+        'should have accounted for all the internal http requests'
+      )
 
       stats = agent.metrics.getOrCreateMetric('External/localhost:8321/http', scope)
-      t.equals(stats.callCount, 1,
-               "should record outbound HTTP requests in the agent's metrics")
+      t.equals(
+        stats.callCount, 1,
+        'should record outbound HTTP requests in metrics'
+      )
 
-      stats = transaction.metrics.getOrCreateMetric('External/localhost:8321/http',
-                                                    scope)
-      t.equals(stats.callCount, 1,
-               "should associate outbound HTTP requests with the inbound transaction")
+      stats = transaction.metrics.getOrCreateMetric(
+        'External/localhost:8321/http',
+        scope
+      )
+      t.equals(
+        stats.callCount, 1,
+        'should associate outbound HTTP requests with the inbound transaction'
+      )
+
+      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+
+      HTTP_ATTRS.forEach(function(key) {
+        t.ok(attributes[key] !== undefined, 'Trace contains attribute: ' + key)
+      })
+      if (attributes.httpResponseMessage) {
+        t.equal(
+          attributes.httpResponseMessage,
+          'OK',
+          'Trace contains httpResponseMessage'
+        )
+      }
 
       t.end()
     })
   }.bind(this)
 
-  external.listen(TEST_EXTERNAL_PORT, TEST_HOST, function () {
-    server.listen(TEST_INTERNAL_PORT, TEST_HOST, function () {
+  external.listen(TEST_EXTERNAL_PORT, TEST_HOST, function() {
+    server.listen(TEST_INTERNAL_PORT, TEST_HOST, function() {
       // The transaction doesn't get created until after the instrumented
       // server handler fires.
-      t.notOk(agent.getTransaction(),
-              "transaction hasn't been created until the first request")
+      t.notOk(agent.getTransaction(), 'should create tx until first request')
 
-      var req = http.request({host   : TEST_HOST,
-                              port   : TEST_INTERNAL_PORT,
-                              path   : TEST_INTERNAL_PATH,
-                              method : 'GET'},
-                             testResponseHandler)
+      var req = http.request({
+        host    : TEST_HOST,
+        port    : TEST_INTERNAL_PORT,
+        path    : TEST_INTERNAL_PATH,
+        method  : 'GET'
+      }, testResponseHandler)
 
-      req.on('error', function (error) { t.fail(error); })
+      req.on('error', function(error) { t.fail(error) })
 
       req.end()
     })
@@ -222,7 +242,7 @@ test("built-in http instrumentation shouldn't swallow errors", function(t) {
   server.listen(1337, makeRequest)
 })
 
-test("built-in http instrumentation making outbound requests", function (t) {
+test("built-in http instrumentation making outbound requests", function(t) {
   var agent = helper.instrumentMockedAgent()
 
   var server = http.createServer(function cb_createServer(req, res) {
@@ -239,10 +259,10 @@ test("built-in http instrumentation making outbound requests", function (t) {
   })
 
   function request(type, options, next) {
-    http.request(options, function (res) {
+    http.request(options, function(res) {
       t.equal(res.statusCode, 200, "got HTTP OK status code")
 
-      var sink = new StreamSink(function (err, body) {
+      var sink = new StreamSink(function(err, body) {
         if (err) {
           t.fail(err)
           return t.end()
@@ -282,11 +302,11 @@ test("built-in http instrumentation making outbound requests", function (t) {
     }, next)
   }
 
-  server.listen(1337, function () {
-    helper.runInTransaction(agent, function () {
-      requestWithHost(function () {
-        requestWithHostname(function () {
-          requestWithNOTHING(function () {
+  server.listen(1337, function() {
+    helper.runInTransaction(agent, function() {
+      requestWithHost(function() {
+        requestWithHostname(function() {
+          requestWithNOTHING(function() {
             t.end()
           })
         })
@@ -298,7 +318,7 @@ test("built-in http instrumentation making outbound requests", function (t) {
 test(
   "built-in http instrumentation making outbound requests obsoletely",
   {skip: !http.createClient},
-  function (t) {
+  function(t) {
   var agent = helper.instrumentMockedAgent()
 
   var server = http.createServer(function cb_createServer(req, res) {
@@ -320,12 +340,12 @@ test(
     var path = options.path
 
     var req = http.createClient(port, host).request('GET', path)
-    req.on('response', function (res) {
-      res.on('end', function () {
+    req.on('response', function(res) {
+      res.on('end', function() {
         t.equal(res.statusCode, 200, "got HTTP OK status code")
       })
 
-      var sink = new StreamSink(function (err, body) {
+      var sink = new StreamSink(function(err, body) {
         if (err) {
           t.fail(err)
           return t.end()
@@ -366,11 +386,11 @@ test(
     }, next)
   }
 
-  server.listen(1337, function () {
-    helper.runInTransaction(agent, function () {
-      requestWithHost(function () {
-        requestWithHostname(function () {
-          requestWithNOTHING(function () {
+  server.listen(1337, function() {
+    helper.runInTransaction(agent, function() {
+      requestWithHost(function() {
+        requestWithHostname(function() {
+          requestWithNOTHING(function() {
             t.end()
           })
         })
@@ -395,16 +415,19 @@ test("built-in http instrumentation should not crash for requests that are in pr
     count++
 
     if (count === 1) {
-      t.ok(true, 'request #1 was received')
-      res.end()
+      setImmediate(function() {
+        t.ok(true, 'request #1 was received')
+        res.end()
 
-      closing = true
-      server.close()
+        closing = true
+        server.close()
+      })
     } else {
-      t.ok(true, 'request #2 was received')
-      t.notOk(!closing,
-        'server should be in the middle of closing when request #2 is handled')
-      res.end()
+      setImmediate(function() {
+        t.ok(true, 'request #2 was received')
+        t.ok(closing, 'server should be closing when request #2 is handled')
+        res.end()
+      })
     }
   })
 
@@ -426,7 +449,11 @@ test("built-in http instrumentation should not crash for requests that are in pr
       path: '/',
       agent: false
     }
-    http.request(options, callback).end()
+    var req = http.request(options, callback)
+    req.on('error', function(err) {
+      t.error(err, 'should not fail to make requests')
+    })
+    req.end()
   }
 })
 

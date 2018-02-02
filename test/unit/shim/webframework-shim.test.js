@@ -1,5 +1,6 @@
 'use strict'
 
+var sinon = require('sinon')
 var chai = require('chai')
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
@@ -416,6 +417,27 @@ describe('WebFrameworkShim', function() {
         })
       })
 
+      it('should not affect transaction name state if type is errorware', function() {
+        testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
+
+        function testType(type, expectedName) {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: type, route: '/foo/bar'}
+          )
+          helper.runInTransaction(agent, function(tx) {
+            txInfo.transaction = tx
+            sinon.spy(tx.nameState, 'appendPath')
+            sinon.spy(tx.nameState, 'popPath')
+            var segment = wrapped(req)
+
+            expect(tx.nameState.appendPath.called).to.be.false()
+            expect(tx.nameState.popPath.called).to.be.false()
+            expect(segment).to.exist().and.have.property('name', expectedName)
+          })
+        }
+      })
+
       it('should name the segment according to the middleware type', function() {
         testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment//foo/bar')
         testType(shim.APPLICATION, 'Restify/Mounted App: /foo/bar')
@@ -460,6 +482,48 @@ describe('WebFrameworkShim', function() {
         }
       })
 
+      it('should not prepend root if the value is an array', function() {
+        testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment//one,/two')
+        testType(shim.APPLICATION, 'Restify/Mounted App: /one,/two')
+        testType(shim.ROUTER, 'Restify/Router: /one,/two')
+        testType(shim.ROUTE, 'Restify/Route Path: /one,/two')
+        testType(shim.ERRORWARE, 'Nodejs/Middleware/Restify/getActiveSegment//one,/two')
+        testType(shim.PARAMWARE, 'Nodejs/Middleware/Restify/getActiveSegment//one,/two')
+
+        function testType(type, expectedName) {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: type, route: ['/one', '/two']}
+          )
+          helper.runInTransaction(agent, function(tx) {
+            txInfo.transaction = tx
+            var segment = wrapped(req)
+
+            expect(segment).to.exist().and.have.property('name', expectedName)
+          })
+        }
+      })
+
+      it('should reinstate its own context', function() {
+        testType(shim.MIDDLEWARE, 'Nodejs/Middleware/Restify/getActiveSegment')
+
+        function testType(type, expectedName) {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: type, route: ''}
+          )
+          var tx = helper.runInTransaction(agent, function(_tx) {
+            return _tx
+          })
+          txInfo.transaction = tx
+          txInfo.segmentStack.push(tx.trace.root)
+
+          var segment = wrapped(req)
+
+          expect(segment).to.exist().and.have.property('name', expectedName)
+        }
+      })
+
       describe('when the middleware is synchronous', function() {
         it('should notice thrown exceptions', function() {
           var wrapped = shim.recordMiddleware(function() {
@@ -482,7 +546,7 @@ describe('WebFrameworkShim', function() {
           })
         })
 
-        it('should not pop the name if there was an error', function() {
+        it('pops the name if error was thrown and there is no next handler', function() {
           var wrapped = shim.recordMiddleware(function() {
             throw new Error('foobar')
           }, {route: '/foo/bar'})
@@ -500,6 +564,24 @@ describe('WebFrameworkShim', function() {
           })
         })
 
+        it('does not pop the name if there was an error and a next handler', function() {
+          var wrapped = shim.recordMiddleware(function() {
+            throw new Error('foobar')
+          }, {route: '/foo/bar', next: shim.SECOND})
+
+          helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+            try {
+              wrapped(req, function() {})
+            } catch (e) {
+              // Don't care about the error...
+            }
+
+            expect(tx.nameState.getPath()).to.equal('/foo/bar')
+          })
+        })
+
         it('should pop the namestate if there was no error', function() {
           var wrapped = shim.recordMiddleware(function() {}, {route: '/foo/bar'})
 
@@ -509,6 +591,26 @@ describe('WebFrameworkShim', function() {
             wrapped(req)
 
             expect(tx.nameState.getPath()).to.equal('/')
+          })
+        })
+
+        it('should pop the namestate if error is not an error', function() {
+          var wrapped = shim.recordMiddleware(function(r, obj, next) {
+            next(obj)
+          }, {route: '/foo/bar'})
+
+          var err = new Error()
+          shim.setErrorPredicate(function(obj) { return obj === err })
+
+          helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+
+            wrapped(req, {}, function() {}) // Not an error!
+            expect(tx.nameState.getPath()).to.equal('/')
+
+            wrapped(req, err, function() {}) // Error!
+            expect(tx.nameState.getPath()).to.equal('/foo/bar')
           })
         })
       })
@@ -655,11 +757,11 @@ describe('WebFrameworkShim', function() {
               wrapped(req)
             } catch (err) {
               expect(txInfo).to.have.property('error', err)
-              expect(txInfo).to.have.property('errorHandled', false)
+              expect(txInfo).to.have.property('errorHandled').that.is.not.ok()
 
               errorware(err, req)
               expect(txInfo).to.have.property('error', err)
-              expect(txInfo).to.have.property('errorHandled', true)
+              expect(txInfo).to.have.property('errorHandled').that.is.ok()
             }
           })
         })
@@ -1009,7 +1111,7 @@ describe('WebFrameworkShim', function() {
 
   describe('#captureUrlParams', function() {
     beforeEach(function() {
-      agent.config.capture_params = true
+      agent.config.attributes.enabled = true
     })
 
     it('should copy the provided params onto the segment parameters', function() {
@@ -1023,12 +1125,13 @@ describe('WebFrameworkShim', function() {
       })
     })
 
-    it('should obey the capture_params configuration', function() {
-      agent.config.capture_params = false
+    it('should not obey the attributes.enabled configuration', function() {
+      agent.config.attributes.enabled = false
       var segment = {parameters: {foo: 'other', bang: 'bam'}}
       shim.getSegment = function() { return segment }
       shim.captureUrlParams({foo: 'bar', biz: 'baz'})
-      expect(segment).property('parameters').to.deep.equal({foo: 'other', bang: 'bam'})
+      expect(segment).property('parameters')
+        .to.deep.equal({foo: 'other', biz: 'baz', bang: 'bam'})
     })
 
     it('should not throw when out of a transaction', function() {

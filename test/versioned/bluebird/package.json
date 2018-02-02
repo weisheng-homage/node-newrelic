@@ -1,0 +1,32 @@
+{
+  "name": "bluebird-tests",
+  "version": "0.0.0",
+  "private": true,
+  "tests": [
+    {
+      "engines": {
+        "node": ">=0.10.0"
+      },
+      "dependencies": {
+        "bluebird": ">=2"
+      },
+      "files": [
+        "regressions.tap.js",
+        "segments.tap.js",
+        "transaction-state.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=0.10.0"
+      },
+      "dependencies": {
+        "bluebird": ">=3"
+      },
+      "files": [
+        "methods.tap.js"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

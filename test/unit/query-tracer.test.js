@@ -160,7 +160,6 @@ describe('Query Tracer', function testQueryTracer() {
 
   describe('prepareJSON', function testPrepareJSON() {
     describe('webTransaction when record_sql is "raw"', function testWebTransaction() {
-
       var queries
 
       beforeEach(function() {
@@ -876,9 +875,7 @@ function addQuery(queries, duration, url, query) {
   var transaction = new FakeTransaction(url)
   var segment = new FakeSegment(transaction, duration)
 
-  queries.addQuery(segment, 'mysql', query || 'select * from foo where a=2', {
-    stack: FAKE_STACK
-  })
+  queries.addQuery(segment, 'mysql', query || 'select * from foo where a=2', FAKE_STACK)
 
   return segment
 }
@@ -887,6 +884,8 @@ function FakeTransaction(url) {
   this.url = url || null
   this.name = 'FakeTransaction'
 }
+
+FakeTransaction.prototype.getFullName = function() { return this.name }
 
 function FakeSegment(transaction, duration, name) {
   this.transaction = transaction

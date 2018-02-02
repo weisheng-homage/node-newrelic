@@ -1,4 +1,338 @@
 
+### 2.7.0 (2018-02-01):
+
+* Added agent attribute filtering via include and exclude rules.
+
+  Agent attributes can now be controlled using fine grained include and exclude
+  rules. These rules, described below, replace `capture_params` and
+  `ignored_params`. Any attributes listed in `ignored_params` will be migrated
+  to `attributes.exclude` internally, unless `attributes.exclude` is explicitly
+  set.
+
+  There are three new configuration properties added to the root config and
+  each destination (more on destinations later). These new configurations are:
+
+  * `attributes.enabled` - Enables collection of attributes for the destination.
+  * `attributes.include` - A list of attributes or wildcard rules to include.
+  * `attributes.exclude` - A list of attributes or wildcard rules to exclude.
+
+  The include and exclude rules can be exact rules (for example
+  `request.headers.contentLength`), or wildcard rules which match just the
+  beginning of attribute keys (for example `request.headers.*` would match any
+  request header).
+
+  These rules can be specified globally at the root of the configuration, or
+  for specific destinations. These destinations are:
+
+  * `transaction_tracer` - Controls transaction trace attributes.
+  * `transaction_events` - Controls transaction event attributes.
+  * `error_collector` - Controls error event attributes.
+  * `browser_monitoring` - Controls browser/RUM transaction attributes.
+
+* Renamed `addCustomParameter` to `addCustomAttribute`.
+
+  The `addCustomParameter` method is now deprecated and will be removed in a
+  future release of the agent. The `addCustomAttribute` method is a drop-in
+  replacement for it.
+
+* Added cache to agent attribute filtering.
+
+  To minimize the overhead of applying attribute rules, the agent caches results
+  of filtering specific attribute keys and destinations. The cache is limited to
+  1000 destination-key pairs by default but can be configured with
+  `attributes.filter_cache_limit`. This cache offers a 10x improvement for
+  applying filter rules for cache-hits.
+
+* Added limits for agent attributes to keep monitoring overhead down.
+
+  Attribute keys and values are limited to 255 bytes each. Keys which are larger
+  than 255 bytes are dropped, and a warning message is logged. Values larger
+  than 255 bytes are truncated to 255 bytes, respecting multi-byte UTF-8
+  encoding. Custom attributes are limited to 64 per transaction. Attributes
+  beyond the 64th are silently ignored.
+
+* Added `allow_all_headers` to config options and updated `http` instrumentation.
+
+  When set to `true`, the agent will collect all request headers. This collection
+  respects the agent attribute include and exclude rules. A default set of
+  exclusion rules are provided in `newrelic.js`. These rules exclude all cookies
+  and authentication headers.
+
+* The agent will no longer crash when `crypto.DEFAULT_ENCODING` has been changed.
+
+  Previously, the agent would assume the result of `hash.digest()` was an
+  instance of a Buffer. If `crypto.DEFAULT_ENCODING` is changed, `hash.digest()`
+  will return a string and the agent would crash.  The agent now ensures that
+  the value is a Buffer instance before moving on.
+
+
+* Renamed `request_uri` attribute to `request.uri`.
+
+  This brings the attribute name in line with all other request attributes.
+
+* Updated `https-proxy-agent` dependency from `^0.3.5` to `^0.3.6`.
+
+* Updated versioned tests where applicable to ensure most minor versions of
+  instrumented modules work as expected.
+
+* Fixed stalling test for v1 line of Mongo driver.
+
+* Added tests verifying Hapi 404 transactions result in correctly named metrics.
+
+  The Hapi instrumentation was doing the correct thing, but we did not have tests
+  for this specific case.
+
+* Fixed error if `process.config.variables.node_prefix` missing.
+
+  If `process.config.variables.node_prefix` is falsey (which can happen if using
+  electron, leading to this issue https://discuss.newrelic.com/t/new-relic-on-electron-nodejs/53601)
+  the `getGlobalPackages` function in `lib/environment.js` will give an err when
+  it shouldn't.
+
+  Thanks to Jarred Filmer (@BrighTide) for the fix!
+
+* Segments may now be flagged as opaque, causing internal segments to be omitted
+  from the transaction trace.
+
+* Added error to collector connection failure log message.
+
+### 2.6.1 (2018-01-18):
+
+* Fixed naming bug in Restify instrumentation regarding parameters to `next`.
+
+  The instrumentation previously considered any truthy value passed to `next` to
+  be an error. It is possible to pass a string or boolean to `next` in Restify
+  to control further routing of the request. This would cause the middleware's
+  mounting path to be erroneously appended to the transaction name.
+
+* Fixed access to `bluebird.coroutine.addYieldHandler`.
+
+  This was accidentally not copied by our instrumentation making access to the
+  function fail. This has been resolved and tests expanded to ensure no other
+  properties were missed.
+
+* Added regression test for promise instrumentation and stack overflows.
+
+### 2.6.0 (2018-01-09):
+
+* Fixed a crashing error in the hapi instrumentation.
+
+  When recording the execution of an extension listening to a server event
+  (e.g. 'onPreStart') the agent would crash due to the lack of a `raw` property
+  on the first argument passed to the extension handler. The agent now checks
+  the event before wrapping the extension handler, and checks for the existence
+  of the `raw` property before attempting to dereference off it.
+
+* Fixed an incompatibility with the npm module `mimic-response`.
+
+  The agent's HTTP instrumentation previously did not play well with the way
+  `mimic-response` copied properties from an `http.IncomingMessage`. This caused
+  modules that relied on that, such as `got`, to hang.
+
+* Refactored promise instrumentation.
+
+  This new instrumentation is far more performant than the previous and
+  maintains a more sensible trace structure under a wider range of sequences.
+
+* Added `transaction_tracer.hide_internals` configuration.
+
+  This configuration controls the enumerability of the internal properties the
+  agent. Making these properties non-enumerable can have an impact on the
+  performance of the agent. Disabling this option may decrease agent overhead.
+
+* Added concurrent environment scanning, limited to 2 reads at a time.
+
+  This improves the performance of dependency scanning at agent startup,
+  allowing the agent to connect to our services more quickly.
+
+* Refactored instrumentation tests to run against wide range of module versions.
+
+  Instrumentation tests will be run against all supported major versions of
+  every instrumented module. For releases, we will test against every supported
+  minor version of the modules. This vastly improves our test coverage and
+  should reduce the instances of regressions for specific versions of modules.
+
+* Added tests for _all_ of bluebird's promise methods.
+
+  These tests ensure that we 100% instrument bluebird. Some gaps in
+  instrumentation were found and fixed. Anyone using bluebird should upgrade.
+
+* Fixed naming rule testing tool to use same url scrubbing as the agent itself.
+
+### 2.5.0 (2018-01-03):
+* Added hapi v17 instrumentation
+
+  Hapi v17 added support for promise-based middleware which broke transaction
+  tracking in the agent.  This caused issues in naming, as the agent will name
+  the transaction after the path to the middleware that responded to a request.
+
+* Added instrumentation for `vision@5`
+
+  Due to the way `vision` is mounted to the hapi server when using hapi v17.x,
+  the agent's instrumentation would not pick up on the middleware being mounted.
+  This new instrumentation now correctly times rendering done in the `vision`
+  middleware.
+
+* Added `unwrapOnce` method to shim object
+
+  This new method can be used to unwrap a single layer of instrumentation.
+  `unwrapOnce` is useful in cases where multiple instrumentations wrap the same
+  method and unwrapping of the top level is required.
+
+* Added `isErrorWare` checks around `nameState.appendPath`/`nameState.popPath`
+  calls to avoid doubling up paths in transaction names
+
+  Previously, the agent would append its transaction name with the path fragment
+  where an error handler middleware was mounted.  The extraneous path fragment
+  will now be omitted, and the transaction will be named properly after the
+  middleware that threw the error.
+
+* Added `parent` property to webframework-shim segment description
+
+* Added support for pg-latest on Node 5 or higher
+
+* Fixed creating supportability metric when mysql2 goes uninstrumented.
+
+* Added a `segmentStack.pop`to the middleware `after` in cases when an error is
+  caught and there is no next handler
+
+* Fixed determining parents for middleware segments when transaction state is
+  lost and reinstated
+
+* Refactored existing hapi instrumentation for different `server.ext()`
+  invocations
+
+* Refactored webframework-shim `_recordMiddleware` to construct different
+  segment descriptions for callback- or promise-based middleware
+
+* Added check to `_recordMiddleware` to avoid prepending a slash if original
+  `route` is an array
+
+* Changed logic in http instrumentation to attach `response.status` to the
+  transaction as a string
+
+* Updated `startWebTransaction` and `startBackgroundTransaction` to add nested
+  transactions as segments to parent transactions
+
+* Updated `node-postgres@^6` versioned tests to avoid deprecation warning on
+  direct module `connect` and `end` calls
+
+* Fixed running domain tests on Node 9.3.0.
+
+* Improved logging for CAT headers and transaction name-state management.
+
+* All `json-safe-stringify` calls now wrapped in `try/catch`
+
+* Removed `lib/util/safe-json`
+
+### 2.4.2 (2017-12-12):
+* Added Peter Svetlichny to the contributors list!
+
+* Optimized `NameState#getPath`.
+
+* Optimized `shim.record`.
+
+* Optimized `shim.recordMiddleware`.
+
+* Upgraded `eslint` to v4.
+
+* Fixed parsing SQL for queries containing newlines.
+
+### 2.4.1 (2017-11-28):
+* Added promise benchmarks to test non-async_hooks instrumentation.
+
+* Added logging for external calls made outside of a transaction.
+
+* Added logging for when `unhandledRejection` is noticed.
+
+* Improved performance of creating and merging metrics.
+
+* Improved performance of `tracer.bindFunction`.
+
+* Moved `require` calls for vendor metadata to module-level.
+
+* Removed try-catch around internal property setting on older versions of Node.
+
+### 2.4.0 (2017-11-15):
+* Instrumentation will now only modify the arity of wrapped functions when needed.
+
+  This can be controlled with the `matchArity` property on a `WrapSpec`.
+  Disabling arity matching has a significant, positive impact on the performance
+  of instrumentation.
+
+* Added benchmarks for shimmer methods.
+
+* Pinned hapi tests at v16 due to incompatibility in hapi v17 with Node.js
+  versions <8.
+
+* The agent's parsed queries will now only hold onto the stack that the query
+  was made at, instead of an error object instance.
+
+  Previously, the parsed query objects would hold onto an error instance, which
+  would in turn hold onto references to all the functions in the stack when the
+  error was created. This could cause memory issues if the functions were
+  holding onto references to other pieces of data.
+
+* Revert wrapping of `https` for Node `^8.9.1`.
+
+  The original cause for this problem was reverted by Node.
+
+### 2.3.2 (2017-11-02):
+
+* Fixed a bug with Node >=8.9 that prevented https externals from being recorded.
+
+* Added Node 9 to test suite.
+
+* Removed problematic tests for ancient version of Hapi (7.1).
+
+* Document purpose of `throw` in tracer to prevent developer confusion.
+
+* Added script for running agent micro benchmarks.
+
+* Added benchmarks for all the `Shim` and `Tracer` methods.
+
+### 2.3.1 (2017-10-24):
+* Agent will attempt to reconnect to the collector forever after backing off to
+  5 minute delays.
+
+* Refactored environment scan to improve startup time and fix cyclical symlink
+  resolving.
+
+### 2.3.0 (2017-10-16):
+* The agent will now support the `await` keyword by default.
+
+* Added cases for omitting the agent with and without async hooks to the async
+  hooks microbenchmark.
+
+* Pinned version of Mocha to 3.x due to the incompatibility of Mocha v4 and Node
+  v0.10 and v0.12.
+
+* Added benchmark for performance of function wrapping.
+
+* Added GC information to async_hooks benchmark.
+
+* Improved trace-level logging for capturing queries.
+
+### v2.2.2 (2017-09-26):
+* Hapi handlers will now preserve the defaults associated with them.
+
+  Previously when wrapping handlers, the agent would drop the associated defaults on
+  the ground, these are now properly forwarded to the wrapper.  Big thanks to Sean
+  Parmelee (@seanparmelee) for finding the root cause of this bug and reporting it!
+
+* Pinned `request` version for testing old versions of Node.
+
+* Added tests for feature flags created at agent initialization.
+
+* Fixed starting the agent with an invalid process version.
+
+### v2.2.1 (2017-09-11):
+* Added metrics for enabled/disabled feature flags.
+
+* Fixed transaction naming for Hapi plugins.
+
+  Thanks Marc Höffl (@KeKs0r) for providing a reproduction!
+
 ### v2.2.0 (2017-08-22):
 * Added support for ignoring ranges of status codes.
 

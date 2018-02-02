@@ -1,6 +1,7 @@
 'use strict'
 
 var chai = require('chai')
+var DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
 var expect = chai.expect
 var helper = require('../lib/agent_helper')
 var codec = require('../../lib/util/codec')
@@ -9,22 +10,21 @@ var Trace = require('../../lib/transaction/trace')
 var Transaction = require('../../lib/transaction')
 
 
-describe('Trace', function () {
-  var agent
+describe('Trace', function() {
+  var agent = null
 
-  beforeEach(function () {
+  beforeEach(function() {
     agent = helper.loadMockedAgent()
   })
 
-  afterEach(function () {
+  afterEach(function() {
     helper.unloadAgent(agent)
   })
 
-  it('should always be bound to a transaction', function () {
+  it('should always be bound to a transaction', function() {
     // fail
-    var transam
-    expect(function () {
-      transam = new Trace()
+    expect(function() {
+      return new Trace()
     }).throws(/must be associated with a transaction/)
 
     // succeed
@@ -33,16 +33,16 @@ describe('Trace', function () {
     expect(tt.transaction).instanceof(Transaction)
   })
 
-  it('should have the root of a Segment tree', function () {
+  it('should have the root of a Segment tree', function() {
     var tt = new Trace(new Transaction(agent))
     expect(tt.root).instanceof(Segment)
   })
 
-  it('should be the primary interface for adding segments to a trace', function () {
+  it('should be the primary interface for adding segments to a trace', function() {
     var transaction = new Transaction(agent)
     var trace = transaction.trace
 
-    expect(function () { trace.add('Custom/Test17/Child1') }).not.throws()
+    expect(function() { trace.add('Custom/Test17/Child1') }).not.throws()
   })
 
   it('should produce a transaction trace in the expected format', function(done) {
@@ -55,7 +55,7 @@ describe('Trace', function () {
           return done(err)
         }
 
-        codec.decode(traceJSON[4], function (derr, reconstituted) {
+        codec.decode(traceJSON[4], function(derr, reconstituted) {
           if (derr) {
             return done(derr)
           }
@@ -72,49 +72,43 @@ describe('Trace', function () {
     })
   })
 
-  it('should send host display name when set by user', function () {
+  it('should send host display name when set by user', function() {
+    agent.config.attributes.enabled = true
     agent.config.process_host.display_name = 'test-value'
 
     var trace = new Trace(new Transaction(agent))
 
-    expect(trace.parameters).deep.equal({'host.displayName': 'test-value'})
+    expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE))
+      .deep.equal({'host.displayName': 'test-value'})
   })
 
-  it('should not send host display name when not set by user', function () {
+  it('should not send host display name when not set by user', function() {
     var trace = new Trace(new Transaction(agent))
 
-    expect(trace.parameters).deep.equal({})
+    expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE)).deep.equal({})
   })
 
-  it('should produce human-readable JSON of the entire trace graph')
+  describe('when inserting segments', function() {
+    var trace = null
+    var transaction = null
 
-  describe('when inserting segments', function () {
-    var trace
-      , transaction
-
-
-    beforeEach(function () {
+    beforeEach(function() {
       transaction = new Transaction(agent)
-      trace       = transaction.trace
+      trace = transaction.trace
     })
 
-    it('should require a name for the new segment', function () {
-      expect(function () { trace.add(); }).throws(/must be named/)
+    it('should allow child segments on a trace', function() {
+      expect(function() { trace.add('Custom/Test17/Child1') }).not.throws()
     })
 
-    it('should allow child segments on a trace', function () {
-      expect(function () { trace.add('Custom/Test17/Child1'); }).not.throws()
-    })
-
-    it('should return the segment', function () {
+    it('should return the segment', function() {
       var segment
-      expect(function () { segment = trace.add('Custom/Test18/Child1'); }).not.throws()
+      expect(function() { segment = trace.add('Custom/Test18/Child1') }).not.throws()
       expect(segment).instanceof(Segment)
     })
 
-    it('should call a function associated with the segment',
-       function (done) {
-      var segment = trace.add('Custom/Test18/Child1', function () {
+    it('should call a function associated with the segment', function(done) {
+      var segment = trace.add('Custom/Test18/Child1', function() {
         return done()
       })
 
@@ -122,7 +116,7 @@ describe('Trace', function () {
       transaction.end()
     })
 
-    it('should report total time', function () {
+    it('should report total time', function() {
       trace.setDurationInMillis(40, 0)
       var child = trace.add('Custom/Test18/Child1')
       child.setDurationInMillis(27, 0)
@@ -137,7 +131,7 @@ describe('Trace', function () {
       expect(trace.getTotalTimeDurationInMillis()).equal(48)
     })
 
-    it('should report total time on branched traces', function () {
+    it('should report total time on branched traces', function() {
       trace.setDurationInMillis(40, 0)
       var child = trace.add('Custom/Test18/Child1')
       child.setDurationInMillis(27, 0)
@@ -153,7 +147,7 @@ describe('Trace', function () {
     })
 
     it('should report the expected trees for trees with uncollected segments',
-        function () {
+        function() {
       var expectedTrace = [
         0,
         27,
@@ -230,7 +224,7 @@ describe('Trace', function () {
       expect(child.toJSON()).deep.equal(expectedTrace)
     })
 
-    it('should report the expected trees for branched trees', function () {
+    it('should report the expected trees for branched trees', function() {
       var expectedTrace = [
         0,
         27,
@@ -316,7 +310,7 @@ describe('Trace', function () {
     })
 
     it('should measure exclusive time vs total time at each level of the graph',
-       function () {
+       function() {
       var child = trace.add('Custom/Test18/Child1')
 
       trace.setDurationInMillis(42)
@@ -325,7 +319,7 @@ describe('Trace', function () {
       expect(trace.getExclusiveDurationInMillis()).equal(20)
     })
 
-    it('should accurately sum overlapping segments', function () {
+    it('should accurately sum overlapping segments', function() {
       trace.setDurationInMillis(42)
 
       var now = Date.now()
@@ -348,7 +342,7 @@ describe('Trace', function () {
       expect(trace.getExclusiveDurationInMillis()).equal(5)
     })
 
-    it('should accurately sum partially overlapping segments', function () {
+    it('should accurately sum partially overlapping segments', function() {
       trace.setDurationInMillis(42)
 
       var now = Date.now()
@@ -369,7 +363,7 @@ describe('Trace', function () {
       expect(trace.getExclusiveDurationInMillis()).equal(9)
     })
 
-    it('should accurately sum partially overlapping, open-ranged segments', function () {
+    it('should accurately sum partially overlapping, open-ranged segments', function() {
       trace.setDurationInMillis(42)
 
       var now = Date.now()
@@ -384,7 +378,7 @@ describe('Trace', function () {
       expect(trace.getExclusiveDurationInMillis()).equal(9)
     })
 
-    it('should be limited to 900 children', function () {
+    it('should be limited to 900 children', function() {
       // They will be tagged as _collect = false after the limit runs out.
       for (var i = 0; i < 950; ++i) {
         var segment = trace.add(i.toString(), noop)
@@ -401,7 +395,28 @@ describe('Trace', function () {
       trace.root.children = []
       trace.recorders = []
 
-      function noop(){}
+      function noop() {}
+    })
+  })
+
+  describe('#addAttribute', function() {
+    var trace = null
+
+    beforeEach(function() {
+      agent.config.attributes.enabled = true
+      trace = new Transaction(agent).trace
+    })
+
+    it('does not add attribute if key length limit is exceeded', function() {
+      var tooLong = [
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
+        'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
+        'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
+      ].join(' ')
+      trace.addAttribute(tooLong, 'will fail')
+      var attributes = Object.keys(trace.attributes.attributes)
+      expect(attributes.length).to.equal(0)
     })
   })
 
@@ -421,15 +436,16 @@ describe('Trace', function () {
       }
 
       details.trace.generateJSON(function(err, json, trace) {
-        expect(err).to.not.exist
-        expect(json[1]).equal(1234)
+        expect(err).to.not.exist()
+        expect(json[1]).to.equal(1234)
+        expect(trace).to.equal(details.trace)
         done()
       })
     })
 
     describe('when `simple_compression` is `false`', function() {
       it('should compress the segment arrays', function(done) {
-        details.trace.generateJSON(function(err, json, trace) {
+        details.trace.generateJSON(function(err, json) {
           if (err) {
             return done(err)
           }
@@ -455,7 +471,7 @@ describe('Trace', function () {
       })
 
       it('should not compress the segment arrays', function(done) {
-        details.trace.generateJSON(function(err, json, trace) {
+        details.trace.generateJSON(function(err, json) {
           if (err) {
             return done(err)
           }
@@ -471,10 +487,10 @@ describe('Trace', function () {
 function makeTrace(agent, callback) {
   var DURATION = 33
   var URL = '/test?test=value'
-  agent.config.capture_params = true
+  agent.config.attributes.enabled = true
 
   var transaction = new Transaction(agent)
-  transaction.trace.parameters.request_uri = URL
+  transaction.trace.addAttribute('request.uri', URL)
   transaction.url  = URL
   transaction.verb = 'GET'
 
@@ -486,8 +502,8 @@ function makeTrace(agent, callback) {
   trace.setDurationInMillis(DURATION, 0)
 
   var web = trace.root.add(URL)
+  transaction.baseSegment = web
   transaction.finalizeNameFromUri(URL, 200)
-  web.markAsWeb(URL)
   // top-level element will share a duration with the quasi-ROOT node
   web.setDurationInMillis(DURATION, 0)
 
@@ -512,7 +528,11 @@ function makeTrace(agent, callback) {
         0,
         DURATION,
         'WebTransaction/NormalizedUri/*',
-        {nr_exclusive_duration_millis : 8, test : 'value'},
+        {
+          'nr_exclusive_duration_millis': 8,
+          'request.uri': '/test?test=value',
+          'test': 'value'
+        },
         [
           // TODO: ensure that the ordering is correct WRT start time
           db.toJSON(),
@@ -526,16 +546,15 @@ function makeTrace(agent, callback) {
     trace.root.timer.start / 1000,
     {},
     {
-      nr_flatten_leading : false
+      nr_flatten_leading: false
     },
     rootSegment,
     {
       agentAttributes: {
-        test : 'value'
+        'request.uri': '/test?test=value',
+        'test': 'value'
       },
-      userAttributes: {
-
-      },
+      userAttributes: {},
       intrinsics: {}
     },
     []  // FIXME: parameter groups

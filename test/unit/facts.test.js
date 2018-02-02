@@ -3,7 +3,6 @@
 var hostname = require('os').hostname
 var chai = require('chai')
 var expect = chai.expect
-var should = chai.should()
 var helper = require('../lib/agent_helper')
 var facts = require('../../lib/collector/facts')
 var sysInfo = require('../../lib/system-info')
@@ -100,11 +99,8 @@ describe('fun facts about apps that New Relic is interested in include', functio
 
   it("the environment (see environment.test.js) as crazy nested arrays", function(done) {
     facts(agent, function getFacts(factsed) {
-      should.exist(factsed.environment)
-
-      var materialized = factsed.environment.toJSON()
-      expect(materialized).an('array')
-      expect(materialized).length.above(1)
+      expect(factsed.environment).to.be.an('array')
+      expect(factsed.environment).to.have.length.above(1)
       done()
     })
   })
@@ -505,6 +501,8 @@ describe('display_host', function() {
   var agent
   var original_hostname = os.hostname
 
+  this.timeout(10000) // Environment scans can take a long time.
+
   beforeEach(function() {
     agent = helper.loadMockedAgent(null, DISABLE_ALL_DETECTIONS)
     agent.config.utilization = null
@@ -571,7 +569,9 @@ describe('display_host', function() {
 
     it('should be ipv6 when ipv_preference === 6', function(done) {
       if (!agent.config.getIPAddresses().ipv6) {
+        /* eslint-disable no-console */
         console.log('this machine does not have an ipv6 address, skipping')
+        /* eslint-enable no-console */
         return done()
       }
       agent.config.process_host.ipv_preference = '6'
@@ -596,7 +596,9 @@ describe('display_host', function() {
     it("returns no ipv4, hostname should be ipv6 if possible",
       function noip4(done) {
         if (!agent.config.getIPAddresses().ipv6) {
+          /* eslint-disable no-console */
           console.log('this machine does not have an ipv6 address, skipping')
+          /* eslint-enable no-console */
           return done()
         }
         var mockedNI = {lo: [], en0: [{

@@ -7,6 +7,7 @@ node_js:
   - "6"
   - "7"
   - "8"
+  - "9"
 env:
   - SUITE=smoke
   - SUITE=unit
@@ -14,10 +15,25 @@ env:
   - SUITE=lint
   - SUITE=prerelease
   - SUITE=security
+  - SUITE=versioned
 matrix:
   exclude:
     - node_js: "0.10"
       env: SUITE=security
+    - node_js: "0.10"
+      env: SUITE=lint
+    - node_js: "0.12"
+      env: SUITE=security
+    - node_js: "0.12"
+      env: SUITE=lint
+    - node_js: "4"
+      env: SUITE=security
+    - node_js: "4"
+      env: SUITE=lint
+    - node_js: "5"
+      env: SUITE=security
+    - node_js: "5"
+      env: SUITE=lint
   allow_failures:
     - env: SUITE=prerelease
 addons:
