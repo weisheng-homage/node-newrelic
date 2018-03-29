@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "2.7.0",
+  "version": "3.3.0",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "licenses": [
     {
@@ -104,12 +104,14 @@
   },
   "scripts": {
     "bench": "node ./bin/run-bench.js",
+    "versioned-tests": "./bin/run-versioned-tests.sh",
     "test": "make test"
   },
   "bin": {
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
+    "@newrelic/koa": "^1.0.0",
     "async": "^2.1.4",
     "concat-stream": "^1.5.0",
     "https-proxy-agent": "^0.3.6",
@@ -121,7 +123,7 @@
     "@newrelic/native-metrics": "^2.1.0"
   },
   "devDependencies": {
-    "@newrelic/test-utilities": "git+https://github.com/newrelic/node-test-utilities.git",
+    "@newrelic/test-utilities": "^1.2.0",
     "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",
@@ -137,13 +139,14 @@
     "got": "^8.0.1",
     "ioredis": "*",
     "jsdoc": "^3.4.0",
+    "lodash": "^4.17.5",
     "memcached": ">=0.2.8",
     "minami": "^1.1.1",
     "mkdirp": "*",
     "mocha": "^3.5.3",
     "mongodb": "^2",
     "mysql": "*",
-    "nock": "^9.0.14",
+    "nock": "9.1.9",
     "node-cassandra-cql": "^0.5.0",
     "proxy": "^0.2.3",
     "proxyquire": "^1.8.0",
@@ -155,11 +158,10 @@
     "sequelize": "*",
     "should": "*",
     "sinon": "^3.3.0",
-    "tap": "^9.0.3",
+    "tap": "^10.7.3",
     "temp": "^0.8.1",
     "through": "^2.3.6",
-    "when": "*",
-    "wrench": "*"
+    "when": "*"
   },
   "repository": {
     "type": "git",

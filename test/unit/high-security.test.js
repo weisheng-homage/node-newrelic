@@ -1,82 +1,121 @@
 'use strict'
 
-var path   = require('path')
+var _ = require('lodash')
 var chai   = require('chai')
-var helper = require('../lib/agent_helper.js')
-var facts  = require('../../lib/collector/facts.js')
-var API    = require('../../api.js')
+var helper = require('../lib/agent_helper')
+var facts = require('../../lib/collector/facts')
+var API = require('../../api')
 var Config = require('../../lib/config')
 
+
 var should = chai.should()
+var expect = chai.expect
 
-describe('high security mode', function () {
+describe('high security mode', function() {
+  describe('config to be sent during connect', function() {
+    var agent = null
 
-  describe('config to be sent during connect', function () {
-    var agent
-    var api
-
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.loadMockedAgent()
-      api = new API(agent)
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
     })
 
-    it('should contain high_security', function () {
+    it('should contain high_security', function() {
       facts(agent, function getFacts(factoids) {
-        factoids.high_security.should.not.equal(null)
+        expect(factoids).to.have.property('high_security')
       })
     })
   })
 
-  describe('conditional application of server side settings', function () {
-    var config
+  describe('conditional application of server side settings', function() {
+    var config = null
 
-    describe('high_security === true', function () {
-      beforeEach(function () {
+    describe('when high_security === true', function() {
+      beforeEach(function() {
         config = new Config({high_security: true})
       })
 
-      it('should reject disabling ssl', function () {
-        // enabled by defualt, but lets make sure.
-        config.ssl = true
-        config.onConnect({high_security: true, ssl: false})
-        config.ssl.should.equal(true)
+      it('should reject disabling ssl', function() {
+        check('ssl', true, false)
       })
 
-      it('should reject enabling capture_params', function () {
-        // disabled by default, but lets make sure.
-        config.capture_params = false
-        config.onConnect({high_security: true, capture_params: true})
-        config.capture_params.should.equal(false)
+      it('should reject enabling capture_params', function() {
+        check('capture_params', false, true)
       })
 
-      it('should shut down the agent if high_security is false', function () {
+      it('should reject enabling allow_all_headers', function() {
+        check('allow_all_headers', false, true)
+      })
+
+      it('should reject enabling slow_sql', function() {
+        check('slow_sql.enabled', false, true)
+      })
+
+      it('should not change attributes settings', function() {
+        check('attributes.include', [], ['foobar'])
+        check('attributes.exclude', [], ['fizzbang'])
+      })
+
+      it('should not change transaction_tracer settings', function() {
+        check('transaction_tracer.record_sql', 'obfuscated', 'raw')
+        check('transaction_tracer.attributes.include', [], ['foobar'])
+        check('transaction_tracer.attributes.exclude', [], ['fizzbang'])
+      })
+
+      it('should not change error_collector settings', function() {
+        check('error_collector.attributes.include', [], ['foobar'])
+        check('error_collector.attributes.exclude', [], ['fizzbang'])
+      })
+
+      it('should not change browser_monitoring settings', function() {
+        check('browser_monitoring.attributes.include', [], ['foobar'])
+        check('browser_monitoring.attributes.exclude', [], ['fizzbang'])
+      })
+
+      it('should not change transaction_events settings', function() {
+        check('transaction_events.attributes.include', [], ['foobar'])
+        check('transaction_events.attributes.exclude', [], ['fizzbang'])
+      })
+
+      it('should shut down the agent if high_security is false', function() {
         config.onConnect({high_security: false})
-        config.agent_enabled.should.equal(false)
+        expect(config.agent_enabled).to.be.false()
       })
 
-      it('should shut down the agent if high_security is missing', function () {
+      it('should shut down the agent if high_security is missing', function() {
         config.onConnect({})
-        config.agent_enabled.should.equal(false)
+        expect(config.agent_enabled).to.be.false()
       })
+
+      function check(key, expected, server) {
+        _.set(config, key, _.isArray(expected) ? _.slice(expected) : expected)
+        var fromServer = {high_security: true}
+        fromServer[key] = _.isArray(server) ? _.slice(server) : server
+
+        expect(_.get(config, key)).to.deep.equal(expected)
+        expect(fromServer).property(key).to.deep.equal(server)
+
+        config.onConnect(fromServer)
+        expect(_.get(config, key)).to.deep.equal(expected)
+      }
     })
 
-    describe('high_security === false', function () {
-      beforeEach(function () {
+    describe('when high_security === false', function() {
+      beforeEach(function() {
         config = new Config({high_security: false})
       })
 
-      it('should accept disabling ssl', function () {
+      it('should accept disabling ssl', function() {
         // enabled by defualt, but lets make sure.
         config.ssl = true
         config.onConnect({ssl: false})
-        config.ssl.should.equal(false)
+        config.ssl.should.equal(true)
       })
 
-      it('should reject enabling capture_params', function () {
+      it('should reject enabling capture_params', function() {
         // disabled by default, but lets make sure.
         config.capture_params = false
         config.onConnect({capture_params: true})
@@ -85,95 +124,98 @@ describe('high security mode', function () {
     })
   })
 
-  describe('coerces other settings', function () {
-    describe('_applyHighSecurity during init', function () {
+  describe('coerces other settings', function() {
+    describe('_applyHighSecurity during init', function() {
       var orig = Config.prototype._applyHighSecurity
       var called
 
-      beforeEach(function () {
+      beforeEach(function() {
         called = false
         Config.prototype._applyHighSecurity = function() {
           called = true
         }
       })
 
-      afterEach(function () {
+      afterEach(function() {
         Config.prototype._applyHighSecurity = orig
       })
 
-      it('should call if high_security is on', function () {
-        // jshint nonew:false
-        new Config({high_security: true})
-        // jshint nonew:true
+      it('should call if high_security is on', function() {
+        new Config({high_security: true}) // eslint-disable-line no-new
         called.should.equal(true)
       })
 
-      it('should not call if high_security is off', function () {
-        // jshint nonew:false
-        new Config({high_security: false})
-        // jshint nonew:true
+      it('should not call if high_security is off', function() {
+        new Config({high_security: false}) // eslint-disable-line no-new
         called.should.equal(false)
       })
     })
 
-
-    describe('high_security === true', function () {
-      it('should detect that ssl is off', function (done) {
-        var config = new Config({high_security: true})
-        config.ssl = false
-        config.on('ssl', function(value) {
-          value.should.equal(true)
-          config.ssl.should.equal(true)
-          done()
-        })
-        config._applyHighSecurity()
+    describe('when high_security === true', function() {
+      it('should detect that ssl is off', function() {
+        check('ssl', false, true)
       })
 
-      it('should detect that capture_params is on', function (done) {
-        var config = new Config({'high_security': true})
-        config.capture_params = true
-        config.on('capture_params', function(value) {
-          value.should.equal(false)
-          config.capture_params.should.equal(false)
-          done()
-        })
-        config._applyHighSecurity()
+      it('should detect that capture_params is on', function() {
+        check('capture_params', true, false)
       })
 
-      it('should detect that attributes.enabled is on', function (done) {
-        var config = new Config({'high_security': true})
-        config.attributes.enabled = true
-        config.on('attributes.enabled', function(value) {
-          value.should.equal(false)
-          config.attributes.enabled.should.equal(false)
-          done()
-        })
-        config._applyHighSecurity()
+      it('should detect that allow_all_headers is on', function() {
+        check('allow_all_headers', true, false)
       })
 
-      it('should detect that slow_sql is enabled', function (done) {
-        var config = new Config({'high_security': true})
-        config.slow_sql.enabled = true
-        config.on('slow_sql.enabled', function(value) {
-          value.should.equal(false)
-          config.slow_sql.enabled.should.equal(false)
-          done()
-        })
-        config._applyHighSecurity()
+      it('should change attributes settings', function() {
+        // Should not touch `enabled` setting or exclude.
+        check('attributes.enabled', true, true)
+        check('attributes.enabled', false, false)
+        check('attributes.exclude', ['fizbang'], ['fizbang'])
+
+        check('attributes.include', ['foobar'], [])
       })
 
-      it('should detect that record_sql is raw', function (done) {
-        var config = new Config({'high_security': true})
-        config.transaction_tracer.record_sql = 'raw'
-        config.on('transaction_tracer.record_sql', function(value) {
-          value.should.equal('obfuscated')
-          config.transaction_tracer.record_sql.should.equal('obfuscated')
-          done()
-        })
-        config._applyHighSecurity()
+      it('should change transaction_tracer settings', function() {
+        check('transaction_tracer.record_sql', 'raw', 'obfuscated')
+
+        // Should not touch `enabled` setting.
+        check('transaction_tracer.attributes.enabled', true, true)
+        check('transaction_tracer.attributes.enabled', false, false)
+
+        check('transaction_tracer.attributes.include', ['foobar'], [])
+        check('transaction_tracer.attributes.exclude', ['fizbang'], ['fizbang'])
       })
 
-      it('should detect no problems', function () {
+      it('should change error_collector settings', function() {
+        // Should not touch `enabled` setting.
+        check('error_collector.attributes.enabled', true, true)
+        check('error_collector.attributes.enabled', false, false)
+
+        check('error_collector.attributes.include', ['foobar'], [])
+        check('error_collector.attributes.exclude', ['fizbang'], ['fizbang'])
+      })
+
+      it('should change browser_monitoring settings', function() {
+        // Should not touch `enabled` setting.
+        check('browser_monitoring.attributes.enabled', true, true)
+        check('browser_monitoring.attributes.enabled', false, false)
+
+        check('browser_monitoring.attributes.include', ['foobar'], [])
+        check('browser_monitoring.attributes.exclude', ['fizbang'], ['fizbang'])
+      })
+
+      it('should change transaction_events settings', function() {
+        // Should not touch `enabled` setting.
+        check('transaction_events.attributes.enabled', true, true)
+        check('transaction_events.attributes.enabled', false, false)
+
+        check('transaction_events.attributes.include', ['foobar'], [])
+        check('transaction_events.attributes.exclude', ['fizbang'], ['fizbang'])
+      })
+
+      it('should detect that slow_sql is enabled', function() {
+        check('slow_sql.enabled', true, false)
+      })
+
+      it('should detect no problems', function() {
         var config = new Config({high_security: true})
         config.ssl = true
         config.capture_params = false
@@ -182,30 +224,38 @@ describe('high security mode', function () {
         config.capture_params.should.equal(false)
       })
     })
+
+    function check(key, before, after) {
+      var fromFile = {high_security: true}
+      _.set(fromFile, key, before)
+
+      var config = new Config(fromFile)
+      expect(_.get(config, key)).to.deep.equal(after)
+    }
   })
 
-  describe('affect custom params', function () {
-    var agent
-    var api
+  describe('affect custom params', function() {
+    var agent = null
+    var api = null
 
-    beforeEach(function () {
+    beforeEach(function() {
       agent = helper.loadMockedAgent()
       api = new API(agent)
     })
 
-    afterEach(function () {
+    afterEach(function() {
       helper.unloadAgent(agent)
     })
 
-    it('should disable addCustomParameter if high_security is on', function () {
+    it('should disable addCustomAttribute if high_security is on', function() {
       agent.config.high_security = true
-      var success = api.addCustomParameter('key', 'value')
+      var success = api.addCustomAttribute('key', 'value')
       success.should.equal(false)
     })
 
-    it('should not affect addCustomParameter if high_security is off', function () {
+    it('should not affect addCustomAttribute if high_security is off', function() {
       agent.config.high_security = false
-      var success = api.addCustomParameter('key', 'value')
+      var success = api.addCustomAttribute('key', 'value')
       should.not.exist(success)
     })
   })

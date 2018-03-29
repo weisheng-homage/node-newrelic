@@ -13,11 +13,13 @@ tap.test('Hapi router introspection', function(t) {
   var port = null
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent()
+    agent = helper.instrumentMockedAgent(null, {
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      }
+    })
     server = utils.getServer()
-
-    // disabled by default
-    agent.config.attributes.enabled = true
 
     done()
   })
@@ -68,6 +70,62 @@ tap.test('Hapi router introspection', function(t) {
       path: '/test/{id}',
       config: hello
     })
+
+    server.start().then(function() {
+      port = server.info.port
+      var params = {
+        uri: 'http://localhost:' + port + '/test/31337',
+        json: true
+      }
+      request.get(params, function(error, res, body) {
+        t.equal(res.statusCode, 200, 'nothing exploded')
+        t.deepEqual(body, {status: 'ok'}, 'got expected response')
+        t.end()
+      })
+    })
+  })
+
+  t.test('using `pre` config option', function(t) {
+    agent.on('transactionFinished', verifier(t))
+
+    var route = {
+      method: 'GET',
+      path: '/test/{id}',
+      options: {
+        pre: [
+          function plain() {
+            t.ok(agent.getTransaction(), 'transaction available in plain `pre` function')
+            return 'ok'
+          },
+          [
+            {
+              method: function nested() {
+                t.ok(
+                  agent.getTransaction(),
+                  'transaction available in nested `pre` function'
+                )
+                return 'ok'
+              }
+            },
+            {
+              assign: 'pre3',
+              method: function nested2() {
+                t.ok(
+                  agent.getTransaction(),
+                  'transaction available in 2nd nested `pre` function'
+                )
+                return 'ok'
+              }
+            }
+          ]
+        ],
+        handler: function(req) {
+          t.ok(agent.getTransaction(), 'transaction is available in final handler')
+          return {status: req.pre.pre3}
+        }
+      }
+    }
+    server.route(route)
 
     server.start().then(function() {
       port = server.info.port
@@ -211,6 +269,9 @@ function verifier(t, verb) {
     t.equal(web.name, transaction.name, 'segment name and transaction name match')
     t.equal(web.partialName, 'Hapi/' + verb + '//test/{id}',
             'should have partial name for apdex')
-    t.equal(web.parameters.id, '31337', 'namer gets attributes out of route')
+    t.equal(
+      web.parameters['request.parameters.id'], '31337',
+      'namer gets attributes out of route'
+    )
   }
 }

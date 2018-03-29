@@ -1,3 +1,184 @@
+### 3.3.0 (2018-03-27):
+
+* Added `newrelic.startSegment()` which replaces `newrelic.createTracer()`.
+
+  This new API method allows you to create custom segments using either callbacks
+  or promises.
+
+* Fixed bug in `pre` route config option in Hapi instrumentation.
+
+  Only applies to Hapi v16 and below. The `pre` handler wrapping was not properly
+  returning in cases when the element was a string referring to a registered server
+  method, and as a result these elements would be replaced with `undefined`.
+
+### 3.2.0 (2018-03-14):
+
+* Added [`@newrelic/koa`](https://github.com/newrelic/node-newrelic-koa) as a
+  dependency.
+
+  This introduces instrumentation for **Koa v2.0.0** or higher. It will be treated
+  as first-party instrumentation within the agent, but publishing it as a
+  separate module allows it to be installed independently according to users' needs.
+
+* Refactored instrumentation hooks to work with modules.
+
+  With this change it is now possible to link against external instrumentation
+  modules.
+
+### 3.1.0 (2018-03-13):
+
+* Promise based web framework middleware instrumentation now supports callback
+  based sequencing.
+
+  Previously, a promise based middleware was assumed to continue to the next
+  middleware once the promise it returned resolved.  This assumption has been
+  relaxed to allow for a callback to be supplied to the middleware to invoke the
+  next middleware.
+
+### 3.0.0 (2018-03-06):
+
+* Removed the `ssl` configuration option.
+
+  TLS is now always used in communication with New Relic Servers. The `ssl`
+  configuration value and `NEW_RELIC_USE_SSL` environment value are no longer
+  used. Setting either value to anything other than `true` will result in a
+  warning.
+
+* Security bulletin [NR18-05](https://docs.newrelic.com/docs/accounts-partnerships/new-relic-security/security-bulletins/security-bulletin-nr18-06):
+
+  Fixes issue introduced in 2.8.0 where the agent may have captured all
+  transaction attributes, even with High Security Mode enabled on the account.
+  This may have included sensitive data attached to transactions.
+
+* All request parameters now prefixed with `request.parameters.`.
+
+  Previously request parameters such as route and query parameters were added
+  as attributes without any name changes. For example `/foo?bar=value` would add
+  the attribute `bar` to the transaction. Now this attribute would be named
+  `request.parameters.bar`.
+
+  Any Insights dashboards, alerts, or other NRQL queries using these attributes
+  must be updated to use the new attribute names.
+
+### 2.9.1 (2018-03-05):
+
+* Security bulletin [NR18-05](https://docs.newrelic.com/docs/accounts-partnerships/new-relic-security/security-bulletins/security-bulletin-nr18-06):
+
+  Fixes issue introduced in 2.8.0 where the agent may have captured all
+  transaction attributes, even with High Security Mode enabled on the account.
+  This may have included sensitive data attached to transactions.
+
+* Removed support for agent attributes include/exclude rules.
+
+  These will be coming back in Node Agent v3.0.0. The fix for the above security
+  bulletin required a backwards incompatible change to our attributes.
+
+* Fixed bug in Bluebird instrumentation.
+
+  Some methods were not instrumented correctly. This would cause a problem if a
+  function was passed to these methods.
+
+  Special thanks to Andreas Lind (@papandreou) for helping us find this bug.
+
+### 2.9.0 (2018-02-27):
+
+* Added the `WebFrameworkShim#savePossibleTransactionName` method.
+
+  This method may be used to mark the current running middleware as a potential
+  responder. `savePossibleTransactionName` should be used if a middleware can't
+  be determined to be a terminal middleware while it executes, but may be
+  responsible for responding after execution has finished.
+
+* Fixed `dns.resolve` results assertion.
+
+* Added check for `parentSegment` in `async_hooks` instrumentation, to help
+  ensure that transaction context is maintained.
+
+* Expanded `async_hooks` tests around maintain transaction context.
+
+* Added Koa to metric naming objects.
+
+* Added `callback` prop to `middlewareWithPromiseRecorder` return spec.
+
+  While we aren't actually wrapping any callback, this is a workaround that gives
+  us access to the active segment. This ensures that all segments inside Koa
+  transaction traces are named correctly, particularly in cases when transaction
+  context may be lost.
+
+* Updated `after` prop in `middlewareWithPromiseRecorder` return spec to set
+  `txInfo.errorHandled = true` in cases when there is no error.
+
+  Because Koa has no concept of errorware in the same sense as Express or Connect
+  (`(err, req, res, next)`), the agent now assumes if a middleware resolves, any
+  error that may have occurred can be marked as handled.
+
+* Upgraded `tap` dev dependency to v10.
+
+* Added a check for the function's prototype in `shim#wrapReturn`.
+
+  The agent used to throw if a function with no prototype was passed into
+  `wrapReturn`, then `bind` was called on the wrapper.
+
+### 2.8.0 (2018-02-21):
+
+* Added instrumentation support for MongoDB version 3.
+
+  Version 3 of [mongodb](https://npmjs.org/package/mongodb) is now supported.
+  Previously datastore host information (instance metrics) was incorrectly
+  captured by the agent with `mongodb` v3. This has been fixed and all features
+  should be functional now.
+
+* Enable certain agent attributes when high security mode is enabled.
+
+  During the switch from the old `capture_params`/`ignored_params` to the new
+  attribute include/exclude rules, high security mode was over-zealous in what
+  attributes it disallowed. This has been trimmed back to be in line with other
+  agents.
+
+* Updated documentation for `apdex_t` setting and removed environment variable.
+
+  This was never configurable on client side and the documentation was misleading.
+
+* Documented environment variables for `slow_sql` configurations.
+
+  Thanks to Olivier Tassinari (@oliviertassinari) for the update!
+
+* Updated `hapi/hapi-pre-17/package.json` to run `errors.tap.js` in more versions.
+
+* Added internal cache to unwrapped core modules for agent use.
+
+* Improved logging around environment facts gathering.
+
+### 2.7.1 (2018-02-08):
+
+* Change `attributes.enabled` to `true` by default.
+
+  In the previous version we defaulted this to `false` to maintain parity with
+  `capture_params` which defaulted to `false`. However, this is a invalid parity
+  because `attribute.enabled` controls more attributes than `capture_params`.
+
+* The agent will no longer generate browser data for ignored transactions.
+
+* Removed unnecessary checks around `Timer.unref()` calls.
+
+  `unref` has been supported since Node v0.9, meaning it will always be present
+  in timers set by the agent (with 0.10 being the earliest supported version).
+
+* Expanded Hapi instrumentation to support route [`pre` handlers](https://github.com/hapijs/hapi/blob/v16/API.md#route-prerequisites).
+
+  This is a Hapi route config option that was previously uninstrumented, causing
+  transaction names to become invalid. This expanded instrumentation ensures
+  that all additional handlers are wrapped and associated with the main route.
+
+* Added a split in the node versions for the `mysql2` and `cassandra` versioned
+  tests.
+
+  As of `mysql2` v1.3.1 and `cassandra` v3.4.0 the minimum supported version of
+  Node is 4.
+
+* Replaced as many instances of `{}` as possible with `Object.create(null)`.
+
+* Removed extraneous logger arg in `addCustomAttribute` call.
 
 ### 2.7.0 (2018-02-01):
 
@@ -64,7 +245,6 @@
   instance of a Buffer. If `crypto.DEFAULT_ENCODING` is changed, `hash.digest()`
   will return a string and the agent would crash.  The agent now ensures that
   the value is a Buffer instance before moving on.
-
 
 * Renamed `request_uri` attribute to `request.uri`.
 

@@ -38,7 +38,7 @@ describe('WebFrameworkShim', function() {
       errorHandled: false,
       error: null
     }
-    req = {__NR_transactionInfo: txInfo}
+    req = {__NR_transactionInfo: txInfo, params: {foo: 'bar', biz: 'bang'}}
     Promise = require('bluebird')
   })
 
@@ -524,6 +524,53 @@ describe('WebFrameworkShim', function() {
         }
       })
 
+      describe('when high_security is off', function() {
+        beforeEach(function() {
+          agent.config.high_security = false
+        })
+
+        it('should capture route parameters', function() {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: shim.MIDDLEWARE, route: ['/one', '/two']}
+          )
+          helper.runInTransaction(agent, function(tx) {
+            txInfo.transaction = tx
+            var segment = wrapped(req)
+
+            expect(segment).to.exist()
+              .and.property('parameters').to.deep.equal({
+                nr_exclusive_duration_millis: null,
+                foo: 'bar',
+                biz: 'bang'
+              })
+          })
+        })
+      })
+
+
+      describe('when high_security is on', function() {
+        beforeEach(function() {
+          agent.config.high_security = true
+        })
+
+        it('should not capture route parameters', function() {
+          var wrapped = shim.recordMiddleware(
+            wrappable.getActiveSegment,
+            {type: shim.MIDDLEWARE, route: ['/one', '/two']}
+          )
+          helper.runInTransaction(agent, function(tx) {
+            txInfo.transaction = tx
+            var segment = wrapped(req)
+
+            expect(segment).to.exist()
+              .and.property('parameters').to.deep.equal({
+                nr_exclusive_duration_millis: null
+              })
+          })
+        })
+      })
+
       describe('when the middleware is synchronous', function() {
         it('should notice thrown exceptions', function() {
           var wrapped = shim.recordMiddleware(function() {
@@ -677,12 +724,21 @@ describe('WebFrameworkShim', function() {
 
         beforeEach(function() {
           unwrappedTimeout = shim.unwrap(setTimeout)
-          middleware = function(_req, err) {
+          middleware = function(_req, err, next) {
             segment = shim.getSegment()
             return new Promise(function(resolve, reject) {
               unwrappedTimeout(function() {
                 try {
                   expect(txInfo.transaction.nameState.getPath()).to.equal('/foo/bar')
+                  if (next) {
+                    return next().then(function() {
+                      expect(txInfo.transaction.nameState.getPath()).to.equal('/foo/bar')
+                      resolve()
+                    }, function(e) {
+                      expect(txInfo.transaction.nameState.getPath()).to.equal('/')
+                      resolve()
+                    })
+                  }
                   if (err) {
                     throw err
                   } else {
@@ -697,6 +753,7 @@ describe('WebFrameworkShim', function() {
 
           wrapped = shim.recordMiddleware(middleware, {
             route: '/foo/bar',
+            next: shim.LAST,
             promise: true
           })
         })
@@ -735,6 +792,34 @@ describe('WebFrameworkShim', function() {
             return wrapped(req).then(function() {
               expect(tx.nameState.getPath()).to.equal('/')
               expect(segment.timer.getDurationInMillis()).to.be.above(18)
+            })
+          })
+        })
+
+        it('should pop the name of the handler off when next is called', function() {
+          return helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+            return wrapped(req, null, function next() {
+              expect(tx.nameState.getPath()).to.equal('/')
+              return new Promise(function(resolve) {
+                expect(agent.tracer.getTransaction()).to.equal(tx)
+                resolve()
+              })
+            })
+          })
+        })
+
+        it('should have the right name when the next handler errors', function() {
+          return helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+            return wrapped(req, null, function next() {
+              expect(tx.nameState.getPath()).to.equal('/')
+              return new Promise(function(resolve, reject) {
+                expect(agent.tracer.getTransaction()).to.equal(tx)
+                reject()
+              })
             })
           })
         })
@@ -1044,6 +1129,23 @@ describe('WebFrameworkShim', function() {
     })
   })
 
+  describe('#savePossibleTransactionName', function() {
+    it('should mark the path on the namestate', function() {
+      helper.runInTransaction(agent, function(tx) {
+        txInfo.transaction = tx
+        var ns = tx.nameState
+        ns.appendPath('asdf')
+        shim.savePossibleTransactionName(req)
+        ns.popPath()
+        expect(ns.getPath()).to.equal('/asdf')
+      })
+    })
+
+    it('should not explode when no req object is passed in', function() {
+      shim.savePossibleTransactionName()
+    })
+  })
+
   describe('#noticeError', function() {
     it('should cache errors in the transaction info', function() {
       var err = new Error('test error')
@@ -1132,6 +1234,14 @@ describe('WebFrameworkShim', function() {
       shim.captureUrlParams({foo: 'bar', biz: 'baz'})
       expect(segment).property('parameters')
         .to.deep.equal({foo: 'other', biz: 'baz', bang: 'bam'})
+    })
+
+    it('should obey high_security mode', function() {
+      agent.config.high_security = true
+      var segment = {parameters: {foo: 'other'}}
+      shim.getSegment = function() { return segment }
+      shim.captureUrlParams({foo: 'bar', biz: 'baz'})
+      expect(segment).property('parameters').to.deep.equal({foo: 'other'})
     })
 
     it('should not throw when out of a transaction', function() {

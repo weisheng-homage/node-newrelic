@@ -5,18 +5,18 @@ var chai = require('chai')
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 var should = chai.should()
-var API = require('../../../lib/collector/api.js')
+var API = require('../../../lib/collector/api')
 
 
 var HOST = 'collector.newrelic.com'
-var PORT = 80
-var URL = 'http://' + HOST
+var PORT = 443
+var URL = 'https://' + HOST
 var RUN_ID = 1337
 
 
 function generate(method, runID) {
   var fragment = '/agent_listener/invoke_raw_method?' +
-    'marshal_format=json&protocol_version=14&' +
+    'marshal_format=json&protocol_version=15&' +
     'license_key=license%20key%20here&method=' + method
 
   if (runID) fragment += '&run_id=' + runID
@@ -28,7 +28,7 @@ var timeout = global.setTimeout
 function fast() { global.setTimeout = function(cb) {return timeout(cb, 0)} }
 function slow() { global.setTimeout = timeout }
 
-describe("CollectorAPI", function() {
+describe('CollectorAPI', function() {
   var api = null
   var agent = null
 
@@ -38,7 +38,7 @@ describe("CollectorAPI", function() {
       host: HOST,
       port: PORT,
       app_name: ['TEST'],
-      ssl: false,
+      ssl: true,
       license_key: 'license key here',
       utilization: {
         detect_aws: false,
@@ -60,8 +60,8 @@ describe("CollectorAPI", function() {
     helper.unloadAgent(agent)
   })
 
-  describe("_login", function() {
-    describe("on the happy path", function() {
+  describe('_login', function() {
+    describe('on the happy path', function() {
       var bad
       var ssc
       var raw
@@ -76,7 +76,7 @@ describe("CollectorAPI", function() {
       beforeEach(function(done) {
         agent.config.port = 8080
         var redirection = nock(URL + ':8080')
-          .post(generate('get_redirect_host'))
+          .post(generate('preconnect'))
           .reply(200, {return_value: HOST})
         var connection = nock(URL)
           .post(generate('connect'))
@@ -110,12 +110,12 @@ describe("CollectorAPI", function() {
       })
     })
 
-    describe("off the happy path", function() {
-      describe("receiving 503 response from get_redirect_host", function() {
+    describe('off the happy path', function() {
+      describe('receiving 503 response from preconnect', function() {
         var captured
 
         before(function(done) {
-          var redirection = nock(URL).post(generate('get_redirect_host')).reply(503)
+          var redirection = nock(URL).post(generate('preconnect')).reply(503)
 
           api._login(function test(error) {
             captured = error
@@ -125,28 +125,28 @@ describe("CollectorAPI", function() {
           })
         })
 
-        it("should have gotten an error", function() {
+        it('should have gotten an error', function() {
           should.exist(captured)
         })
 
-        it("should have passed on the status code", function() {
+        it('should have passed on the status code', function() {
           expect(captured.statusCode).equal(503)
         })
 
-        it("should have included an informative error message", function() {
+        it('should have included an informative error message', function() {
           expect(captured.message)
-            .equal("No body found in response to get_redirect_host.")
+            .equal('No body found in response to preconnect.')
         })
       })
 
-      describe("receiving no hostname from get_redirect_host", function() {
+      describe('receiving no hostname from preconnect', function() {
         var captured
         var ssc
 
 
         before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('get_redirect_host'))
+                              .post(generate('preconnect'))
                               .reply(200, {return_value: ''})
           var connect = nock(URL)
                           .post(generate('connect'))
@@ -162,27 +162,27 @@ describe("CollectorAPI", function() {
           })
         })
 
-        it("should have gotten no error", function() {
+        it('should have gotten no error', function() {
           should.not.exist(captured)
         })
 
-        it("should use preexisting collector hostname", function() {
+        it('should use preexisting collector hostname', function() {
           expect(api._agent.config.host).equal(HOST)
         })
 
-        it("should pass along server-side configuration from collector", function() {
+        it('should pass along server-side configuration from collector', function() {
           expect(ssc).eql({agent_run_id: RUN_ID})
         })
       })
 
-      describe("receiving a weirdo redirect name from get_redirect_host", function () {
+      describe('receiving a weirdo redirect name from preconnect', function() {
         var captured
         var ssc
 
 
-        before(function (done) {
+        before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('get_redirect_host'))
+                              .post(generate('preconnect'))
                               .reply(200, {return_value: HOST + ':chug:8089'})
           var connect = nock(URL)
                           .post(generate('connect'))
@@ -198,31 +198,31 @@ describe("CollectorAPI", function() {
           })
         })
 
-        it("should have gotten no error", function () {
+        it('should have gotten no error', function() {
           should.not.exist(captured)
         })
 
-        it("should use preexisting collector hostname", function () {
+        it('should use preexisting collector hostname', function() {
           expect(api._agent.config.host).equal(HOST)
         })
 
-        it("should use preexisting collector port number", function () {
+        it('should use preexisting collector port number', function() {
           expect(api._agent.config.port).equal(PORT)
         })
 
-        it("should pass along server-side configuration from collector", function () {
+        it('should pass along server-side configuration from collector', function() {
           expect(ssc).eql({agent_run_id: RUN_ID})
         })
       })
 
-      describe("receiving no config back from connect", function () {
+      describe('receiving no config back from connect', function() {
         var captured
         var ssc
 
 
-        before(function (done) {
+        before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('get_redirect_host'))
+                              .post(generate('preconnect'))
                               .reply(200, {return_value: HOST})
           var connect = nock(URL)
                           .post(generate('connect'))
@@ -238,25 +238,25 @@ describe("CollectorAPI", function() {
           })
         })
 
-        it("should have gotten an error", function () {
+        it('should have gotten an error', function() {
           should.exist(captured)
         })
 
-        it("should have gotten an informative error message", function () {
-          expect(captured.message).equal("No agent run ID received from handshake.")
+        it('should have gotten an informative error message', function() {
+          expect(captured.message).equal('No agent run ID received from handshake.')
         })
 
-        it("should pass along no server-side configuration from collector", function () {
+        it('should pass along no server-side configuration from collector', function() {
           should.not.exist(ssc)
         })
       })
 
-      describe("receiving 503 response from connect", function () {
+      describe('receiving 503 response from connect', function() {
         var captured
 
-        before(function (done) {
+        before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('get_redirect_host'))
+                              .post(generate('preconnect'))
                               .reply(200, {return_value: HOST})
           var connection = nock(URL)
                               .post(generate('connect'))
@@ -271,28 +271,28 @@ describe("CollectorAPI", function() {
           })
         })
 
-        it("should have gotten an error", function () {
+        it('should have gotten an error', function() {
           should.exist(captured)
         })
 
-        it("should have passed on the status code", function () {
+        it('should have passed on the status code', function() {
           expect(captured.statusCode).equal(503)
         })
 
-        it("should have included an informative error message", function () {
+        it('should have included an informative error message', function() {
           expect(captured.message)
-            .equal("No body found in response to connect.")
+            .equal('No body found in response to connect.')
         })
       })
 
-      describe("receiving 200 response to get_redirect_host but no data", function () {
+      describe('receiving 200 response to preconnect but no data', function() {
         var captured
         var data
         var raw
 
 
-        before(function (done) {
-          var redirection = nock(URL).post(generate('get_redirect_host')).reply(200)
+        before(function(done) {
+          var redirection = nock(URL).post(generate('preconnect')).reply(200)
 
           api._login(function test(error, response, json) {
             captured = error
@@ -304,37 +304,37 @@ describe("CollectorAPI", function() {
           })
         })
 
-        it("should have gotten an error", function () {
+        it('should have gotten an error', function() {
           should.exist(captured)
         })
 
-        it("should have paseed on the status code", function () {
+        it('should have paseed on the status code', function() {
           expect(captured.statusCode).equal(200)
         })
 
-        it("should have included an informative error message", function () {
+        it('should have included an informative error message', function() {
           expect(captured.message)
-            .equal("No body found in response to get_redirect_host.")
+            .equal('No body found in response to preconnect.')
         })
 
-        it("should have no return_value", function () {
+        it('should have no return_value', function() {
           should.not.exist(data)
         })
 
-        it("should have passed along (empty) body", function () {
+        it('should have passed along (empty) body', function() {
           should.not.exist(raw)
         })
       })
 
-      describe("receiving 200 response to connect but no data", function () {
+      describe('receiving 200 response to connect but no data', function() {
         var captured
         var data
         var raw
 
 
-        before(function (done) {
+        before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('get_redirect_host'))
+                              .post(generate('preconnect'))
                               .reply(200, {return_value: HOST})
           var connection = nock(URL).post(generate('connect')).reply(200)
 
@@ -349,28 +349,28 @@ describe("CollectorAPI", function() {
           })
         })
 
-        it("should have gotten an error", function () {
+        it('should have gotten an error', function() {
           should.exist(captured)
         })
 
-        it("should not have a status code on the error", function () {
+        it('should not have a status code on the error', function() {
           expect(captured.statusCode).equal(200)
         })
 
-        it("should have included an informative error message", function () {
-          expect(captured.message).equal("No body found in response to connect.")
+        it('should have included an informative error message', function() {
+          expect(captured.message).to.equal('No body found in response to connect.')
         })
 
-        it("should have no return_value", function () {
+        it('should have no return_value', function() {
           should.not.exist(data)
         })
 
-        it("should have passed along (empty) body", function () {
+        it('should have passed along (empty) body', function() {
           should.not.exist(raw)
         })
       })
 
-      describe("receiving InvalidLicenseKey after get_redirect_host", function () {
+      describe('receiving InvalidLicenseKey after preconnect', function() {
         var captured
         var data
         var raw
@@ -383,14 +383,14 @@ describe("CollectorAPI", function() {
           }
         }
 
-        before(function (done) {
+        before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('get_redirect_host'))
+                              .post(generate('preconnect'))
                               .reply(200, response)
 
-          api._login(function test(error, response, json) {
+          api._login(function test(error, res, json) {
             captured = error
-            data = response
+            data = res
             raw = json
 
             redirection.done()
@@ -398,41 +398,41 @@ describe("CollectorAPI", function() {
           })
         })
 
-        it("should have gotten an error", function () {
+        it('should have gotten an error', function() {
           should.exist(captured)
         })
 
-        it("should have a status code on the error", function () {
+        it('should have a status code on the error', function() {
           expect(captured.statusCode).equal(200)
         })
 
-        it("should have included an informative error message", function () {
+        it('should have included an informative error message', function() {
           expect(captured.message)
-            .equal("Invalid license key. Please contact support@newrelic.com.")
+            .equal('Invalid license key. Please contact support@newrelic.com.')
         })
 
-        it("should have included the New Relic error class", function () {
-          expect(captured.class).equal("NewRelic::Agent::LicenseException")
+        it('should have included the New Relic error class', function() {
+          expect(captured.class).to.equal('NewRelic::Agent::LicenseException')
         })
 
-        it("should have no return value", function () {
+        it('should have no return value', function() {
           should.not.exist(data)
         })
 
-        it("should have passed along raw response", function () {
+        it('should have passed along raw response', function() {
           expect(raw).eql(response)
         })
       })
     })
   })
 
-  describe("connect", function() {
-    it("requires a callback", function() {
-      expect(function() { api.connect(null) }).throws("callback is required")
+  describe('connect', function() {
+    it('requires a callback', function() {
+      expect(function() { api.connect(null) }).to.throw('callback is required')
     })
 
-    describe("on the happy path", function () {
-      describe("succeeds immediately, the same as _login", function () {
+    describe('on the happy path', function() {
+      describe('succeeds immediately, the same as _login', function() {
         var bad
         var ssc
         var raw
@@ -445,17 +445,17 @@ describe("CollectorAPI", function() {
 
         var response = {return_value: valid}
 
-        before(function (done) {
+        before(function(done) {
           var redirection = nock(URL)
-                              .post(generate('get_redirect_host'))
+                              .post(generate('preconnect'))
                               .reply(200, {return_value: HOST})
           var connection = nock(URL)
                               .post(generate('connect'))
                               .reply(200, response)
 
-          api.connect(function test(error, response, json) {
+          api.connect(function test(error, res, json) {
             bad = error
-            ssc = response
+            ssc = res
             raw = json
 
             redirection.done()
@@ -464,24 +464,24 @@ describe("CollectorAPI", function() {
           })
         })
 
-        it("should not error out", function () {
+        it('should not error out', function() {
           should.not.exist(bad)
         })
 
-        it("should have a run ID", function () {
+        it('should have a run ID', function() {
           expect(ssc.agent_run_id).equal(RUN_ID)
         })
 
-        it("should pass through server-side configuration untouched", function () {
+        it('should pass through server-side configuration untouched', function() {
           expect(ssc).eql(valid)
         })
 
-        it("should pass through exactly what it got back from the server", function () {
+        it('should pass through exactly what it got back from the server', function() {
           expect(raw).eql(response)
         })
       })
 
-      describe("succeeds when given a non-80 port number for redirect", function () {
+      describe('succeeds when given a non-80 port number for redirect', function() {
         var bad
         var ssc
         var raw
@@ -494,17 +494,17 @@ describe("CollectorAPI", function() {
 
         var response = {return_value: valid}
 
-        beforeEach(function (done) {
+        beforeEach(function(done) {
           var redirection = nock(URL)
-                              .post(generate('get_redirect_host'))
+                              .post(generate('preconnect'))
                               .reply(200, {return_value: HOST + ':8089'})
           var connection = nock(URL + ':8089')
                               .post(generate('connect'))
                               .reply(200, response)
 
-          api.connect(function test(error, response, json) {
+          api.connect(function test(error, res, json) {
             bad = error
-            ssc = response
+            ssc = res
             raw = json
 
             redirection.done()
@@ -514,36 +514,36 @@ describe("CollectorAPI", function() {
         })
 
         // the port number gets changed, so reset it
-        after(function () {
+        after(function() {
           api._agent.config.port = 80
         })
 
-        it("should not error out", function () {
+        it('should not error out', function() {
           should.not.exist(bad)
         })
 
-        it("should have the correct hostname", function () {
+        it('should have the correct hostname', function() {
           expect(api._agent.config.host).equal(HOST)
         })
 
-        it("should have the correct port number", function () {
+        it('should have the correct port number', function() {
           expect(api._agent.config.port).equal('8089')
         })
 
-        it("should have a run ID", function () {
+        it('should have a run ID', function() {
           expect(ssc.agent_run_id).equal(RUN_ID)
         })
 
-        it("should pass through server-side configuration untouched", function () {
+        it('should pass through server-side configuration untouched', function() {
           expect(ssc).eql(valid)
         })
 
-        it("should pass through exactly what it got back from the server", function () {
+        it('should pass through exactly what it got back from the server', function() {
           expect(raw).eql(response)
         })
       })
 
-      describe("succeeds after one 503 on get_redirect_host", function () {
+      describe('succeeds after one 503 on preconnect', function() {
         var bad
         var ssc
         var raw
@@ -556,18 +556,18 @@ describe("CollectorAPI", function() {
 
         var response = {return_value: valid}
 
-        before(function (done) {
+        beforeEach(function(done) {
           fast()
 
-          var redirectURL = generate('get_redirect_host')
+          var redirectURL = generate('preconnect')
           var failure = nock(URL).post(redirectURL).reply(503)
           var success = nock(URL).post(redirectURL).reply(200, {return_value: HOST})
           var connection = nock(URL).post(generate('connect')).reply(200, response)
 
 
-          api.connect(function test(error, response, json) {
+          api.connect(function test(error, res, json) {
             bad = error
-            ssc = response
+            ssc = res
             raw = json
 
             failure.done()
@@ -577,28 +577,28 @@ describe("CollectorAPI", function() {
           })
         })
 
-        after(function () {
+        afterEach(function() {
           slow()
         })
 
-        it("should not error out", function () {
+        it('should not error out', function() {
           should.not.exist(bad)
         })
 
-        it("should have a run ID", function () {
+        it('should have a run ID', function() {
           expect(ssc.agent_run_id).equal(RUN_ID)
         })
 
-        it("should pass through server-side configuration untouched", function () {
+        it('should pass through server-side configuration untouched', function() {
           expect(ssc).eql(valid)
         })
 
-        it("should pass through exactly what it got back from the server", function () {
+        it('should pass through exactly what it got back from the server', function() {
           expect(raw).eql(response)
         })
       })
 
-      describe("succeeds after five 503s on get_redirect_host", function () {
+      describe('succeeds after five 503s on preconnect', function() {
         var bad
         var ssc
         var raw
@@ -611,18 +611,18 @@ describe("CollectorAPI", function() {
 
         var response = {return_value: valid}
 
-        before(function (done) {
+        before(function(done) {
           fast()
 
-          var redirectURL = generate('get_redirect_host')
+          var redirectURL = generate('preconnect')
           var failure = nock(URL).post(redirectURL).times(5).reply(503)
           var success = nock(URL).post(redirectURL).reply(200, {return_value: HOST})
           var connection = nock(URL).post(generate('connect')).reply(200, response)
 
 
-          api.connect(function test(error, response, json) {
+          api.connect(function test(error, res, json) {
             bad = error
-            ssc = response
+            ssc = res
             raw = json
 
             failure.done()
@@ -632,23 +632,23 @@ describe("CollectorAPI", function() {
           })
         })
 
-        after(function () {
+        after(function() {
           slow()
         })
 
-        it("should not error out", function () {
+        it('should not error out', function() {
           should.not.exist(bad)
         })
 
-        it("should have a run ID", function () {
+        it('should have a run ID', function() {
           expect(ssc.agent_run_id).equal(RUN_ID)
         })
 
-        it("should pass through server-side configuration untouched", function () {
+        it('should pass through server-side configuration untouched', function() {
           expect(ssc).eql(valid)
         })
 
-        it("should pass through exactly what it got back from the server", function () {
+        it('should pass through exactly what it got back from the server', function() {
           expect(raw).eql(response)
         })
       })
@@ -675,7 +675,7 @@ describe("CollectorAPI", function() {
         var body = null
 
         before(function(done) {
-          var redirectURL = generate('get_redirect_host')
+          var redirectURL = generate('preconnect')
           var failure = nock(URL).post(redirectURL).times(1).reply(503, exception)
 
           api.connect(function test(error, response) {
@@ -705,12 +705,12 @@ describe("CollectorAPI", function() {
         })
       })
 
-      describe('retries get_redirect_host until forced to disconnect', function() {
+      describe('retries preconnect until forced to disconnect', function() {
         var captured = null
         var body = null
 
         before(function(done) {
-          var redirectURL = generate('get_redirect_host')
+          var redirectURL = generate('preconnect')
           var failure = nock(URL).post(redirectURL).times(500).reply(503)
           var disconnect = nock(URL).post(redirectURL).times(1).reply(503, exception)
           api.connect(function test(error, response) {
@@ -741,7 +741,7 @@ describe("CollectorAPI", function() {
         })
       })
 
-      describe("fails on receiving InvalidLicenseKey", function() {
+      describe('fails on receiving InvalidLicenseKey', function() {
         var captured = null
         var data = null
         var raw = null
@@ -754,7 +754,7 @@ describe("CollectorAPI", function() {
         }
 
         before(function(done) {
-          var redirectURL = generate('get_redirect_host')
+          var redirectURL = generate('preconnect')
           failure = nock(URL).post(redirectURL).times(1).reply(200, error)
 
           api.connect(function test(error, response, json) {
@@ -771,33 +771,33 @@ describe("CollectorAPI", function() {
           failure.done()
         })
 
-        it("should have gotten an error", function() {
+        it('should have gotten an error', function() {
           should.exist(captured)
         })
 
-        it("should have a status code on the error", function() {
+        it('should have a status code on the error', function() {
           expect(captured.statusCode).equal(200)
         })
 
-        it("should have included an informative error message", function() {
+        it('should have included an informative error message', function() {
           expect(captured.message)
-            .equal("Invalid license key. Please contact support@newrelic.com.")
+            .equal('Invalid license key. Please contact support@newrelic.com.')
         })
 
-        it("should have included the New Relic error class", function() {
-          expect(captured.class).equal("NewRelic::Agent::LicenseException")
+        it('should have included the New Relic error class', function() {
+          expect(captured.class).to.equal('NewRelic::Agent::LicenseException')
         })
 
-        it("should have no return value", function() {
+        it('should have no return value', function() {
           should.not.exist(data)
         })
 
-        it("should have passed along raw response", function() {
+        it('should have passed along raw response', function() {
           expect(raw).eql(error)
         })
       })
 
-      describe("fails on receiving InvalidLicenseKey after one 503", function() {
+      describe('fails on receiving InvalidLicenseKey after one 503', function() {
         var captured = null
         var data = null
         var raw = null
@@ -811,7 +811,7 @@ describe("CollectorAPI", function() {
         }
 
         before(function(done) {
-          var redirectURL = generate('get_redirect_host')
+          var redirectURL = generate('preconnect')
           failure = nock(URL).post(redirectURL).reply(503)
           license = nock(URL).post(redirectURL).times(1).reply(200, error)
 
@@ -829,40 +829,40 @@ describe("CollectorAPI", function() {
           license.done()
         })
 
-        it("should have gotten an error", function() {
+        it('should have gotten an error', function() {
           should.exist(captured)
         })
 
-        it("should have a status code on the error", function() {
+        it('should have a status code on the error', function() {
           expect(captured.statusCode).equal(200)
         })
 
-        it("should have included an informative error message", function() {
+        it('should have included an informative error message', function() {
           expect(captured.message)
-            .equal("Invalid license key. Please contact support@newrelic.com.")
+            .equal('Invalid license key. Please contact support@newrelic.com.')
         })
 
-        it("should have included the New Relic error class", function() {
-          expect(captured.class).equal("NewRelic::Agent::LicenseException")
+        it('should have included the New Relic error class', function() {
+          expect(captured.class).to.equal('NewRelic::Agent::LicenseException')
         })
 
-        it("should have no return value", function() {
+        it('should have no return value', function() {
           should.not.exist(data)
         })
 
-        it("should have passed along raw response", function() {
+        it('should have passed along raw response', function() {
           expect(raw).eql(error)
         })
       })
     })
   })
 
-  describe("reportSettings", function () {
+  describe('reportSettings', function() {
     var bad
     var raw
     var response = {return_value: []}
 
-    before(function (done) {
+    before(function(done) {
       api._agent.config.run_id = RUN_ID
 
       var mock = nock(URL)
@@ -877,39 +877,37 @@ describe("CollectorAPI", function() {
       })
     })
 
-    after(function () {
+    after(function() {
       api._agent.config.run_id = undefined
     })
 
-    it("should not error out", function () {
+    it('should not error out', function() {
       should.not.exist(bad)
     })
 
-    it("should return the expected 'empty' response", function () {
+    it('should return the expected `empty` response', function() {
       expect(raw).eql(response)
     })
   })
 
-  describe("errorData", function () {
-    it("requires errors to send", function () {
-      expect(function () { api.errorData(null, function () {}) })
-        .throws("must pass errors to send")
+  describe('errorData', function() {
+    it('requires errors to send', function() {
+      expect(function() { api.errorData(null, function() {}) })
+        .to.throw('must pass errors to send')
     })
 
-    it("requires a callback", function () {
-      expect(function () { api.errorData([], null) })
-        .throws("callback is required")
+    it('requires a callback', function() {
+      expect(function() { api.errorData([], null) })
+        .to.throw('callback is required')
     })
 
-    describe("on the happy path", function () {
+    describe('on the happy path', function() {
       var bad
       var nothing
       var raw
-
-
       var response = {return_value: []}
 
-      before(function (done) {
+      before(function(done) {
         api._agent.config.run_id = RUN_ID
         var shutdown = nock(URL)
                          .post(generate('error_data', RUN_ID))
@@ -925,9 +923,9 @@ describe("CollectorAPI", function() {
           ]
         ]
 
-        api.errorData(errors, function test(error, response, json) {
+        api.errorData(errors, function test(error, res, json) {
           bad = error
-          nothing = response
+          nothing = res
           raw = json
 
           shutdown.done()
@@ -935,44 +933,44 @@ describe("CollectorAPI", function() {
         })
       })
 
-      after(function () {
+      after(function() {
         api._agent.config.run_id = undefined
       })
 
-      it("should not error out", function () {
+      it('should not error out', function() {
         should.not.exist(bad)
       })
 
-      it("should return empty data array", function () {
+      it('should return empty data array', function() {
         expect(nothing).eql([])
       })
 
-      it("should pass through exactly what it got back from the server", function () {
+      it('should pass through exactly what it got back from the server', function() {
         expect(raw).eql(response)
       })
     })
   })
 
-  describe("queryData", function () {
-    it("requires queries to send", function () {
-      expect(function () { api.queryData(null, function () {}); })
-        .throws("must pass queries to send")
+  describe('queryData', function() {
+    it('requires queries to send', function() {
+      expect(function() { api.queryData(null, function() {}) })
+        .to.throw('must pass queries to send')
     })
 
-    it("requires a callback", function () {
-      expect(function () { api.queryData([], null); })
-        .throws("callback is required")
+    it('requires a callback', function() {
+      expect(function() { api.queryData([], null) })
+        .to.throw('callback is required')
     })
 
-    describe("on the happy path", function () {
+    describe('on the happy path', function() {
       var bad
-        , nothing
-        , raw
+      var nothing
+      var raw
 
 
       var response = {return_value : []}
 
-      before(function (done) {
+      before(function(done) {
         api._agent.config.run_id = RUN_ID
         var shutdown = nock(URL)
                          .post(generate('sql_trace_data', RUN_ID))
@@ -993,9 +991,9 @@ describe("CollectorAPI", function() {
           ]
         ]
 
-        api.queryData(queries, function test(error, response, json) {
+        api.queryData(queries, function test(error, res, json) {
           bad = error
-          nothing = response
+          nothing = res
           raw = json
 
           shutdown.done()
@@ -1003,36 +1001,36 @@ describe("CollectorAPI", function() {
         })
       })
 
-      after(function () {
+      after(function() {
         api._agent.config.run_id = undefined
       })
 
-      it("should not error out", function () {
+      it('should not error out', function() {
         should.not.exist(bad)
       })
 
-      it("should return empty data array", function () {
+      it('should return empty data array', function() {
         expect(nothing).eql([])
       })
 
-      it("should pass through exactly what it got back from the server", function () {
+      it('should pass through exactly what it got back from the server', function() {
         expect(raw).eql(response)
       })
     })
   })
 
-  describe("analyticsEvents", function () {
-    it("requires errors to send", function () {
-      expect(function () { api.analyticsEvents(null, function () {}) })
-        .throws("must pass events to send")
+  describe('analyticsEvents', function() {
+    it('requires errors to send', function() {
+      expect(function() { api.analyticsEvents(null, function() {}) })
+        .to.throw('must pass events to send')
     })
 
-    it("requires a callback", function () {
-      expect(function () { api.analyticsEvents([], null) })
-        .throws("callback is required")
+    it('requires a callback', function() {
+      expect(function() { api.analyticsEvents([], null) })
+        .to.throw('callback is required')
     })
 
-    describe("on the happy path", function () {
+    describe('on the happy path', function() {
       var bad
       var nothing
       var raw
@@ -1040,7 +1038,7 @@ describe("CollectorAPI", function() {
 
       var response = {return_value: []}
 
-      before(function (done) {
+      before(function(done) {
         api._agent.config.run_id = RUN_ID
         var shutdown = nock(URL)
                          .post(generate('analytic_event_data', RUN_ID))
@@ -1049,20 +1047,20 @@ describe("CollectorAPI", function() {
         var errors = [
           RUN_ID,
           [{
-            "webDuration": 1.0,
-            "timestamp": 1000,
-            "name": "Controller/rails/welcome/index",
-            "duration": 1.0,
-            "type": "Transaction"
+            'webDuration': 1.0,
+            'timestamp': 1000,
+            'name': 'Controller/rails/welcome/index',
+            'duration': 1.0,
+            'type': 'Transaction'
           },{
-            "A": "a",
-            "B": "b",
+            'A': 'a',
+            'B': 'b',
           }]
         ]
 
-        api.analyticsEvents(errors, function test(error, response, json) {
+        api.analyticsEvents(errors, function test(error, res, json) {
           bad = error
-          nothing = response
+          nothing = res
           raw = json
 
           shutdown.done()
@@ -1070,36 +1068,36 @@ describe("CollectorAPI", function() {
         })
       })
 
-      after(function () {
+      after(function() {
         api._agent.config.run_id = undefined
       })
 
-      it("should not error out", function () {
+      it('should not error out', function() {
         should.not.exist(bad)
       })
 
-      it("should return empty data array", function () {
+      it('should return empty data array', function() {
         expect(nothing).eql([])
       })
 
-      it("should pass through exactly what it got back from the server", function () {
+      it('should pass through exactly what it got back from the server', function() {
         expect(raw).eql(response)
       })
     })
   })
 
-  describe("metricData", function () {
-    it("requires metrics to send", function () {
-      expect(function () { api.metricData(null, function () {}) })
-        .throws("must pass metrics to send")
+  describe('metricData', function() {
+    it('requires metrics to send', function() {
+      expect(function() { api.metricData(null, function() {}) })
+        .to.throw('must pass metrics to send')
     })
 
-    it("requires a callback", function () {
-      expect(function () { api.metricData([], null) })
-        .throws("callback is required")
+    it('requires a callback', function() {
+      expect(function() { api.metricData([], null) })
+        .to.throw('callback is required')
     })
 
-    describe("on the happy path", function () {
+    describe('on the happy path', function() {
       var bad
       var nothing
       var raw
@@ -1107,7 +1105,7 @@ describe("CollectorAPI", function() {
 
       var response = {return_value: []}
 
-      before(function (done) {
+      before(function(done) {
         api._agent.config.run_id = RUN_ID
         var shutdown = nock(URL)
                          .post(generate('metric_data', RUN_ID))
@@ -1115,18 +1113,18 @@ describe("CollectorAPI", function() {
 
         // would like to keep this set of tests relatively self-contained
         var metrics = {
-          toJSON: function () {
+          toJSON: function() {
             return [
-              [{name: "Test/Parent"},  [1,0.026,0.006,0.026,0.026,0.000676]],
-              [{name: "Test/Child/1"}, [1,0.012,0.012,0.012,0.012,0.000144]],
-              [{name: "Test/Child/2"}, [1,0.008,0.008,0.008,0.008,0.000064]]
+              [{name: 'Test/Parent'},  [1,0.026,0.006,0.026,0.026,0.000676]],
+              [{name: 'Test/Child/1'}, [1,0.012,0.012,0.012,0.012,0.000144]],
+              [{name: 'Test/Child/2'}, [1,0.008,0.008,0.008,0.008,0.000064]]
             ]
           }
         }
 
-        api.metricData(metrics, function test(error, response, json) {
+        api.metricData(metrics, function test(error, res, json) {
           bad = error
-          nothing = response
+          nothing = res
           raw = json
 
           shutdown.done()
@@ -1134,36 +1132,36 @@ describe("CollectorAPI", function() {
         })
       })
 
-      after(function () {
+      after(function() {
         api._agent.config.run_id = undefined
       })
 
-      it("should not error out", function () {
+      it('should not error out', function() {
         should.not.exist(bad)
       })
 
-      it("should return empty data array", function () {
+      it('should return empty data array', function() {
         expect(nothing).eql([])
       })
 
-      it("should pass through exactly what it got back from the server", function () {
+      it('should pass through exactly what it got back from the server', function() {
         expect(raw).eql(response)
       })
     })
   })
 
-  describe("transactionSampleData", function () {
-    it("requires slow trace data to send", function () {
-      expect(function () { api.transactionSampleData(null, function () {}) })
-        .throws("must pass slow trace data to send")
+  describe('transactionSampleData', function() {
+    it('requires slow trace data to send', function() {
+      expect(function() { api.transactionSampleData(null, function() {}) })
+        .to.throw('must pass slow trace data to send')
     })
 
-    it("requires a callback", function () {
-      expect(function () { api.transactionSampleData([], null) })
-        .throws("callback is required")
+    it('requires a callback', function() {
+      expect(function() { api.transactionSampleData([], null) })
+        .to.throw('callback is required')
     })
 
-    describe("on the happy path", function () {
+    describe('on the happy path', function() {
       var bad
       var nothing
       var raw
@@ -1171,7 +1169,7 @@ describe("CollectorAPI", function() {
 
       var response = {return_value: []}
 
-      before(function (done) {
+      before(function(done) {
         api._agent.config.run_id = RUN_ID
         var shutdown = nock(URL)
                          .post(generate('transaction_sample_data', RUN_ID))
@@ -1180,9 +1178,9 @@ describe("CollectorAPI", function() {
         // imagine this is a serialized transaction trace
         var trace = []
 
-        api.transactionSampleData([trace], function test(error, response, json) {
+        api.transactionSampleData([trace], function test(error, res, json) {
           bad = error
-          nothing = response
+          nothing = res
           raw = json
 
           shutdown.done()
@@ -1190,44 +1188,43 @@ describe("CollectorAPI", function() {
         })
       })
 
-      after(function () {
+      after(function() {
         api._agent.config.run_id = undefined
       })
 
-      it("should not error out", function () {
+      it('should not error out', function() {
         should.not.exist(bad)
       })
 
-      it("should return empty data array", function () {
+      it('should return empty data array', function() {
         expect(nothing).eql([])
       })
 
-      it("should pass through exactly what it got back from the server", function () {
+      it('should pass through exactly what it got back from the server', function() {
         expect(raw).eql(response)
       })
     })
   })
 
-  describe("shutdown", function () {
-    it("requires a callback", function () {
-      expect(function () { api.shutdown(null) }).throws("callback is required")
+  describe('shutdown', function() {
+    it('requires a callback', function() {
+      expect(function() { api.shutdown(null) }).to.throw('callback is required')
     })
 
-    describe("on the happy path", function () {
-      var bad
-      var nothing
-      var raw
-
+    describe('on the happy path', function() {
+      var bad = null
+      var nothing = null
+      var raw = null
 
       var response = {return_value: null}
 
-      before(function (done) {
+      before(function(done) {
         api._agent.config.run_id = RUN_ID
         var shutdown = nock(URL).post(generate('shutdown', RUN_ID)).reply(200, response)
 
-        api.shutdown(function test(error, response, json) {
+        api.shutdown(function test(error, res, json) {
           bad = error
-          nothing = response
+          nothing = res
           raw = json
 
           shutdown.done()
@@ -1235,38 +1232,35 @@ describe("CollectorAPI", function() {
         })
       })
 
-      after(function () {
+      after(function() {
         api._agent.config.run_id = undefined
       })
 
-      it("should not error out", function () {
+      it('should not error out', function() {
         should.not.exist(bad)
       })
 
-      it("should return null", function () {
+      it('should return null', function() {
         expect(nothing).equal(null)
       })
 
-      it("should pass through exactly what it got back from the server", function () {
+      it('should pass through exactly what it got back from the server', function() {
         expect(raw).eql(response)
       })
     })
 
-    describe("off the happy path", function () {
-      describe("fails on a 503 status code", function () {
-        var captured
-        var body
-        var raw
-
+    describe('off the happy path', function() {
+      describe('fails on a 503 status code', function() {
+        var captured = null
+        var body = null
 
         beforeEach(function(done) {
           api._agent.config.run_id = RUN_ID
           var failure = nock(URL).post(generate('shutdown', RUN_ID)).reply(503)
 
-          api.shutdown(function test(error, response, json) {
+          api.shutdown(function test(error, response) {
             captured = error
             body = response
-            raw = json
 
             failure.done()
             done()
@@ -1277,27 +1271,27 @@ describe("CollectorAPI", function() {
           api._agent.config.run_id = undefined
         })
 
-        it("should have gotten an error", function () {
+        it('should have gotten an error', function() {
           should.exist(captured)
         })
 
-        it("should have passed on the status code", function () {
+        it('should have passed on the status code', function() {
           expect(captured.statusCode).equal(503)
         })
 
-        it("should have included an informative error message", function () {
+        it('should have included an informative error message', function() {
           expect(captured.message)
-            .equal("No body found in response to shutdown.")
+            .equal('No body found in response to shutdown.')
         })
 
-        it("should not have a response body", function () {
+        it('should not have a response body', function() {
           should.not.exist(body)
         })
       })
     })
   })
 
-  describe("_runLifecycle", function() {
+  describe('_runLifecycle', function() {
     var method
 
     beforeEach(function() {
@@ -1310,12 +1304,12 @@ describe("CollectorAPI", function() {
       method = api._methods.metrics
     })
 
-    it("should bail out if disconnected", function(done) {
+    it('should bail out if disconnected', function(done) {
       api._agent.config.run_id = undefined
 
       function tested(error) {
         should.exist(error)
-        expect(error.message).equals("Not connected to collector.")
+        expect(error.message).equals('Not connected to collector.')
 
         done()
       }
@@ -1323,7 +1317,7 @@ describe("CollectorAPI", function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it("should discard HTTP 413 errors", function (done) {
+    it('should discard HTTP 413 errors', function(done) {
       var failure = nock(URL).post(generate('metric_data', 31337)).reply(413)
       function tested(error) {
         should.not.exist(error)
@@ -1335,7 +1329,7 @@ describe("CollectorAPI", function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it("should discard HTTP 415 errors", function (done) {
+    it('should discard HTTP 415 errors', function(done) {
       var failure = nock(URL).post(generate('metric_data', 31337)).reply(415)
       function tested(error) {
         should.not.exist(error)
@@ -1347,10 +1341,10 @@ describe("CollectorAPI", function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it("should discard InternalLimitExceeded exceptions", function (done) {
+    it('should discard InternalLimitExceeded exceptions', function(done) {
       var exception = {
         exception: {
-          message: "Trace memory limit exceeded: 32MB -- discarding trace for 1337",
+          message: 'Trace memory limit exceeded: 32MB -- discarding trace for 1337',
           error_type: 'NewRelic::Agent::InternalLimitExceeded'
         }
       }
@@ -1366,10 +1360,10 @@ describe("CollectorAPI", function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it("should pass through HTTP 500 errors", function (done) {
+    it('should pass through HTTP 500 errors', function(done) {
       var failure = nock(URL).post(generate('metric_data', 31337)).reply(500)
       function tested(error) {
-        expect(error.message).equal("No body found in response to metric_data.")
+        expect(error.message).equal('No body found in response to metric_data.')
 
         failure.done()
         done()
@@ -1378,10 +1372,10 @@ describe("CollectorAPI", function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it("should pass through HTTP 503 errors", function (done) {
+    it('should pass through HTTP 503 errors', function(done) {
       var failure = nock(URL).post(generate('metric_data', 31337)).reply(503)
       function tested(error) {
-        expect(error.message).equal("No body found in response to metric_data.")
+        expect(error.message).equal('No body found in response to metric_data.')
 
         failure.done()
         done()
@@ -1390,10 +1384,10 @@ describe("CollectorAPI", function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it("should pass through InvalidLicenseKey errors", function (done) {
+    it('should pass through InvalidLicenseKey errors', function(done) {
       var exception = {
         exception: {
-          message: "Your license key is invalid or the collector is busted.",
+          message: 'Your license key is invalid or the collector is busted.',
           error_type: 'NewRelic::Agent::LicenseException'
         }
       }
@@ -1401,7 +1395,7 @@ describe("CollectorAPI", function() {
       var failure = nock(URL).post(generate('metric_data', 31337)).reply(200, exception)
       function tested(error) {
         expect(error.message)
-          .equal("Your license key is invalid or the collector is busted.")
+          .equal('Your license key is invalid or the collector is busted.')
 
         failure.done()
         done()
@@ -1432,7 +1426,7 @@ describe("CollectorAPI", function() {
           .post(generate('shutdown', 31337))
           .reply(200, {return_value: null})
         redirect = nock(URL)
-          .post(generate('get_redirect_host'))
+          .post(generate('preconnect'))
           .reply(200, {return_value: 'collector.newrelic.com'})
         connect = nock(URL)
           .post(generate('connect'))
@@ -1453,9 +1447,9 @@ describe("CollectorAPI", function() {
       it('should reconnect and resubmit', function(done) {
         api._runLifecycle(method, null, function(error) {
           if (error) {
-            console.error(error.stack)
+            console.error(error.stack) // eslint-disable-line no-console
           }
-          expect(error).to.not.exist
+          expect(error).to.not.exist()
           expect(api._agent.config.run_id).equal(31338) // has new run ID
           nockDone()
           done()
@@ -1479,10 +1473,10 @@ describe("CollectorAPI", function() {
       })
     })
 
-    it("should stop the agent on ForceDisconnectException", function(done) {
+    it('should stop the agent on ForceDisconnectException', function(done) {
       var exception = {
         exception: {
-          message: "Wake up! Time to die!",
+          message: 'Wake up! Time to die!',
           error_type: 'NewRelic::Agent::ForceDisconnectException'
         }
       }
@@ -1495,7 +1489,7 @@ describe("CollectorAPI", function() {
         .reply(200, {return_value: null})
 
       function tested(error) {
-        expect(error.message).equal("Wake up! Time to die!")
+        expect(error.message).equal('Wake up! Time to die!')
         expect(error.class).equal('NewRelic::Agent::ForceDisconnectException')
         should.not.exist(api._agent.config.run_id)
 
@@ -1507,17 +1501,17 @@ describe("CollectorAPI", function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it("should pass through maintenance notices", function (done) {
+    it('should pass through maintenance notices', function(done) {
       var exception = {
         exception: {
-          message: "Out for a smoke beeearrrbeee",
+          message: 'Out for a smoke beeearrrbeee',
           error_type: 'NewRelic::Agent::MaintenanceError'
         }
       }
 
       var failure = nock(URL).post(generate('metric_data', 31337)).reply(200, exception)
       function tested(error) {
-        expect(error.message).equal("Out for a smoke beeearrrbeee")
+        expect(error.message).equal('Out for a smoke beeearrrbeee')
         expect(error.class).equal('NewRelic::Agent::MaintenanceError')
 
         failure.done()
@@ -1527,17 +1521,17 @@ describe("CollectorAPI", function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it("should pass through runtime errors", function (done) {
+    it('should pass through runtime errors', function(done) {
       var exception = {
         exception: {
-          message: "What does this button do?",
+          message: 'What does this button do?',
           error_type: 'RuntimeError'
         }
       }
 
       var failure = nock(URL).post(generate('metric_data', 31337)).reply(200, exception)
       function tested(error) {
-        expect(error.message).equal("What does this button do?")
+        expect(error.message).equal('What does this button do?')
         expect(error.class).equal('RuntimeError')
 
         failure.done()
@@ -1547,10 +1541,10 @@ describe("CollectorAPI", function() {
       api._runLifecycle(method, null, tested)
     })
 
-    it("should pass through unexpected errors", function (done) {
+    it('should pass through unexpected errors', function(done) {
       var failure = nock(URL).post(generate('metric_data', 31337)).reply(501)
       function tested(error) {
-        expect(error.message).equal("No body found in response to metric_data.")
+        expect(error.message).equal('No body found in response to metric_data.')
 
         failure.done()
         done()
@@ -1559,5 +1553,4 @@ describe("CollectorAPI", function() {
       api._runLifecycle(method, null, tested)
     })
   })
-
 })

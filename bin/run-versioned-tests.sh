@@ -1,6 +1,6 @@
 #! /bin/bash
 
-VERSIONED_MODE=--major
+VERSIONED_MODE="${VERSIONED_MODE:---major}"
 if [[ $TRAVIS_BRANCH == `git describe --tags --always HEAD` ]]; then
   VERSIONED_MODE=--minor
 fi
@@ -8,5 +8,14 @@ fi
 #   VERSIONED_MODE=--minor
 # fi
 
-export NEW_RELIC_HOME=`pwd`/test/versioned
-time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 'test/versioned/**/*.tap.js'
+set -f
+directories=()
+if [[ "$1" != '' ]]; then
+  directories=(
+    "test/versioned/${1}"
+    "node_modules/@newrelic/${1}/tests/versioned"
+  )
+fi
+
+export AGENT_PATH=`pwd`
+time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 ${directories[@]}
