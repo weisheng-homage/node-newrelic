@@ -715,7 +715,7 @@ function createTracer(name, callback) {
  *  up on the transaction breakdown table and server breakdown graph. Segments
  *  just show up in transaction traces.
  *
- * @param {function(cb) -> ?Promise} handler
+ * @param {function(cb): ?Promise} handler
  *  The function to track as a segment.
  *
  * @param {function} [callback]
