@@ -162,7 +162,7 @@ describe('built-in http module instrumentation', function() {
         server.listen(8123, 'localhost', function() {
           // The transaction doesn't get created until after the instrumented
           // server handler fires.
-          expect(agent.getTransaction()).to.not.exist()
+          expect(agent.getTransaction()).to.not.exist
           done()
         })
       })
@@ -315,12 +315,11 @@ describe('built-in http module instrumentation', function() {
         expect(stats.callCount).equal(2)
       })
 
-      it('should associate outbound HTTP requests with the inbound transaction',
-         function() {
-        var stats = transaction
-                      .metrics
-                      .getOrCreateMetric('External/localhost:8321/http',
-                                         'WebTransaction/NormalizedUri/*')
+      it('should associate outbound HTTP requests with the inbound transaction', () => {
+        var stats = transaction.metrics.getOrCreateMetric(
+          'External/localhost:8321/http',
+          'WebTransaction/NormalizedUri/*'
+        )
         expect(stats.callCount).equal(1)
       })
 
@@ -333,7 +332,7 @@ describe('built-in http module instrumentation', function() {
       })
 
       it('should call the shim hook', function() {
-        expect(hookCalled).to.be.true()
+        expect(hookCalled).to.be.true
       })
     })
 

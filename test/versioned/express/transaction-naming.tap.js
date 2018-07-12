@@ -18,7 +18,7 @@ runTests({
 })
 
 function runTests(flags) {
-  test("transaction name with single route", function(t) {
+  test('transaction name with single route', function(t) {
     setup(t)
 
     app.get('/path1', function(req, res) {
@@ -28,7 +28,7 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test("transaction name with no matched routes", function(t) {
+  test('transaction name with no matched routes', function(t) {
     setup(t)
 
     app.get('/path1', function(req, res) {
@@ -53,7 +53,7 @@ function runTests(flags) {
     })
   })
 
-  test("transaction name with route that has multiple handlers", function(t) {
+  test('transaction name with route that has multiple handlers', function(t) {
     setup(t)
 
     app.get('/path1', function(req, res, next) {
@@ -65,7 +65,7 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test("transaction name with router middleware", function(t) {
+  test('transaction name with router middleware', function(t) {
     setup(t)
 
     var router = new express.Router()
@@ -78,7 +78,7 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test("transaction name with middleware function", function(t) {
+  test('transaction name with middleware function', function(t) {
     setup(t)
 
     app.use('/path1', function(req, res, next) {
@@ -92,7 +92,73 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test("transaction name with subapp middleware", function(t) {
+  test('transaction name with array of middleware with unspecified mount path', (t) => {
+    setup(t)
+
+    function mid1(req, res, next) {
+      t.pass('mid1 is executed')
+      next()
+    }
+
+    function mid2(req, res, next) {
+      t.pass('mid2 is executed')
+      next()
+    }
+
+    app.use([mid1, mid2])
+
+    app.get('/path1', (req, res) => {
+      res.end()
+    })
+
+    runTest(t, '/path1', '/path1')
+  })
+
+  test('transaction name when ending in array of unmounted middleware', (t) => {
+    setup(t)
+
+    function mid1(req, res, next) {
+      t.pass('mid1 is executed')
+      next()
+    }
+
+    function mid2(req, res) {
+      t.pass('mid2 is executed')
+      res.end()
+    }
+
+    app.use([mid1, mid2])
+
+    app.use(mid1)
+
+    runTest(t, '/path1', '/')
+  })
+
+  test('transaction name with shared middleware function', function(t) {
+    setup(t)
+
+    app.use(['/path1', '/path2'], function(req, res, next) {
+      next()
+    })
+
+    app.get('/path1', function(req, res) {
+      res.end()
+    })
+
+    runTest(t, '/path1', '/path1')
+  })
+
+  test('transaction name when ending in shared middleware', function(t) {
+    setup(t)
+
+    app.use(['/path1', '/path2'], function(req, res) {
+      res.end()
+    })
+
+    runTest(t, '/path1', '/path1,/path2')
+  })
+
+  test('transaction name with subapp middleware', function(t) {
     setup(t)
 
     var subapp = express()
@@ -106,7 +172,7 @@ function runTests(flags) {
     runTest(t, '/path1', '/path1')
   })
 
-  test("transaction name with subrouter", function(t) {
+  test('transaction name with subrouter', function(t) {
     setup(t)
 
     var router = new express.Router()
@@ -120,7 +186,7 @@ function runTests(flags) {
     runTest(t, '/api/path1', '/api/path1')
   })
 
-  test("multiple route handlers with the same name do not duplicate transaction name",
+  test('multiple route handlers with the same name do not duplicate transaction name',
       function(t) {
     setup(t)
 
@@ -359,6 +425,32 @@ function runTests(flags) {
     })
   })
 
+  test('Express transaction names are unaffected by errorware', function(t) {
+    t.plan(1)
+    setup(t)
+
+    agent.on('transactionFinished', function(tx) {
+      var expected = 'WebTransaction/Expressjs/GET//test'
+      t.equal(tx.trace.root.children[0].name, expected)
+    })
+
+    app.use('/test', function() {
+      throw new Error('endpoint error')
+    })
+
+    app.use('/test', function(err, req, res, next) { // eslint-disable-line no-unused-vars
+      res.send(err.message)
+    })
+
+    var server = app.listen(function() {
+      http.request({ port: server.address().port, path: '/test' }).end()
+    })
+
+    t.tearDown(function() {
+      server.close()
+    })
+  })
+
   test('when next is called after transaction state loss', function(t) {
     // Uninstrumented work queue. This must be set up before the agent is loaded
     // so that no transaction state is maintained.
@@ -438,14 +530,13 @@ function runTests(flags) {
 
   function makeMultiRunner(t, endpoint, expectedName, numTests) {
     var done = 0
-    var seen = []
+    var seen = new Set()
     if (!expectedName) expectedName = endpoint
     agent.on('transactionFinished', function(transaction) {
-      t.ok(seen.indexOf(transaction) === -1,
-          'should never see the finishing transaction twice')
-      seen.push(transaction)
+      t.notOk(seen.has(transaction), 'should never see the finishing transaction twice')
+      seen.add(transaction)
       t.equal(transaction.name, 'WebTransaction/Expressjs/GET/' + expectedName,
-        "transaction has expected name")
+        'transaction has expected name')
       transaction.end()
       if (++done === numTests) {
         done = 0
@@ -461,7 +552,7 @@ function runTests(flags) {
     if (!expectedName) expectedName = endpoint
     agent.on('transactionFinished', function(transaction) {
       t.equal(transaction.name, 'WebTransaction/Expressjs/GET/' + expectedName,
-        "transaction has expected name")
+        'transaction has expected name')
       t.end()
     })
     var server = app.listen(function() {

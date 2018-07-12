@@ -14,18 +14,18 @@ var shimmer = require('./lib/shimmer')
 var Shim = require('./lib/shim/shim')
 var TransactionHandle = require('./lib/transaction/handle')
 
-var MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
+const MODULE_TYPE = require('./lib/shim/constants').MODULE_TYPE
 
 /*
  *
  * CONSTANTS
  *
  */
-var RUM_STUB = "<script type='text/javascript'>window.NREUM||(NREUM={});" +
+const RUM_STUB = "<script type='text/javascript' %s>window.NREUM||(NREUM={});" +
                 "NREUM.info = %s; %s</script>"
 
 // these messages are used in the _gracefail() method below in getBrowserTimingHeader
-var RUM_ISSUES = [
+const RUM_ISSUES = [
   'NREUM: no browser monitoring headers generated; disabled',
   'NREUM: transaction missing or ignored while generating browser monitoring headers',
   'NREUM: config.browser_monitoring missing, something is probably wrong',
@@ -36,12 +36,12 @@ var RUM_ISSUES = [
   'NREUM: browser_monitoring disabled by browser_monitoring.loader config'
 ]
 
-// can't overwrite internal parameters or all heck will break loose
-var CUSTOM_BLACKLIST = [
+// Can't overwrite internal parameters or all heck will break loose.
+const CUSTOM_BLACKLIST = new Set([
   'nr_flatten_leading'
-]
+])
 
-var CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
+const CUSTOM_EVENT_TYPE_REGEX = /^[a-zA-Z0-9:_ ]+$/
 
 /**
  * The exported New Relic API. This contains all of the functions meant to be
@@ -103,8 +103,8 @@ API.prototype.setTransactionName = function setTransactionName(name) {
  * - ignore: set the transaction that was active when
  *   `API#getTransaction` was called to be ignored.
  *
- * @returns {TransactionHandle} transaction The transaction object with the `end`
- *                               and `ignore` methods on it.
+ * @returns {TransactionHandle} The transaction object with the `end` and
+ *  `ignore` methods on it.
  */
 API.prototype.getTransaction = function getTransaction() {
   var metric = this.agent.metrics.getOrCreateMetric(
@@ -115,7 +115,7 @@ API.prototype.getTransaction = function getTransaction() {
   var transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
     logger.debug("No transaction found when calling API#getTransaction")
-    return TransactionHandle.stub
+    return new TransactionHandle.Stub()
   }
 
   transaction.handledExternally = true
@@ -206,7 +206,7 @@ API.prototype.setControllerName = function setControllerName(name, action) {
 
 /**
  * Deprecated. Please use `addCustomAttribute` instead.
- * TODO: remove in v4
+ * TODO: remove in v5
  */
 API.prototype.addCustomParameter = util.deprecate(
   addCustomParameter, [
@@ -247,7 +247,7 @@ function addCustomParameter(key, value) {
     )
   }
 
-  if (CUSTOM_BLACKLIST.indexOf(key) !== -1) {
+  if (CUSTOM_BLACKLIST.has(key)) {
     return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
@@ -297,7 +297,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
     )
   }
 
-  if (CUSTOM_BLACKLIST.indexOf(key) !== -1) {
+  if (CUSTOM_BLACKLIST.has(key)) {
     return logger.warn('Not overwriting value of NR-only attribute %s.', key)
   }
 
@@ -306,7 +306,7 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
 
 /**
  * Deprecated. Please use `addCustomAttributes` instead.
- * TODO: remove in v4
+ * TODO: remove in v5
  */
 API.prototype.addCustomParameters = util.deprecate(
   addCustomParameters, [
@@ -499,9 +499,11 @@ API.prototype.addIgnoringRule = function addIgnoringRule(pattern) {
  *
  * Do *not* reuse the headers between users, or even between requests.
  *
+ * @param {string} [options.nonce] - Nonce to inject into `<script>` header.
+ *
  * @returns {string} The `<script>` header to be injected.
  */
-API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
+API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader(options) {
   var metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/getBrowserTimingHeader'
   )
@@ -616,10 +618,13 @@ API.prototype.getBrowserTimingHeader = function getBrowserTimingHeader() {
   var tabs = config.browser_monitoring.debug ? 2 : 0
   var json = JSON.stringify(rum_hash, null, tabs)
 
+  // set nonce attribute if passed in options
+  var nonce = options && options.nonce ? 'nonce="' + options.nonce + '"' : ''
 
   // the complete header to be written to the browser
   var out = util.format(
     RUM_STUB,
+    nonce,
     json,
     js_agent_loader
   )
@@ -1026,7 +1031,7 @@ function startBackgroundTransaction(name, group, handle) {
       tx.id
     )
 
-    tx.finalizeName(txName)
+    tx._partialName = txName
     tx.baseSegment = tracer.createSegment(name, recordBackground)
     tx.baseSegment.partialName = group
     tx.baseSegment.start()
@@ -1142,7 +1147,7 @@ function createBackgroundTransaction(name, group, handle) {
       tx.id
     )
 
-    tx.finalizeName(txName)
+    tx._partialName = txName
     tx.baseSegment = tracer.createSegment(name, recordBackground)
     tx.baseSegment.partialName = group
     tx.baseSegment.start()
@@ -1215,7 +1220,7 @@ API.prototype.recordMetric = function recordMetric(name, value) {
     return
   }
 
-  // TODO: In Agent v3 prefix custom metrics with `Custom/`.
+  // TODO: In Agent v5 prefix custom metrics with `Custom/`.
   var metric = this.agent.metrics.getOrCreateMetric(name)
 
   if (typeof value === 'number') {
@@ -1369,7 +1374,9 @@ API.prototype.recordCustomEvent = function recordCustomEvent(eventType, attribut
     timestamp: Date.now()
   }
 
-  this.agent.customEvents.add([instrinics, attributes])
+  var tx = this.agent.getTransaction()
+  var priority = tx && tx.priority || Math.random()
+  this.agent.customEvents.add([instrinics, attributes], priority)
 }
 
 /**
@@ -1568,10 +1575,9 @@ API.prototype.shutdown = function shutdown(options, cb) {
 
   if (options && options.collectPendingData && agent._state !== 'started') {
     if (typeof options.timeout === 'number') {
-      var shutdownTimeout = setTimeout(function shutdownTimeout() {
+      setTimeout(function shutdownTimeout() {
         agent.stop(callback)
-      }, options.timeout)
-      shutdownTimeout.unref()
+      }, options.timeout).unref()
     } else if (options.timeout) {
       logger.warn(
         'options.timeout should be of type "number". Got %s',

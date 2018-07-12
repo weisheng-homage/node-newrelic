@@ -200,11 +200,14 @@ test('lchown', {skip: fs.lchown === undefined}, function(t) {
   helper.runInNamedTransaction(agent, function(trans) {
     fs.lchown(name, uid, gid, function(err) {
       t.ok(err, 'should error for non root users')
-      verifySegments(t, agent, NAMES.FS.PREFIX + 'lchown', [NAMES.FS.PREFIX + 'open'])
+      const useOpen = semver.satisfies(process.version, '<10.6')
+      const extra = useOpen ? [NAMES.FS.PREFIX + 'open'] : null
+      verifySegments(t, agent, NAMES.FS.PREFIX + 'lchown', extra)
 
       trans.end(function checkMetrics() {
+        const names = useOpen ? ['lchown', 'open'] : ['lchown']
         t.ok(
-          checkMetric(['lchown', 'open'], agent, trans.name),
+          checkMetric(names, agent, trans.name),
           'metric should exist after transaction end'
         )
       })
@@ -832,28 +835,11 @@ test('watch (file)', function(t) {
   setTimeout(function() {
     helper.runInTransaction(agent, function(trans) {
       var watcher = fs.watch(name, function(ev, file) {
-        t.equal(ev, 'change')
+        t.equal(ev, 'change', 'should be expected event')
 
-        // watch doesn't return the filename when watching files on OSX
-        // on versions <0.12...
-        // TODO: Remove this check when deprecating Node 0.10.
-        if (
-          process.platform !== 'darwin' ||
-          semver.satisfies(process.version, '>=0.12.x')
-        ) {
-          t.equal(file, 'watch-file')
-        } else {
-          t.pass('skip checking file name')
-        }
-        t.equal(
-          agent.getTransaction(),
-          trans,
-          'should preserve transaction')
-        t.equal(
-          trans.trace.root.children.length,
-          1,
-          'should not create any segments'
-        )
+        t.equal(file, 'watch-file', 'should have correct file name')
+        t.equal(agent.getTransaction(), trans, 'should preserve transaction')
+        t.equal(trans.trace.root.children.length, 1, 'should not create any segments')
         watcher.close()
       })
       fs.writeFile(name, content + 'more', function(err) {

@@ -54,16 +54,6 @@ describe('Analytics events', function() {
   })
 
   describe('when analytics events are disabled', function() {
-    it('should not send events to server', function(done) {
-      agent.collector.analyticsEvents = function() {
-        throw new Error() // FAIL
-      }
-      agent.config.transaction_events.enabled = false
-      agent._sendEvents(function cb__sendEvents() {
-        done()
-      })
-    })
-
     it('collector cannot enable remotely', function() {
       agent.config.transaction_events.enabled = false
       expect(function() {
@@ -117,6 +107,52 @@ describe('Analytics events', function() {
       })
     })
 
+    it('should add DT parent attributes with an accepted payload', function(done) {
+      agent.config.feature_flag.distributed_tracing = true
+      agent.config.application_id = 'test'
+      agent.config.account_id = 1
+      trans = new Transaction(agent)
+      const payload = trans.createDistributedTracePayload().text()
+      trans.isDistributedTrace = null
+      trans.acceptDistributedTracePayload(payload)
+      trans.end(function() {
+        expect(agent.events.toArray().length).to.equal(1)
+
+        var attributes = agent.events.toArray()[0][0]
+        expect(attributes.traceId).to.equal(trans.id)
+        expect(attributes.guid).to.equal(trans.id)
+        expect(attributes.priority).to.equal(trans.priority)
+        expect(attributes.sampled).to.equal(trans.sampled)
+        expect(attributes.parentId).to.equal(trans.id)
+        expect(attributes['parent.type']).to.equal('App')
+        expect(attributes['parent.app']).to.equal(agent.config.application_id)
+        expect(attributes['parent.account']).to.equal(agent.config.account_id)
+        expect(trans.sampled).to.equal(true)
+        expect(trans.priority).to.be.greaterThan(1)
+
+        done()
+      })
+    })
+
+    it('should add DT attributes', function(done) {
+      agent.config.feature_flag.distributed_tracing = true
+      trans = new Transaction(agent)
+      trans.end(function() {
+        expect(agent.events.toArray().length).to.equal(1)
+
+        var attributes = agent.events.toArray()[0][0]
+        expect(attributes.traceId).to.equal(trans.id)
+        expect(attributes.guid).to.equal(trans.id)
+        expect(attributes.priority).to.equal(trans.priority)
+        expect(attributes.sampled).to.equal(trans.sampled)
+        expect(trans.sampled).to.equal(true)
+        expect(trans.priority).to.be.greaterThan(1)
+
+        done()
+      })
+    })
+
+
     it('should contain user and agent attributes', function(done ) {
       trans.end(function() {
         expect(agent.events.toArray().length).to.equal(1)
@@ -166,57 +202,6 @@ describe('Analytics events', function() {
       }
 
       expect(agent.events.toArray().length).equals(10)
-    })
-
-    it('re-aggregate on failure', function(done) {
-      agent.collector.analyticsEvents = function(payload, cb) {
-        cb(true)
-      }
-      trans = new Transaction(agent)
-
-      for (var i = 0; i < 20; i++) {
-        agent._addEventFromTransaction(trans)
-      }
-
-      agent._sendEvents(function(err) {
-        expect(err).exist()
-        expect(agent.events.toArray().length).equals(20)
-        done()
-      })
-    })
-
-    it('empty on success', function(done) {
-      agent.collector.analyticsEvents = function(payload, cb) {
-        cb()
-      }
-      trans = new Transaction(agent)
-
-      for (var i = 0; i < 20; i++) {
-        agent._addEventFromTransaction(trans)
-      }
-
-      agent._sendEvents(function(err) {
-        expect(err).not.exist()
-        expect(agent.events.toArray().length).equals(0)
-        done()
-      })
-    })
-
-    it('empty on 413', function(done) {
-      agent.collector.analyticsEvents = function(payload, cb) {
-        cb({statusCode: 413})
-      }
-      trans = new Transaction(agent)
-
-      for (var i = 0; i < 20; i++) {
-        agent._addEventFromTransaction(trans)
-      }
-
-      agent._sendEvents(function(err) {
-        expect(err).exist()
-        expect(agent.events.toArray().length).equals(0)
-        done()
-      })
     })
   })
 })

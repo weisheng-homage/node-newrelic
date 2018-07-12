@@ -1,17 +1,27 @@
 'use strict'
 
-var helper = require('../../lib/agent_helper')
-var tap = require('tap')
-var semver = require('semver')
+const helper = require('../../lib/agent_helper')
+const tap = require('tap')
+const semver = require('semver')
 
 
 tap.test('external requests', function(t) {
   t.autoend()
 
-  t.test('segments should end on error', function(t) {
-    var agent = helper.loadTestAgent(t)
-    var http = require('http')
+  let agent = null
+  let http = null
+  t.beforeEach((done) => {
+    agent = helper.instrumentMockedAgent()
+    http = require('http')
+    done()
+  })
 
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+    done()
+  })
+
+  t.test('segments should end on error', function(t) {
     var notVeryReliable = http.createServer(function badHandler(req) {
       req.socket.end()
     })
@@ -47,9 +57,6 @@ tap.test('external requests', function(t) {
     // sequences will be their own tree under the main external call. This
     // results in a tree with several sibling branches that might otherwise be
     // shown in a heirarchy. This is okay.
-    var agent = helper.loadTestAgent(t)
-    var http = require('http')
-
     var server = http.createServer(function(req, res) {
       req.resume()
       res.end('ok')
@@ -83,13 +90,8 @@ tap.test('external requests', function(t) {
       t.ok(external.timer.hasEnd(), 'should have ended')
       t.ok(external.children.length, 'should have children')
 
-      // TODO: Change this to a simple equal when deprecating Node v0.10
       var connect = external.children[0]
-      t.match(
-        connect.name,
-        /^(?:http\.Agent#createConnection|net\.Socket\.connect)$/,
-        'should be connect segment'
-      )
+      t.equal(connect.name, 'http.Agent#createConnection', 'should be connect segment')
       t.equal(connect.children.length, 1, 'connect should have 1 child')
 
       // There is potentially an extra layer of create/connect segments.
@@ -108,11 +110,10 @@ tap.test('external requests', function(t) {
   })
 
   t.test('should not duplicate the external segment', function(t) {
-    var agent = helper.loadTestAgent(t)
     var https = require('https')
 
     helper.runInTransaction(agent, function inTransaction() {
-      https.get('https://encrypted.google.com/', function onResonse(res) {
+      https.get('https://encrypted.google.com:443/', function onResonse(res) {
         res.once('end', check)
         res.resume()
       })
@@ -124,7 +125,7 @@ tap.test('external requests', function(t) {
 
       t.equal(
         segment.name,
-        'External/encrypted.google.com/',
+        'External/encrypted.google.com:443/',
         'should be named'
       )
       t.ok(segment.timer.start, 'should have started')
@@ -150,7 +151,6 @@ tap.test('external requests', function(t) {
   t.test('NODE-1647 should not interfere with `got`', gotOpts, function(t) {
     // Our way of wrapping HTTP response objects caused `got` to hang. This was
     // resolved in agent 2.5.1.
-    var agent = helper.loadTestAgent(t)
     var got = require('got')
     helper.runInTransaction(agent, function() {
       var req = got('https://www.google.com/')
@@ -159,6 +159,34 @@ tap.test('external requests', function(t) {
         function() { t.end() },
         function(e) { t.error(e); t.end() }
       )
+    })
+  })
+
+  t.test('should record requests to default ports', (t) => {
+    helper.runInTransaction(agent, (tx) => {
+      http.get('http://example.com', (res) => {
+        res.resume()
+        res.on('end', () => {
+          const segment = tx.trace.root.children[0]
+          t.equal(segment.name, 'External/example.com/', 'should create external segment')
+          t.end()
+        })
+      })
+    })
+  })
+
+  t.test('should expose the external segment on the http request', (t) => {
+    helper.runInTransaction(agent, (tx) => {
+      let reqSegment = null
+      const req = http.get('http://example.com', (res) => {
+        res.resume()
+        res.on('end', () => {
+          const segment = tx.trace.root.children[0]
+          t.equal(reqSegment, segment, 'should expose external')
+          t.end()
+        })
+      })
+      reqSegment = req.__NR_segment
     })
   })
 })
