@@ -1,3 +1,140 @@
+### 4.8.1 (2018-08-27):
+
+* Converted File System instrumentation to use newer shim style.
+
+* Agent instrumentation will no longer interfere with promisification of core
+  methods.
+
+  Some core methods expose pre-promisified versions of the methods as a reference
+  on the method itself. When instrumenting these methods, it neglected to forward
+  these references onto the wrapper function. Now the instrumentation will properly
+  forward property look ups to the original method.
+
+* Converted DNS instrumentation to newer shim style.
+
+* Added tracking of callbacks to DNS instrumentation.
+
+* Converted crypto instrumentation to newer shim style.
+
+* Updated domains instrumentation to use an instrumentation shim.
+
+* Refactored the global instrumentation to use the shim API.
+
+* Ported inspector instrumentation to use an instrumentation shim.
+
+* Ported async_hooks based promise instrumentation over to using shims.
+
+* Added shim types for core instrumentations.
+
+* Fixed outbound https call to use example.com to resolve integration test issue.
+
+* Fixed tests for ioredis 4.0.0 and above.
+
+* Improved benchmark comparison output.
+
+* Added `http` benchmark tests.
+
+### 4.8.0 (2018-08-13):
+
+* Added JSON-formatted output to benchmarks to enable automated benchmark comparison.
+
+* Updated the benchmark runner to measure specifically userland CPU overhead.
+
+* Added DatastoreShim benchmarks.
+
+* Fixed MongoDB instrumentation for driver versions greater than 3.0.6.
+
+  Mongo 3.0.6 removed metadata the Agent relied upon to instrument the driver. This
+  fixes that by going back to the old method of manually listing all objects and
+  methods to instrument.
+
+* Implemented enforcement of `max_payload_size_in_bytes` config value.
+
+  Any payload during the harvest sequence that exceeds the configured limit will
+  be discarded.
+
+* Updated MySQL versioned tests to run against the latest release.
+
+### 4.7.0 (2018-07-31):
+
+* Added support for distributed tracing.
+
+  Distributed tracing lets you see the path that a request takes as it travels
+  through your distributed system. By showing the distributed activity through a
+  unified view, you can troubleshoot and understand a complex system better than
+  ever before.
+
+  Distributed tracing is available with an APM Pro or equivalent subscription.
+  To see a complete distributed trace, you need to enable the feature on a set of
+  neighboring services. Enabling distributed tracing changes the behavior of some
+  New Relic features, so carefully consult the [transition guide](https://docs.newrelic.com/docs/transition-guide-distributed-tracing) before
+  you enable this feature.
+
+  To enable distributed tracing, set `distributed_tracing.enabled` to `true` in
+  your `newrelic.js` file, or set `NEW_RELIC_DISTRIBUTED_TRACING_ENABLED` in your
+  environment.
+
+* Added a warning for too-new versions of Node.js during agent startup.
+
+* Appropriately obfuscated SQL statements will now be included in all transaction
+  traces.
+
+  Previously, the agent would only include the SQL statements if the corresponding
+  query was sufficiently slow.
+
+* Added ability to execute instrumentation functions in the context of the segment
+  the segment descriptor is describing.
+
+  All `record*` methods supplied by all instrumentation shim classes now allow for
+  a function to be executed under the context of the segment the record call will
+  produce. This may be done by supplying a function in the `inContext` key for the
+  segment descriptor passed to the record method.
+
+* Reservoirs will now respect setting their size to 0.
+
+### 4.6.0 (2018-07-24):
+
+* Added full support for Node v10.
+
+* Added instrumentation for `crypto.scrypt`.
+
+* Added instrumentation for `fs.realpath.native`.
+
+* Added instrumentation for `process.setUncaughtExceptionCaptureCallback`.
+
+* Updated tests to use `asyncResource.runInAsyncScope` instead of `emitBefore` and
+  `emitAfter`
+
+* Pulled `distributed_tracing` config value from behind `feature_flag`.
+
+### 4.5.1 (2018-07-18):
+
+- The agent will now properly remerge event data on collection failure.
+
+  Previously, the agent wouldn't observe the correct format for remerging, causing
+  undefined events to be pushed into the reservoir.
+
+### 4.5.0 (2018-07-16):
+
+* Feature flags may now be set from environment variables.
+
+  Using the naming convention `NEW_RELIC_FEATURE_FLAG_<feature flag name in upper
+  case>`.
+
+* Transaction events may be harvested in two payloads now.
+
+  This change reduces the occurrence of harvests being rejected due to large
+  payloads. Payloads will only be split when they are large (greater than 1/3 the
+  maximum).
+
+* Updated Hapi v17 instrumentation to wrap `server` export, in addition to `Server`.
+
+* `ROOT` segment no longer turns into a span event.
+
+* Fixed span collection when transactions are `sampled=false`.
+
+* Removed `grandparentId` from spans.
+
 ### 4.4.0 (2018-07-12):
 
 * Added config `utilization` env vars to the `BOOLEAN_VARS` set.
@@ -8,6 +145,29 @@
 * Replaced `trusted_account_ids` array with `trusted_account_key`.
 
 * Added node v10 to the test matrix.
+
+* Converted distributed trace `x-newrelic-trace` header name to `newrelic`.
+
+* Added support for different transport types in distributed tracing.
+
+* Added more tests around priority/sampled attributes on traces and events.
+
+* Lazily calculate transaction priority only when needed.
+
+* Transaction priority is now truncated to 6 decimal places on generation.
+
+* Adaptive sampling now uses the `sampling_target` and
+  `sampling_target_period_in_seconds` configuration values.
+
+  With these configurations, the adaptive sampling window is separated from the
+  harvest window.
+
+* Removed `nr.tripId` attribute from distributed trace intrinsics.
+
+* Default span events to enabled.
+
+  These are still protected behind `feature_flag.distributed_tracing` which defaults
+  to `false`.
 
 ### 4.3.0 (2018-07-09):
 
@@ -30,7 +190,7 @@
 
 * Fixed issue with tracking external requests to default ports.
 
- Special thanks to Ryan King for pinpointing the cause of this issue.
+  Special thanks to Ryan King for pinpointing the cause of this issue.
 
 * Added extra check for handling arrays of functions when wrapping middleware
   mounters.
@@ -67,6 +227,25 @@
   which caused infinite recursion in the agent's promise instrumentation.
 
 * No longer download gcc on test suites that do not require it.
+
+* Added `url` parameter to `http` external segments.
+
+* Renamed request parameters on external segments.
+
+  Previously these were named just the parameter name (e.g. `/foo?bar=baz` would
+  become the parameter `"bar": "baz"`). Now they are prefixed with
+  `request.parameter`. (e.g. `"request.parameter.bar": "baz"`).
+
+* Added `EventAggregator` base class.
+
+  The `ErrorAggregator` class was refactored and most generic event aggregation
+  logic was moved to the new `EventAggregator` class.
+
+* Added `SpanEvent` and `SpanAggregator` classes.
+
+* Added Span event generation to the trace `end` method.
+
+* Added Span events to harvest cycle steps.
 
 ### 4.1.5 (2018-06-11):
 
@@ -110,6 +289,11 @@
   result in a false `uninstrumented` status, because the agent would interpret
   `redis.js` as the module itself.
 
+* Moved `computeSampled` call to `Transaction` constructor.
+
+  Previously it was only called in `createDistributedTracePayload`, but this
+  gives all transactions a `sampled` value, and potentially a boosted priority.
+
 ### 4.1.4 (2018-06-04):
 
 * Transaction stubs are now created properly in `api#getTransaction`
@@ -132,6 +316,25 @@
   harvest.
 
 * Modularlized configuration constants to improve readability.
+
+* Added `distributed_tracing` feature flag.
+
+* Added `acceptDistributedTracePayload` method to `Transaction`.
+
+* Added `createDistributedTracePayload` method to `Transaction`.
+
+* Updated `Agent#recordSupportability` to not include `Nodejs/` in the default metric name.
+
+* Added distributed tracing methods to `TransactionHandle`.
+
+* Added distributed tracing cases for `http` and `other` metric recorders.
+
+* Implemented `_addDistributedTraceInstrinsics` on `Transaction`.
+
+  If the `distributed_tracing` feature flag is enabled, the agent will ignore old
+  CAT attributes in favor of distributed trace–related ones.
+
+* Added integration tests around better CAT functionality.
 
 ### 4.1.2 (2018-05-22):
 

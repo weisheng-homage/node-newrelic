@@ -21,6 +21,6 @@
   ],
   "dependencies": {
     "generic-pool": "^2.4.6",
-    "mysql": "^2.15.0"
+    "mysql": "^2.16.0"
   }
 }

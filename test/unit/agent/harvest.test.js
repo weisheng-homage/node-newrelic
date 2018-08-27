@@ -1,5 +1,6 @@
 'use strict'
 
+const a = require('async')
 const expect = require('chai').expect
 const helper = require('../../lib/agent_helper')
 const nock = require('nock')
@@ -485,6 +486,97 @@ describe('Agent harvests', () => {
       expect(agent.events).to.have.length(0)
     })
 
+    it('should send two payloads when there are a lot of events', (done) => {
+      // Reduce the event limit to avoid `RemoteMethod` compressing the payload.
+      const limit = 100
+      agent.config.onConnect({
+        'transaction_events.max_samples_per_minute': limit
+      })
+
+      let eventsBodies = []
+      const harvest = nock(URL)
+      harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS, (b) => eventsBodies.push(b))
+        .reply(200, EMPTY_RESPONSE)
+      harvest.post(ENDPOINTS.EVENTS, (b) => eventsBodies.push(b))
+        .reply(200, EMPTY_RESPONSE)
+
+      a.series([
+        (cb) => {
+          a.timesSeries(limit - 1, (i, cb) => {
+            helper.runInTransaction(agent, (transaction) => {
+              tx = transaction
+              tx.finalizeNameFromUri(`/some/test/url/${i}`, 200)
+              tx.end(() => cb())
+            })
+          }, cb)
+        },
+
+        (cb) => {
+          expect(agent.events).to.have.length(limit)
+          agent.harvest(cb)
+          expect(agent.events).to.have.length(0)
+        },
+
+        (cb) => {
+          harvest.done()
+
+          // Should have sent two payloads.
+          expect(eventsBodies).to.have.length(2)
+          const totalReserviorSize =
+            eventsBodies[0][1].reservoir_size + eventsBodies[1][1].reservoir_size
+          const totalSeen =
+            eventsBodies[0][1].events_seen + eventsBodies[1][1].events_seen
+
+          // Payloads should add up to what was harvested.
+          expect(totalReserviorSize).to.equal(agent.events.limit)
+          expect(totalSeen).to.equal(limit)
+
+          // Should send two different payloads.
+          expect(eventsBodies[0][2])
+            .to.be.an.instanceOf(Array)
+            .and.not.deep.equal(eventsBodies[1][2])
+
+          cb()
+        }
+      ], done)
+    })
+
+    it('should replace split bodies on failure', (done) => {
+      // Reduce the event limit to avoid `RemoteMethod` compressing the payload.
+      const limit = 100
+      agent.config.onConnect({
+        'transaction_events.max_samples_per_minute': limit
+      })
+
+      const harvest = nock(URL)
+      harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
+
+      var expectedEvents
+      a.series([
+        (cb) => {
+          a.timesSeries(limit - 1, (i, cb) => {
+            helper.runInTransaction(agent, (transaction) => {
+              tx = transaction
+              tx.finalizeNameFromUri(`/some/test/url/${i}`, 200)
+              tx.end(() => cb())
+            })
+          }, cb)
+        },
+
+        (cb) => {
+          expect(agent.events).to.have.length(limit)
+          expectedEvents = agent.events.toArray()
+          agent.harvest(cb)
+          expect(agent.events).to.have.length(0)
+        }
+      ], function handleError(err) {
+        expect(err).to.exist
+        expect(agent.events.toArray()).to.have.members(expectedEvents)
+        done()
+      })
+    })
+
     it('should not send if `transaction_events.enabled` is false', (done) => {
       agent.config.transaction_events.enabled = false
 
@@ -509,11 +601,13 @@ describe('Agent harvests', () => {
       harvest.post(ENDPOINTS.METRICS).reply(500, EMPTY_RESPONSE)
 
       expect(agent.events).to.have.length(1)
+      const event = agent.events.toArray()[0]
 
       agent.harvest((err) => {
         expect(err).to.exist
         harvest.done()
         expect(agent.events).to.have.length(1)
+        expect(agent.events.toArray()[0]).to.equal(event)
 
         done()
       })
@@ -727,7 +821,7 @@ describe('Agent harvests', () => {
 
   describe('sending to span_event_data endpoint', () => {
     beforeEach(() => {
-      agent.config.feature_flag.distributed_tracing = true
+      agent.config.distributed_tracing.enabled = true
       agent.config.span_events.enabled = true
       helper.runInTransaction(agent, (tx) => {
         tx.trace.root.end()
@@ -787,7 +881,7 @@ describe('Agent harvests', () => {
     })
 
     it('should not send if `distributed_tracing` is false', (done) => {
-      agent.config.feature_flag.distributed_tracing = false
+      agent.config.distributed_tracing.enabled = false
 
       const harvest = nock(URL)
       harvest.post(ENDPOINTS.METRICS).reply(200, EMPTY_RESPONSE)

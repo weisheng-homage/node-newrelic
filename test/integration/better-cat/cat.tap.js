@@ -17,7 +17,9 @@ let compareSampled = null
 tap.test('cross application tracing full integration', (t) => {
   t.plan(79)
   const config = {
-    feature_flag: {distributed_tracing: true},
+    distributed_tracing: {
+      enabled: true
+    },
     cross_application_tracer: {enabled: true},
     account_id: ACCOUNT_ID,
     application_id: APP_ID,
@@ -28,6 +30,9 @@ tap.test('cross application tracing full integration', (t) => {
   // require http after creating the agent
   const http = require('http')
   const api = new API(agent)
+
+  var firstExternalId
+  var secondExternalId
 
   let serversToStart = 3
   function started() {
@@ -43,6 +48,7 @@ tap.test('cross application tracing full integration', (t) => {
     const tx = agent.tracer.getTransaction()
     tx.nameState.appendPath('foobar')
     http.get(generateUrl(MIDDLE_PORT, 'start/middle'), (externRes) => {
+      firstExternalId = agent.tracer.getSegment().id
       externRes.resume()
       externRes.on('end', () => {
         tx.nameState.popPath('foobar')
@@ -57,6 +63,7 @@ tap.test('cross application tracing full integration', (t) => {
     const tx = agent.tracer.getTransaction()
     tx.nameState.appendPath('foobar')
     http.get(generateUrl(END_PORT, 'middle/end'), (externRes) => {
+      secondExternalId = agent.tracer.getSegment().id
       externRes.resume()
       externRes.on('end', () => {
         tx.nameState.popPath('foobar')
@@ -79,12 +86,15 @@ tap.test('cross application tracing full integration', (t) => {
     })
     var txCount = 0
 
+    const testsToCheck = []
     agent.on('transactionFinished', (trans) => {
       const event = agent.events.toArray().filter((evt) => {
         return evt[0].guid === trans.id
       })[0]
-      transInspector[txCount](trans, event)
-      txCount += 1
+      testsToCheck.push(transInspector[txCount].bind(this, trans, event))
+      if (++txCount === 3) {
+        testsToCheck.map((test) => test())
+      }
     })
   }
 
@@ -118,7 +128,7 @@ tap.test('cross application tracing full integration', (t) => {
         priority: intrinsic.priority
       })
 
-      validateIntrinsics(t, intrinsic, 'end', 'event')
+      validateIntrinsics(t, intrinsic, 'end', 'event', secondExternalId)
     },
     function middleTest(trans, event) {
       // check the unscoped metrics
@@ -173,7 +183,7 @@ tap.test('cross application tracing full integration', (t) => {
         priority: intrinsic.priority
       })
 
-      validateIntrinsics(t, intrinsic, 'middle', 'event')
+      validateIntrinsics(t, intrinsic, 'middle', 'event', firstExternalId)
     },
     function startTest(trans, event) {
       // check the unscoped metrics
@@ -258,7 +268,7 @@ function currySampled(t, a) {
   }
 }
 
-function validateIntrinsics(t, intrinsic, reqName, type) {
+function validateIntrinsics(t, intrinsic, reqName, type, parentSpanId) {
   reqName = reqName || 'start'
   type = type || 'event'
 
@@ -274,7 +284,11 @@ function validateIntrinsics(t, intrinsic, reqName, type) {
 
   if (type !== 'trace') {
     t.ok(intrinsic.parentId, `${reqName} should have a parentId on ${type}`)
-    t.ok(intrinsic.parentSpanId, `${reqName} should have a parentSpanId on ${type}`)
+    t.equal(
+      intrinsic.parentSpanId,
+      parentSpanId,
+      `${reqName} should have a parentSpanId of ${parentSpanId} on ${type}`
+    )
   }
   t.ok(intrinsic['parent.app'], `${reqName} should have a parent app on ${type}`)
   t.ok(intrinsic['parent.type'], `${reqName} should have a parent type on ${type}`)

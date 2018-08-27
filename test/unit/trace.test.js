@@ -73,7 +73,7 @@ describe('Trace', function() {
   })
 
   it('should have DT attributes on transaction end', function(done) {
-    agent.config.feature_flag.distributed_tracing = true
+    agent.config.distributed_tracing.enabled = true
     agent.config.application_id = 'test'
     agent.config.account_id = 1
     helper.runInTransaction(agent, function(tx) {
@@ -93,7 +93,7 @@ describe('Trace', function() {
   })
 
   it('should have DT parent attributes on payload accept', function(done) {
-    agent.config.feature_flag.distributed_tracing = true
+    agent.config.distributed_tracing.enabled = true
     agent.config.application_id = 'test'
     agent.config.account_id = 1
     helper.runInTransaction(agent, function(tx) {
@@ -118,12 +118,52 @@ describe('Trace', function() {
     })
   })
 
-  it('should generate span events on end', function() {
+  it('should generate span events', function() {
     agent.config.span_events.enabled = true
-    agent.config.feature_flag.distributed_tracing = true
+    agent.config.distributed_tracing.enabled = true
 
     var transaction = new Transaction(agent)
-    var parentId = transaction.parentId = 'testParentId'
+
+    var trace = transaction.trace
+    var child1 = transaction.baseSegment = trace.add('test')
+    child1.start()
+    var child2 = child1.add('nested')
+    child2.start()
+    child1.end()
+    child2.end()
+    trace.root.end()
+    transaction.end()
+    trace.generateSpanEvents()
+
+    var events = agent.spans.getEvents()
+    var nested = events[0]
+    var testSpan = events[1]
+
+    expect(nested).to.have.property('parentId', testSpan.guid)
+    expect(nested).to.have.property('category', 'generic')
+    expect(nested).to.have.property('priority', transaction.priority)
+    expect(nested).to.have.property('transactionId', transaction.id)
+    expect(nested).to.have.property('sampled', transaction.sampled)
+    expect(nested).to.have.property('name', 'nested')
+    expect(nested).to.have.property('traceId', transaction.id)
+    expect(nested).to.have.property('timestamp', child1.timer.start)
+
+    expect(testSpan).to.have.property('parentId', null)
+    expect(testSpan).to.have.property('nr.entryPoint').and.be.true
+    expect(testSpan).to.have.property('category', 'generic')
+    expect(testSpan).to.have.property('priority', transaction.priority)
+    expect(testSpan).to.have.property('transactionId', transaction.id)
+    expect(testSpan).to.have.property('sampled', transaction.sampled)
+    expect(testSpan).to.have.property('name', 'test')
+    expect(testSpan).to.have.property('traceId', transaction.id)
+    expect(testSpan).to.have.property('timestamp', child2.timer.start)
+  })
+
+  it('should not generate span events on end if span_events is disabled', function() {
+    agent.config.span_events.enabled = false
+    agent.config.distributed_tracing.enabled = true
+
+    var transaction = new Transaction(agent)
 
     var trace = transaction.trace
     var child1 = trace.add('test')
@@ -136,64 +176,12 @@ describe('Trace', function() {
     transaction.end()
 
     var events = agent.spans.getEvents()
-    var nested = events[0]
-    var root = events[1]
-    var testSpan = events[2]
-
-    expect(nested.parentId).to.equal(testSpan.guid)
-    expect(nested.grandparentId).to.equal(root.guid)
-    expect(nested.category).to.equal('generic')
-    expect(nested.priority).to.equal(transaction.priority)
-    expect(nested.appLocalRootId).to.equal(transaction.id)
-    expect(nested.sampled).to.equal(transaction.sampled)
-    expect(nested.name).to.equal('nested')
-    expect(nested.traceId).to.equal(transaction.id)
-    expect(nested.timestamp).to.equal(child1.timer.start)
-
-    expect(testSpan.parentId).to.equal(root.guid)
-    expect(testSpan.grandparentId).to.equal(transaction.id)
-    expect(testSpan.category).to.equal('generic')
-    expect(testSpan.priority).to.equal(transaction.priority)
-    expect(testSpan.appLocalRootId).to.equal(transaction.id)
-    expect(testSpan.sampled).to.equal(transaction.sampled)
-    expect(testSpan.name).to.equal('test')
-    expect(testSpan.traceId).to.equal(transaction.id)
-    expect(testSpan.timestamp).to.equal(child2.timer.start)
-
-    expect(root.parentId).to.equal(transaction.id)
-    expect(root.grandparentId).to.equal(parentId)
-    expect(root.category).to.equal('generic')
-    expect(root.priority).to.equal(transaction.priority)
-    expect(root.appLocalRootId).to.equal(transaction.id)
-    expect(root.sampled).to.equal(transaction.sampled)
-    expect(root.name).to.equal('ROOT')
-    expect(root.traceId).to.equal(transaction.id)
-    expect(root.timestamp).to.equal(transaction.trace.root.timer.start)
-  })
-
-  it('should not generate span events on end if span_events is disabled', function() {
-    agent.config.span_events.enabled = false
-    agent.config.feature_flag.distributed_tracing = true
-
-    var transaction = new Transaction(agent)
-
-    var trace = transaction.trace
-    var child1 = trace.add('test')
-    child1.start()
-    var child2 = child1.add('nested')
-    child2.start()
-    child1.end()
-    child2.end()
-    trace.root.end()
-    trace.end()
-
-    var events = agent.spans.getEvents()
     expect(events.length).to.equal(0)
   })
 
   it('should not generate span events on end if distributed_tracing is off', function() {
     agent.config.span_events.enabled = true
-    agent.config.feature_flag.distributed_tracing = false
+    agent.config.distributed_tracing.enabled = false
 
     var transaction = new Transaction(agent)
 
@@ -205,7 +193,30 @@ describe('Trace', function() {
     child1.end()
     child2.end()
     trace.root.end()
-    trace.end()
+    transaction.end()
+
+    var events = agent.spans.getEvents()
+    expect(events.length).to.equal(0)
+  })
+
+  it('should not generate span events on end if transaction is not sampled', function() {
+    agent.config.span_events.enabled = true
+    agent.config.distributed_tracing.enabled = false
+
+    var transaction = new Transaction(agent)
+
+    var trace = transaction.trace
+    var child1 = trace.add('test')
+    child1.start()
+    var child2 = child1.add('nested')
+    child2.start()
+    child1.end()
+    child2.end()
+    trace.root.end()
+
+    transaction.priority = 0
+    transaction.sampled = false
+    transaction.end()
 
     var events = agent.spans.getEvents()
     expect(events.length).to.equal(0)
