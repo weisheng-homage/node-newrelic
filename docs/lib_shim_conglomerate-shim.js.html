@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>MessageSubscribeSpec - Documentation</title>
+    <title>lib/shim/conglomerate-shim.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,207 +29,84 @@
 
 <div id="main">
     
-    <h1 class="page-title">MessageSubscribeSpec</h1>
+    <h1 class="page-title">lib/shim/conglomerate-shim.js</h1>
     
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2>
-        MessageSubscribeSpec
-        </h2>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-            <div class="description"><p>Specification for message subscriber methods. That is, methods which
-register a consumer to start receiving messages.</p></div>
-        
-
-        
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>consumer</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The index of the consumer in the method's arguments. Note that if the
-consumer and callback indexes point to the same argument, the argument will
-be wrapped as a consumer.</p></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>messageHandler</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code><a href="global.html#MessageHandlerFunction">MessageHandlerFunction</a></code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>A function to extract message properties from a consumed message.
-This method is only used in the consume case to pull data from the
-retrieved message. Its return value is combined with the <code>MessageSubscribeSpec</code>
-to fully describe the consumed message.</p></td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_message-shim.js.html">lib/shim/message-shim.js</a>, <a href="lib_shim_message-shim.js.html#line236">line 236</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="MessageSpec.html">MessageSpec</a></li>
-        
-            <li><a href="global.html#MessageConsumerWrapperFunction">MessageConsumerWrapperFunction</a></li>
-        
-            <li><a href="MessageShim.html#recordSubscribedConsume">MessageShim#recordSubscribedConsume</a></li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-        
-    
-    </div>
-
-    
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li><a href="MessageSpec.html">MessageSpec</a></li>
-    </ul>
-
-
-    
-
-    
-
-    
-
-     
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict'
+
+const logger = require('../logger').child({component: 'ConglomerateShim'})
+const Shim = require('./shim')
+
+const {MODULE_TYPE} = require('./constants')
+const SHIM_CLASSES = {
+  [MODULE_TYPE.GENERIC]: Shim,
+  [MODULE_TYPE.DATASTORE]: require('./datastore-shim'),
+  [MODULE_TYPE.MESSAGE]: require('./message-shim'),
+  [MODULE_TYPE.PROMISE]: require('./promise-shim'),
+  [MODULE_TYPE.TRANSACTION]: require('./transaction-shim'),
+  [MODULE_TYPE.WEB_FRAMEWORK]: require('./webframework-shim')
+}
+
+/**
+ * A shim for wrapping all-in-one modules which implement multiple services.
+ *
+ * @private
+ * @extends Shim
+ */
+class ConglomerateShim extends Shim {
+  constructor(agent, moduleName, resolvedName) {
+    super(agent, moduleName, resolvedName)
+    this._logger = logger.child({module: moduleName})
+    this._resolvedName = resolvedName
+  }
+
+  get GENERIC() {
+    return MODULE_TYPE.GENERIC
+  }
+  get DATASTORE() {
+    return MODULE_TYPE.DATASTORE
+  }
+  get MESSAGE() {
+    return MODULE_TYPE.MESSAGE
+  }
+  get PROMISE() {
+    return MODULE_TYPE.PROMISE
+  }
+  get TRANSACTION() {
+    return MODULE_TYPE.TRANSACTION
+  }
+  get WEB_FRAMEWORK() {
+    return MODULE_TYPE.WEB_FRAMEWORK
+  }
+
+  /**
+   * Constructs a new `Shim` of the specified type for instrumenting submodules
+   * of the conglomerate module.
+   *
+   * @param {MODULE_TYPE} type  - The type of shim to construct.
+   * @param {string} submodule  - The name of the submodule this will instrument.
+   *
+   * @return {Shim} A new shim of the given type.
+   */
+  makeSpecializedShim(type, submodule) {
+    const ShimClass = SHIM_CLASSES[type]
+    const shim = new ShimClass(this.agent, this.moduleName, this._resolvedName)
+    shim._logger = shim._logger.child({submodule})
+    return shim
+  }
+}
+
+module.exports = ConglomerateShim
+</code></pre>
+        </article>
+    </section>
 
 
 

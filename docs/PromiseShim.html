@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>TransactionShim - Documentation</title>
+    <title>PromiseShim - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">TransactionShim</h1>
+    <h1 class="page-title">PromiseShim</h1>
     
 
     
@@ -42,10 +42,10 @@
 <header>
     
         <h2>
-        TransactionShim
+        PromiseShim
         </h2>
         
-            <div class="class-description"><p>A helper class for working with transactions.</p></div>
+            <div class="class-description"><p>A helper class for wrapping promise modules.</p></div>
         
     
 </header>
@@ -60,14 +60,15 @@
     <h2>Constructor</h2>
     
 
-    <h4 class="name" id="TransactionShim"><span class="type-signature"></span>new TransactionShim<span class="signature">(agent, moduleName, resolvedName)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="PromiseShim"><span class="type-signature"></span>new PromiseShim<span class="signature">(agent, moduleName, resolvedName)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Constructs a transaction managing shim.</p>
+    <p>Constructs a shim associated with the given agent instance, specialized for
+instrumenting promise libraries.</p>
 </div>
 
 
@@ -103,7 +104,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line52">line 52</a>
+        <a href="lib_shim_promise-shim.js.html">lib/shim/promise-shim.js</a>, <a href="lib_shim_promise-shim.js.html#line27">line 27</a>
     </li></ul></dd>
     
 
@@ -114,8 +115,6 @@
     <dd class="tag-see">
         <ul>
             <li><a href="Shim.html">Shim</a></li>
-        
-            <li><a href="WebFrameworkShim.html">WebFrameworkShim</a></li>
         </ul>
     </dd>
     
@@ -173,7 +172,7 @@
             
 
             <td class="description last">
-                <p>The agent the shim will use.</p>
+                <p>The agent this shim will use.</p>
                 
             </td>
         </tr>
@@ -300,12 +299,12 @@
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#agent">Shim#agent</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -379,12 +378,12 @@
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#logger">Shim#logger</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -512,12 +511,12 @@
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#SYMBOLS">Shim#SYMBOLS</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -591,12 +590,12 @@
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#tracer">Shim#tracer</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -682,12 +681,12 @@
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#argsToArray">Shim#argsToArray</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -809,12 +808,12 @@ the given segment.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#bindCallbackSegment">Shim#bindCallbackSegment</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -1022,259 +1021,6 @@ currently active segment.</p>
 
     
 
-    <h4 class="name" id="bindCreateTransaction"><span class="type-signature"></span>bindCreateTransaction<span class="signature">(nodule, property<span class="signature-attributes">opt</span>, spec)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Wraps one or more functions such that new transactions are created when
-invoked.</p>
-<ul>
-<li><code>bindCreateTransaction(nodule, property, spec)</code></li>
-<li><code>bindCreateTransaction(func, spec)</code></li>
-</ul>
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line152">line 152</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>nodule</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>Object</code></span>
-|
-
-<span class="param-type"><code>function</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">
-                <p>The source for the property to wrap, or a single function to wrap.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>property</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">
-                <p>The property to wrap. If omitted, the <code>nodule</code> parameter is assumed to be
-the function to wrap.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>spec</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code><a href="TransactionSpec.html">TransactionSpec</a></code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">
-                <p>The spec for creating the transaction.</p>
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="section-returns">
-<h5>Returns:</h5>
-
-        
-
-<dl class="param-type">
-    <dt>
-        Type:
-    </dt>
-    <dd>
-        
-<span class="param-type"><code>Object</code></span>
-|
-
-<span class="param-type"><code>function</code></span>
-
-
-    </dd>
-</dl>
-
-
-<div class="param-desc">
-    <p>The first parameter to this function, after
-wrapping it or its property.</p>
-</div>
-
-    
-</div>
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
     <h4 class="name" id="bindPromise"><span class="type-signature"></span>bindPromise<span class="signature">(promise<span class="signature-attributes">non-null</span>, segment<span class="signature-attributes">non-null</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 
     
@@ -1297,12 +1043,12 @@ Updates segment timing and resets opaque state.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#bindPromise">Shim#bindPromise</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -1494,12 +1240,12 @@ back on the nodule. Otherwise, the wrapped function is just returned.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#bindSegment">Shim#bindSegment</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -1813,12 +1559,12 @@ the currently active segment will be bound instead.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#createSegment">Shim#createSegment</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -2081,12 +1827,12 @@ active segment.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#defineProperties">Shim#defineProperties</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -2254,12 +2000,12 @@ active segment.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#defineProperty">Shim#defineProperty</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -2450,12 +2196,12 @@ the value is directly set as an unwritable property.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#execute">Shim#execute</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -2544,12 +2290,12 @@ ended yet).</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#getActiveSegment">Shim#getActiveSegment</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -2723,12 +2469,12 @@ associated with the object.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#getName">Shim#getName</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -2892,12 +2638,12 @@ associated with the object.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#getOriginal">Shim#getOriginal</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -3113,12 +2859,12 @@ segment if no object is given.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#getSegment">Shim#getSegment</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -3271,402 +3017,6 @@ with the object.</p>
 
     
 
-    <h4 class="name" id="insertCATReplyHeader"><span class="type-signature"></span>insertCATReplyHeader<span class="signature">(headers, useAlternateHeaderNames<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Adds CAT headers for an outbound response.</p>
-<ul>
-<li><code>insertCATReplyHeaders(headers [, useAlternateHeaderNames])</code></li>
-</ul>
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line445">line 445</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>headers</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>object</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">
-                <p>The outbound response headers object to inject our CAT headers into.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>useAlternateHeaderNames</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">
-                <p>Indicates if HTTP-style headers should be used or alternate style. Some
-transport protocols are more strict on the characters allowed in headers
-and this option can be used to toggle use of pure-alpha header names.</p>
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
-    <h4 class="name" id="insertCATRequestHeaders"><span class="type-signature"></span>insertCATRequestHeaders<span class="signature">(headers, useAlternateHeaderNames<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Adds CAT headers for an outbound request.</p>
-<ul>
-<li><code>insertCATRequestHeaders(headers [, useAlternateHeaderNames])</code></li>
-</ul>
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line358">line 358</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>headers</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>object</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">
-                <p>The outbound request headers object to inject our CAT headers into.</p>
-                
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>useAlternateHeaderNames</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last">
-                <p>Indicates if HTTP-style headers should be used or alternate style. Some
-transport protocols are more strict on the characters allowed in headers
-and this option can be used to toggle use of pure-alpha header names.</p>
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
     <h4 class="name" id="interceptPromise"><span class="type-signature"></span>interceptPromise<span class="signature">(prom, cb)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 
     
@@ -3689,12 +3039,12 @@ resolved or rejected.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#interceptPromise">Shim#interceptPromise</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -3880,12 +3230,12 @@ resolved or rejected.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#isArray">Shim#isArray</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -4045,12 +3395,12 @@ resolved or rejected.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#isBoolean">Shim#isBoolean</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -4210,12 +3560,12 @@ resolved or rejected.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#isFunction">Shim#isFunction</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -4375,12 +3725,12 @@ resolved or rejected.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#isNull">Shim#isNull</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -4540,12 +3890,12 @@ resolved or rejected.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#isNumber">Shim#isNumber</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -4705,12 +4055,12 @@ resolved or rejected.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#isObject">Shim#isObject</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -4870,12 +4220,12 @@ resolved or rejected.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#isPromise">Shim#isPromise</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -5014,6 +4364,175 @@ resolved or rejected.</p>
 
     
 
+    <h4 class="name" id="isPromiseInstance"><span class="type-signature"></span>isPromiseInstance<span class="signature">(obj)</span><span class="type-signature"> &rarr; {bool}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Checks if the given object is an instance of a promise from the promise
+library being wrapped.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_promise-shim.js.html">lib/shim/promise-shim.js</a>, <a href="lib_shim_promise-shim.js.html#line63">line 63</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="PromiseShim.html#setClass">PromiseShim#setClass</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>obj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>*</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The object to check the instance type of.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>bool</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>True if the provided object is an instance of a promise from
+this promise library.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
     <h4 class="name" id="isString"><span class="type-signature"></span>isString<span class="signature">(obj)</span><span class="type-signature"> &rarr; {bool}</span></h4>
 
     
@@ -5035,12 +4554,12 @@ resolved or rejected.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#isString">Shim#isString</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -5204,12 +4723,12 @@ resolved or rejected.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#isWrapped">Shim#isWrapped</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -5428,12 +4947,12 @@ the function to check.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#listenerCount">Shim#listenerCount</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -5621,12 +5140,12 @@ array length before checking it.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#normalizeIndex">Shim#normalizeIndex</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -5812,12 +5331,12 @@ array length before checking it.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#once">Shim#once</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -5956,159 +5475,6 @@ array length before checking it.</p>
 
     
 
-    <h4 class="name" id="popTransactionName"><span class="type-signature"></span>popTransactionName<span class="signature">(pathSegment<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Pops one or more elements off the transaction naming stack.</p>
-<ul>
-<li><code>popTransactionName([pathSegment])</code></li>
-</ul>
-<p>Ideally it is not necessary to ever provide the <code>pathSegment</code> parameter for
-this function, but we do not live in an ideal world.</p>
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line220">line 220</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>pathSegment</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">
-                <p>Optional. Path segment to pop the stack repeatedly until a segment matching
-<code>pathSegment</code> is removed.</p>
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
     <h4 class="name" id="proxy"><span class="type-signature"></span>proxy<span class="signature">(source, properties, dest)</span><span class="type-signature"></span></h4>
 
     
@@ -6130,12 +5496,12 @@ this function, but we do not live in an ideal world.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#proxy">Shim#proxy</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -6304,150 +5670,6 @@ this function, but we do not live in an ideal world.</p>
 
     
 
-    <h4 class="name" id="pushTransactionName"><span class="type-signature"></span>pushTransactionName<span class="signature">(pathSegment)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Pushes a new path segment onto the transaction naming stack.</p>
-<ul>
-<li><code>pushTransactionName(pathSegment)</code></li>
-</ul>
-<p>Transactions are named for the middlware that sends the reponse. Some web
-frameworks are capable of mounting middlware in complex routing stacks. In
-order to maintain the correct name, transactions keep a stack of mount points
-for each middlware/router/app/whatever. The instrumentation should push on
-the mount path for wrapped things when route resolution enters and pop it
-back off when resolution exits the item.</p>
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line199">line 199</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>pathSegment</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>The path segment to add to the naming stack.</p>
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
     <h4 class="name" id="record"><span class="type-signature"></span>record<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, recordNamer)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
 
     
@@ -6474,12 +5696,12 @@ back off when resolution exits the item.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#record">Shim#record</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -6746,12 +5968,12 @@ to.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#setActiveSegment">Shim#setActiveSegment</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -6865,6 +6087,141 @@ to.</p>
 
     
 
+    <h4 class="name" id="setClass"><span class="type-signature"></span>setClass<span class="signature">(clss)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Sets the class used to indentify promises from the wrapped promise library.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_promise-shim.js.html">lib/shim/promise-shim.js</a>, <a href="lib_shim_promise-shim.js.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>clss</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>The promise library's class.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
     <h4 class="name" id="setDefaults"><span class="type-signature"></span>setDefaults<span class="signature">(obj<span class="signature-attributes">nullable</span>, defaults)</span><span class="type-signature"> &rarr; {object}</span></h4>
 
     
@@ -6887,12 +6244,12 @@ not already have that property.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#setDefaults">Shim#setDefaults</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -7101,12 +6458,12 @@ be made writable and non-enumerable.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#setInternalProperty">Shim#setInternalProperty</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -7297,145 +6654,6 @@ be made writable and non-enumerable.</p>
 
     
 
-    <h4 class="name" id="setTransactionName"><span class="type-signature"></span>setTransactionName<span class="signature">(name)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Sets the name to be used for this transaction.</p>
-<ul>
-<li><code>setTransactionName(name)</code></li>
-</ul>
-<p>Either this <em>or</em> the naming stack should be used. Do not use them together.</p>
-</div>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_transaction-shim.js.html">lib/shim/transaction-shim.js</a>, <a href="lib_shim_transaction-shim.js.html#line238">line 238</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">
-                <p>The name to use for the transaction.</p>
-                
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-        
-            
-<div class="section-method">
-
-    
-
     <h4 class="name" id="shimRequire"><span class="type-signature"></span>shimRequire<span class="signature">(filePath)</span><span class="type-signature"> &rarr; (nullable) {*}</span></h4>
 
     
@@ -7457,12 +6675,12 @@ be made writable and non-enumerable.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#shimRequire">Shim#shimRequire</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -7627,12 +6845,12 @@ load, <code>null</code> is returned instead.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#storeSegment">Shim#storeSegment</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -7813,12 +7031,12 @@ load, <code>null</code> is returned instead.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#toArray">Shim#toArray</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -7985,12 +7203,12 @@ back on the nodule. Otherwise, the unwrapped function is just returned.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#unwrap">Shim#unwrap</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -8212,12 +7430,12 @@ back on the nodule. Otherwise, the unwrapped function is just returned.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#unwrapOnce">Shim#unwrapOnce</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -8444,12 +7662,12 @@ method.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#wrap">Shim#wrap</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -8745,6 +7963,466 @@ wrapping it or its properties.</p>
 
     
 
+    <h4 class="name" id="wrapCast"><span class="type-signature"></span>wrapCast<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object|function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Wraps the given properties as methods which take is some value other than
+a function to call and return a promise.</p>
+<ul>
+<li><code>wrapCast(nodule, properties)</code></li>
+<li><code>wrapCast(func)</code></li>
+</ul>
+<p>Examples of promise cast methods include <code>Promise.resolve</code>, <code>Promise.all</code>,
+and Bluebird's <code>Promise.delay</code>. These are static methods which accept some
+arbitrary value and return a Promise instance.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_promise-shim.js.html">lib/shim/promise-shim.js</a>, <a href="lib_shim_promise-shim.js.html#line203">line 203</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The source of the properties to wrap, or a single function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>One or more properties to wrap. If omitted, the <code>nodule</code> parameter is
+assumed to be the function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The first parameter to this function, after
+wrapping it or its properties.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="wrapCatch"><span class="type-signature"></span>wrapCatch<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object|function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Wraps the given properties as rejected promise chaining methods.</p>
+<ul>
+<li><code>wrapCatch(nodule, properties)</code></li>
+<li><code>wrapCatch(func)</code></li>
+</ul>
+<p>NOTE: You must set class used by the library before wrapping catch-methods.</p>
+<p>Promise catch methods differ from then methods in that only one function
+will be executed and only if the promise is rejected. Some libraries accept
+an additional argument to <code>Promise#catch</code> which is usually an error class
+to filter rejections by. This wrap method will handle that case.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_promise-shim.js.html">lib/shim/promise-shim.js</a>, <a href="lib_shim_promise-shim.js.html#line275">line 275</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="PromiseShim.html#setClass">PromiseShim#setClass</a></li>
+        
+            <li><a href="PromiseShim.html#wrapThen">PromiseShim#wrapThen</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The source of the properties to wrap, or a single function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>One or more properties to wrap. If omitted, the <code>nodule</code> parameter is
+assumed to be the function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The first parameter to this function, after
+wrapping it or its properties.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
     <h4 class="name" id="wrapClass"><span class="type-signature"></span>wrapClass<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, spec, args<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
 
     
@@ -8771,12 +8449,12 @@ hooks.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#wrapClass">Shim#wrapClass</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -9072,6 +8750,469 @@ wrapping it or its properties.</p>
 
     
 
+    <h4 class="name" id="wrapConstructor"><span class="type-signature"></span>wrapConstructor<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object|function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Wraps the given properties as constructors for the promise library.</p>
+<ul>
+<li><code>wrapConstructor(nodule, properties)</code></li>
+<li><code>wrapConstructor(func)</code></li>
+</ul>
+<p>It is only necessary to wrap the constructor for the class if there is no
+other way to access the executor function. Some libraries expose a separate
+method which is called to execute the executor. If that is available, it is
+better to wrap that using <a href="PromiseShim.html#wrapExecutorCaller"><code>PromiseShim#wrapExecutorCaller</code></a> than to
+use this method.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_promise-shim.js.html">lib/shim/promise-shim.js</a>, <a href="lib_shim_promise-shim.js.html#line91">line 91</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="PromiseShim.html#wrapExecutorCaller">PromiseShim#wrapExecutorCaller</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The source of the properties to wrap, or a single function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>One or more properties to wrap. If omitted, the <code>nodule</code> parameter is
+assumed to be the constructor to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The first parameter to this function, after
+wrapping it or its properties.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="wrapExecutorCaller"><span class="type-signature"></span>wrapExecutorCaller<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object|function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Wraps the given properties as the caller of promise executors.</p>
+<ul>
+<li><code>wrapExecutorCaller(nodule, properties)</code></li>
+<li><code>wrapExecutorCaller(func)</code></li>
+</ul>
+<p>Wrapping the executor caller method directly is preferable to wrapping
+the constructor of the promise class.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_promise-shim.js.html">lib/shim/promise-shim.js</a>, <a href="lib_shim_promise-shim.js.html#line144">line 144</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="PromiseShim.html#wrapConstructor">PromiseShim#wrapConstructor</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The source of the properties to wrap, or a single function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>One or more properties to wrap. If omitted, the <code>nodule</code> parameter is
+assumed to be the function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The first parameter to this function, after
+wrapping it or its properties.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
     <h4 class="name" id="wrapExport"><span class="type-signature"></span>wrapExport<span class="signature">(nodule, spec)</span><span class="type-signature"> &rarr; {*}</span></h4>
 
     
@@ -9096,12 +9237,12 @@ wrapping it or its properties.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#wrapExport">Shim#wrapExport</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -9267,6 +9408,227 @@ the export.</p>
 
     
 
+    <h4 class="name" id="wrapPromisify"><span class="type-signature"></span>wrapPromisify<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object|function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Wraps the given properties as callback-to-promise conversion methods.</p>
+<ul>
+<li><code>wrapPromisify(nodule, properties)</code></li>
+<li><code>wrapPromisify(func)</code></li>
+</ul>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_promise-shim.js.html">lib/shim/promise-shim.js</a>, <a href="lib_shim_promise-shim.js.html#line295">line 295</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The source of the properties to wrap, or a single function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>One or more properties to wrap. If omitted, the <code>nodule</code> parameter is
+assumed to be the function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The first parameter to this function, after
+wrapping it or its properties.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
     <h4 class="name" id="wrapReturn"><span class="type-signature"></span>wrapReturn<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>, spec, args<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object|function}</span></h4>
 
     
@@ -9296,12 +9658,12 @@ constructors instead.</p>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Shim.html#wrapReturn">Shim#wrapReturn</a>
     </li></ul></dd>
-    
-
     
 
     
@@ -9573,6 +9935,240 @@ assumed to be the function to wrap.</p>
     <dd>
         
 <span class="param-type"><code>Object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The first parameter to this function, after
+wrapping it or its properties.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="wrapThen"><span class="type-signature"></span>wrapThen<span class="signature">(nodule, properties<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object|function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Wraps the given properties as promise chaining methods.</p>
+<ul>
+<li><code>wrapThen(nodule, properties)</code></li>
+<li><code>wrapThen(func)</code></li>
+</ul>
+<p>NOTE: You must set class used by the library before wrapping then-methods.</p>
+<p>Examples of promise then methods include <code>Promise#then</code>, <code>Promise#finally</code>,
+and Bluebird's <code>Promise#map</code>. These are methods which take a function to
+execute once the promise resolves and hands back a new promise.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_shim_promise-shim.js.html">lib/shim/promise-shim.js</a>, <a href="lib_shim_promise-shim.js.html#line245">line 245</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="PromiseShim.html#setClass">PromiseShim#setClass</a></li>
+        
+            <li><a href="PromiseShim.html#wrapCatch">PromiseShim#wrapCatch</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodule</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>object</code></span>
+|
+
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>The source of the properties to wrap, or a single function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>properties</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+|
+
+<span class="param-type"><code>array.&lt;string></code></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <p>One or more properties to wrap. If omitted, the <code>nodule</code> parameter is
+assumed to be the function to wrap.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>object</code></span>
 |
 
 <span class="param-type"><code>function</code></span>
