@@ -13,7 +13,6 @@ var expect = chai.expect
 var should = chai.should()
 var environment = require('../../lib/environment')
 var rimraf = require('rimraf')
-var semver = require('semver')
 
 
 function find(settings, name) {
@@ -124,14 +123,6 @@ describe('the environment scraper', function() {
       should.exist(find(settings, 'Dynamically linked to OpenSSL?'))
     })
 
-    it('should know whether V8 was dynamically linked in', function() {
-      // As of 1.7.0 this is no longer possible
-      // https://github.com/nodejs/io.js/commit/d726a177ed
-      if (semver.satisfies(process.versions.node, '<1.7.0')) {
-        should.exist(find(settings, 'Dynamically linked to V8?'))
-      }
-    })
-
     it('should know whether Zlib was dynamically linked in', function() {
       should.exist(find(settings, 'Dynamically linked to Zlib?'))
     })
@@ -208,7 +199,7 @@ describe('the environment scraper', function() {
     })
   })
 
-   it('should get correct version for dependencies', function(done) {
+  it('should get correct version for dependencies', function(done) {
     var root = path.join(__dirname, '../lib/example-packages')
     environment.listPackages(root, function(err, packages) {
       var versions = packages.reduce(function(map, pkg) {

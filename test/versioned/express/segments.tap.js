@@ -726,8 +726,9 @@ test('when using a regular expression in path', function(t) {
 
 function setup(t) {
   agent = helper.instrumentMockedAgent({
-    express_segments: true
+    feature_flag: {express_segments: true}
   })
+
   express = require('express')
   app = express()
   t.tearDown(function cb_tearDown() {
@@ -752,8 +753,14 @@ function runTest(t, options, callback) {
   }
 
   agent.on('transactionFinished', function(tx) {
-    var baseSegment = tx.trace.root.children[0]
-    t.equal(agent.errors.getTotalErrorCount(), errors, 'should be expected errors')
+    const baseSegment = tx.trace.root.children[0]
+
+    t.equal(
+      agent.errors.traceAggregator.errors.length,
+      errors,
+      'should have errors'
+    )
+
     callback(baseSegment.children, tx)
   })
 

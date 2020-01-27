@@ -1,44 +1,41 @@
-language: node_js
-node_js:
-  - "4"
-  - "5"
-  - "6"
-  - "7"
-  - "8"
-  - "9"
-  - "10"
+language: generic
 env:
-  - SUITE=smoke
-  - SUITE=unit
-  - SUITE=integration
-  - SUITE=lint
-  - SUITE=prerelease
-  - SUITE=security
-  - SUITE=versioned
-matrix:
-  exclude:
-    - node_js: "4"
-      env: SUITE=security
-    - node_js: "4"
-      env: SUITE=lint
-    - node_js: "5"
-      env: SUITE=security
-    - node_js: "5"
-      env: SUITE=lint
-  allow_failures:
-    - env: SUITE=prerelease
-addons:
-  postgresql: "9.3"
+  global:
+    - MONGODB=2.6.11
+  matrix:
+    # NODE 8
+    - NR_NODE_VERSION=8 SUITE=smoke
+    - NR_NODE_VERSION=8 SUITE=unit
+    - NR_NODE_VERSION=8 SUITE=integration
+    - NR_NODE_VERSION=8 SUITE=versioned
+    # NODE 10
+    - NR_NODE_VERSION=10 SUITE=smoke
+    - NR_NODE_VERSION=10 SUITE=unit
+    - NR_NODE_VERSION=10 SUITE=integration
+    - NR_NODE_VERSION=10 SUITE=versioned
+    # NODE 12 --
+    - NR_NODE_VERSION=12 SUITE=smoke
+    - NR_NODE_VERSION=12 SUITE=unit
+    - NR_NODE_VERSION=12 SUITE=integration
+    - NR_NODE_VERSION=12 SUITE=lint
+    - NR_NODE_VERSION=12 SUITE=security
+    - NR_NODE_VERSION=12 SUITE=versioned
 services:
   - memcached
   - mysql
   - redis
-  - cassandra
   - postgresql
   - rabbitmq
+addons:
+  apt:
+    packages:
+      - rabbitmq-server
 before_install:
-  - if [ "$(npm --version)" = "3.10.3" ]; then npm install -g npm@3.4.1; fi
+  - source ./bin/travis-node.sh
   - ./bin/travis-setup.sh
-  - make update_npm_global
-install: if [ "$SUITE" != "smoke" ]; then make node_modules; fi
-script: make $SUITE
+install: if [ "$SUITE" != "smoke" ]; then npm ci; fi
+cache:
+  directories:
+    - "$HOME/.npm"
+script: npm run $SUITE
+after_script: find /home/travis/.npm/_logs -type f -exec cat '{}' +

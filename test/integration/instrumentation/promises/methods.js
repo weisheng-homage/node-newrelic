@@ -125,6 +125,32 @@ module.exports = function(t, library, loadLibrary) {
     })
   })
 
+  ptap.test('Promise.allSettled', function(t) {
+    t.plan(2)
+
+    t.test('context', function(t) {
+      testPromiseContext(t, function(Promise, name) {
+        return Promise.allSettled([Promise.resolve(name), Promise.reject(name)])
+      })
+    })
+
+    t.test('usage', function(t) {
+      testPromiseClassMethod(t, 1, function(Promise, name) {
+        var p1 = Promise.resolve(name + '1')
+        var p2 = Promise.reject(name + '2')
+
+        return Promise.allSettled([p1, p2]).then(function(inspections) {
+          var result = inspections.map(function(i) {
+            return i.isFulfilled() ? { value: i.value() } : { reason: i.reason() }
+          })
+          t.deepEqual(result,
+            [{value: name + '1'}, {reason: name + '2'}],
+            name + 'should not change result')
+        })
+      })
+    })
+  })
+
   ptap.test('Promise.any', function(t) {
     t.plan(2)
 
@@ -831,7 +857,7 @@ module.exports = function(t, library, loadLibrary) {
           .catch(function(err) {
             t.equal(err, foo, name + 'should pass throught the correct object')
           })
-        })
+      })
     })
 
     t.test('casting', function(t) {
@@ -1702,8 +1728,7 @@ module.exports = function(t, library, loadLibrary) {
           var foo = {what: 'throw test object'}
           return p[methodName](foo).then(function() {
             t.fail(name + 'should not go into resolve handler after throw')
-          })
-          .catch(function(err) {
+          }).catch(function(err) {
             t.equal(err, foo, name + 'should pass throught the correct object')
           })
         })
@@ -1952,19 +1977,18 @@ function _testPromiseContext(t, agent, factory) {
       }
     })
 
-    ctxA.transaction.end(function() {
-      helper.runInTransaction(agent, function(txB) {
-        t.tearDown(function() {
-          ctxA.transaction.end()
-          txB.end()
-        })
-        t.notEqual(id(ctxA.transaction), id(txB), 'should not be in transaction a')
+    ctxA.transaction.end()
+    helper.runInTransaction(agent, function(txB) {
+      t.tearDown(function() {
+        ctxA.transaction.end()
+        txB.end()
+      })
+      t.notEqual(id(ctxA.transaction), id(txB), 'should not be in transaction a')
 
-        ctxA.promise.catch(function() {}).then(function() {
-          var tx = agent.tracer.getTransaction()
-          t.comment('A: ' + id(ctxA.transaction) + ' | B: ' + id(txB))
-          t.equal(id(tx), id(txB), 'should be in expected context')
-        })
+      ctxA.promise.catch(function() {}).then(function() {
+        var tx = agent.tracer.getTransaction()
+        t.comment('A: ' + id(ctxA.transaction) + ' | B: ' + id(txB))
+        t.equal(id(tx), id(txB), 'should be in expected context')
       })
     })
   })

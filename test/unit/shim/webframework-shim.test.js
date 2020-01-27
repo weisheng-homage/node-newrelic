@@ -303,6 +303,20 @@ describe('WebFrameworkShim', function() {
           wrappable.bar(routes, () => {})
         })
 
+        it('should not overwrite regex entries in the array of routes', () => {
+          const routes = [/a\/b\/$/, /anotherRegex/, /a/]
+          shim.wrapMiddlewareMounter(wrappable, 'bar', {
+            route: shim.FIRST,
+            wrapper: () => {
+              routes.forEach((r) => {
+                expect(r instanceof RegExp).to.be.true
+              })
+            }
+          })
+
+          wrappable.bar(routes, () => {})
+        })
+
         it('should pass null if the route parameter is a middleware', function() {
           var callCount = 0
           shim.wrapMiddlewareMounter(wrappable, 'bar', {
@@ -550,12 +564,11 @@ describe('WebFrameworkShim', function() {
             txInfo.transaction = tx
             var segment = wrapped(req)
 
-            expect(segment).to.exist
-              .and.property('parameters').to.deep.equal({
-                nr_exclusive_duration_millis: null,
-                foo: 'bar',
-                biz: 'bang'
-              })
+            expect(segment).to.exist.and.to.have.property('attributes')
+            expect(segment.getAttributes()).to.deep.equal({
+              foo: 'bar',
+              biz: 'bang'
+            })
           })
         })
       })
@@ -575,10 +588,8 @@ describe('WebFrameworkShim', function() {
             txInfo.transaction = tx
             var segment = wrapped(req)
 
-            expect(segment).to.exist
-              .and.property('parameters').to.deep.equal({
-                nr_exclusive_duration_millis: null
-              })
+            expect(segment).to.exist.and.to.have.property('attributes')
+            expect(segment.getAttributes()).to.deep.equal({})
           })
         })
       })
@@ -728,6 +739,36 @@ describe('WebFrameworkShim', function() {
         })
       })
 
+      describe('when the middleware is asynchronous and spec.appendPath false', () => {
+        it('should not append path and should not pop path', function(done) {
+          const spec = {
+            route: '/foo/bar',
+            appendPath: false,
+            next: shim.LAST
+          }
+
+          const wrapped = shim.recordMiddleware(function(_req, next) {
+            setTimeout(function() {
+              // verify did not append the path
+              expect(txInfo.transaction.nameState.getPath()).to.equal('/expected')
+              next()
+            }, 10)
+          }, spec)
+
+          helper.runInTransaction(agent, function(tx) {
+            tx.nameState.appendPath('/')
+            tx.nameState.appendPath('/expected')
+
+            txInfo.transaction = tx
+            wrapped(req, function() {
+              // verify did not pop back to '/' from '/expected'
+              expect(tx.nameState.getPath()).to.equal('/expected')
+              done()
+            })
+          })
+        })
+      })
+
       describe('when middleware returns a promise', function() {
         var unwrappedTimeout = null
         var middleware = null
@@ -746,9 +787,16 @@ describe('WebFrameworkShim', function() {
                     return next().then(function() {
                       expect(txInfo.transaction.nameState.getPath()).to.equal('/foo/bar')
                       resolve()
-                    }, function() {
+                    }, function(err) {
                       expect(txInfo.transaction.nameState.getPath()).to.equal('/')
-                      resolve()
+
+                      if (err && err.name === 'AssertionError') {
+                        // Reject assertion errors from promises to fail the test
+                        reject(err)
+                      } else {
+                        // Resolve for errors purposely triggered for tests.
+                        resolve()
+                      }
                     })
                   }
                   if (err) {
@@ -835,7 +883,97 @@ describe('WebFrameworkShim', function() {
             })
           })
         })
+
+        it('should appropriately parent child segments in promise', () => {
+          return helper.runInTransaction(agent, (tx) => {
+            tx.nameState.appendPath('/')
+            txInfo.transaction = tx
+            return wrapped(req, null, () => {
+              return new Promise((resolve) => {
+                const _tx = agent.tracer.getTransaction()
+                expect(_tx).to.equal(tx)
+                expect(_tx.nameState.getPath()).to.equal('/')
+
+                const childSegment = _tx.agent.tracer.createSegment('childSegment')
+                expect(childSegment.parent.name)
+                  .to.equal('Nodejs/Middleware/Restify/middleware//foo/bar')
+
+                resolve()
+              })
+            })
+          })
+        })
       })
+
+      describe(
+        'when middleware returns promise and spec.appendPath is false',
+        () => {
+          let unwrappedTimeout = null
+          let middleware = null
+          let wrapped = null
+
+          beforeEach(() => {
+            unwrappedTimeout = shim.unwrap(setTimeout)
+            middleware = (_req, err, next) => {
+              return new Promise((resolve, reject) => {
+                unwrappedTimeout(() => {
+                  try {
+                    expect(txInfo.transaction.nameState.getPath()).to.equal('/')
+                    if (next) {
+                      return next().then(() => {
+                        expect(txInfo.transaction.nameState.getPath())
+                          .to.equal('/')
+                        resolve()
+                      }, (err) => {
+                        expect(txInfo.transaction.nameState.getPath()).to.equal('/')
+
+                        if (err && err.name === 'AssertionError') {
+                          // Reject assertion errors from promises to fail the test
+                          reject(err)
+                        } else {
+                          // Resolve for errors purposely triggered for tests.
+                          resolve()
+                        }
+                      })
+                    }
+                    if (err) {
+                      throw err
+                    } else {
+                      resolve()
+                    }
+                  } catch (e) {
+                    reject(err)
+                  }
+                }, 20)
+              })
+            }
+
+            wrapped = shim.recordMiddleware(middleware, {
+              route: '/foo/bar',
+              appendPath: false,
+              next: shim.LAST,
+              promise: true
+            })
+          })
+
+          it('should not append path', () => {
+            return helper.runInTransaction(agent, (tx) => {
+              tx.nameState.appendPath('/')
+              txInfo.transaction = tx
+              return wrapped(req, null, () => {
+                expect(tx.nameState.getPath()).to.equal('/')
+                return new Promise((resolve) => {
+                  const _tx = agent.tracer.getTransaction()
+                  expect(_tx).to.equal(tx)
+                  expect(_tx.nameState.getPath()).to.equal('/')
+                  resolve()
+                })
+              })
+            })
+          })
+        }
+      )
+
 
       describe('when wrapping errorware', function() {
         it('should mark the error as handled', function() {

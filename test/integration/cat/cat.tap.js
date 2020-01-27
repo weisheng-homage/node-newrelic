@@ -26,10 +26,11 @@ test('cross application tracing full integration', function(t) {
     config.cross_process_id,
     config.encoding_key
   )
-  var agent = helper.instrumentMockedAgent(null, config)
+  const agent = helper.instrumentMockedAgent(config)
+
   // require http after creating the agent
-  var http = require('http')
-  var api = new API(agent)
+  const http = require('http')
+  const api = new API(agent)
 
   var serversToStart = 3
   function started() {
@@ -90,7 +91,7 @@ test('cross application tracing full integration', function(t) {
     var txCount = 0
 
     agent.on('transactionFinished', function(trans) {
-      var event = agent.events.toArray().filter(function(evt) {
+      var event = agent.transactionEventAggregator.getEvents().filter(function(evt) {
         return evt[0]['nr.guid'] === trans.id
       })[0]
       transInspector[txCount](trans, event)
@@ -112,7 +113,7 @@ test('cross application tracing full integration', function(t) {
         'should have no scoped metrics'
       )
 
-      // Check the intrinsic parameters
+      // Check the intrinsic attributes
       var trace = trans.trace
       t.ok(trace.intrinsics.trip_id, 'end should have a trip_id variable')
       t.ok(trace.intrinsics.path_hash, 'end should have a path_hash variable')
@@ -168,8 +169,10 @@ test('cross application tracing full integration', function(t) {
         'middle generated a scoped metric block'
       )
       if (scoped['WebTransaction/Nodejs/GET//start/middle']) {
-        t.ok(scoped['WebTransaction/Nodejs/GET//start/middle'][etMetric],
-             'middle generated a ExternalTransaction scoped metric')
+        t.ok(
+          scoped['WebTransaction/Nodejs/GET//start/middle'][etMetric],
+          'middle generated a ExternalTransaction scoped metric'
+        )
         var scopedKeys = Object.keys(scoped['WebTransaction/Nodejs/GET//start/middle'])
         t.equal(
           scopedKeys.length, 1,
@@ -178,7 +181,7 @@ test('cross application tracing full integration', function(t) {
         t.deepEqual(scopedKeys, [etMetric], 'should have expected scoped metric name')
       }
 
-      // check the intrinsic parameters
+      // check the intrinsic attributes
       var trace = trans.trace
       t.ok(trace.intrinsics.trip_id, 'middle should have a trip_id variable')
       t.ok(trace.intrinsics.path_hash, 'middle should have a path_hash variable')
@@ -199,7 +202,7 @@ test('cross application tracing full integration', function(t) {
         'middle should have an ExternalTransaction segment'
       )
       t.ok(
-        externalSegment.parameters.transaction_guid,
+        externalSegment.getAttributes().transaction_guid,
         'middle should have a transaction_guid on its external segment'
       )
 
@@ -246,8 +249,10 @@ test('cross application tracing full integration', function(t) {
         'start generated a scoped metric block'
       )
       if (scoped['WebTransaction/Nodejs/GET//start']) {
-        t.ok(scoped['WebTransaction/Nodejs/GET//start'][etMetric],
-             'start generated a ExternalTransaction scoped metric')
+        t.ok(
+          scoped['WebTransaction/Nodejs/GET//start'][etMetric],
+          'start generated a ExternalTransaction scoped metric'
+        )
         var scopedKeys = Object.keys(scoped['WebTransaction/Nodejs/GET//start'])
         t.equal(
           scopedKeys.length, 1,
@@ -256,7 +261,7 @@ test('cross application tracing full integration', function(t) {
         t.deepEqual(scopedKeys, [etMetric], 'should have expected scoped metric name')
       }
 
-      // check the intrinsic parameters
+      // check the intrinsic attributes
       var trace = trans.trace
       t.ok(trace.intrinsics.trip_id, 'start should have a trip_id variable')
       t.ok(trace.intrinsics.path_hash, 'start should have a path_hash variable')
@@ -277,7 +282,7 @@ test('cross application tracing full integration', function(t) {
         'start should have an ExternalTransaction segment'
       )
       t.ok(
-        externalSegment.parameters.transaction_guid,
+        externalSegment.getAttributes().transaction_guid,
         'start should have a transaction_guid on its external segment'
       )
 

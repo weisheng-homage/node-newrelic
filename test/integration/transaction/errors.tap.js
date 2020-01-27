@@ -8,9 +8,9 @@ var util = require('util')
 test('errors in web transactions should gather the query params', function(t) {
   t.plan(9)
 
-  var agent = helper.loadTestAgent(t)
-  var api = new API(agent)
-  var http = require('http')
+  const agent = helper.loadTestAgent(t)
+  const api = new API(agent)
+  const http = require('http')
 
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
@@ -31,7 +31,7 @@ test('errors in web transactions should gather the query params', function(t) {
   })
 
   agent.on('transactionFinished', function() {
-    var error = agent.errors.errors[0]
+    var error = agent.errors.traceAggregator.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
     t.equal(error[3], 'Error', 'should have gathered the type of the error')
@@ -81,17 +81,18 @@ test('errors in web transactions should gather the query params', function(t) {
 test('multiple errors in web transactions should gather the query params', function(t) {
   t.plan(17)
 
-  var agent = helper.loadTestAgent(t)
-  var api = new API(agent)
-  var http = require('http')
-  var names = [
-    'first errors in tx test',
-    'second errors in tx test'
-  ]
+  const agent = helper.loadTestAgent(t)
+  const api = new API(agent)
+  const http = require('http')
 
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
   agent.config.emit('attributes.include')
+
+  var names = [
+    'first errors in tx test',
+    'second errors in tx test'
+  ]
 
   http.createServer(function(req, res) {
     req.resume()
@@ -110,7 +111,7 @@ test('multiple errors in web transactions should gather the query params', funct
   })
 
   agent.on('transactionFinished', function() {
-    agent.errors.errors.forEach(function(error) {
+    agent.errors.traceAggregator.errors.forEach(function(error) {
       t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
 
       t.notEqual(names.indexOf(error[2]), -1, 'should have gathered the errors message')
@@ -164,9 +165,9 @@ test('multiple errors in web transactions should gather the query params', funct
 test('errors in web transactions should gather and merge custom params', function(t) {
   t.plan(12)
 
-  var agent = helper.loadTestAgent(t)
-  var api = new API(agent)
-  var http = require('http')
+  const agent = helper.loadTestAgent(t)
+  const api = new API(agent)
+  const http = require('http')
 
   agent.config.attributes.enabled = true
 
@@ -197,7 +198,7 @@ test('errors in web transactions should gather and merge custom params', functio
   })
 
   agent.on('transactionFinished', function() {
-    var error = agent.errors.errors[0]
+    var error = agent.errors.traceAggregator.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have default tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
     t.equal(error[3], 'Error', 'should have gathered the type of the error')
@@ -217,7 +218,11 @@ test('errors in web transactions should gather and merge custom params', functio
     t.equal(ua.preErrorReplace, 'yesssssssss', 'replace custom param from before error')
     t.equal(ua.thisOneIsUnique, 1987, 'custom param that is not overriding also was kept')
     t.equal(ua.postErrorKeep, 2, 'kept custom param from after error')
-    t.equal(ua.postErrorReplace, 'this one is better', 'replace custom param from after error')
+    t.equal(
+      ua.postErrorReplace,
+      'this one is better',
+      'replace custom param from after error'
+    )
 
     // agent/query parameters
     // on older versions of node the content length and response message
@@ -242,9 +247,9 @@ test('errors in web transactions should gather and merge custom params', functio
 test('multiple errors in web tx should gather and merge custom params', function(t) {
   t.plan(21)
 
-  var agent = helper.loadTestAgent(t)
-  var api = new API(agent)
-  var http = require('http')
+  const agent = helper.loadTestAgent(t)
+  const api = new API(agent)
+  const http = require('http')
 
   agent.config.attributes.enabled = true
 
@@ -289,7 +294,7 @@ test('multiple errors in web tx should gather and merge custom params', function
   })
 
   agent.on('transactionFinished', function() {
-    agent.errors.errors.forEach(function(error) {
+    agent.errors.traceAggregator.errors.forEach(function(error) {
       var expectedParams
       if (errorData[0].name && errorData[0].name === error[2]) {
         expectedParams = errorData[0].customParams
@@ -347,19 +352,13 @@ test('multiple errors in web tx should gather and merge custom params', function
 })
 
 test('errors in background transactions are collected with correct data', function(t) {
-  var agent = helper.loadTestAgent(t)
-  var api = new API(agent)
+  const agent = helper.loadTestAgent(t)
+  const api = new API(agent)
 
   agent.config.attributes.enabled = true
 
-  // Create transaction generator
-  api.startBackgroundTransaction('SomeWork', 'TheGroup', function() {
-    api.noticeError(new Error('errors in tx test'))
-    // Auto-end transaction in setImmediate.
-  })
-
   agent.on('transactionFinished', function() {
-    var error = agent.errors.errors[0]
+    var error = agent.errors.traceAggregator.errors[0]
     t.equal(error[1], 'OtherTransaction/TheGroup/SomeWork', 'should have set tx name')
     t.equal(error[2], 'errors in tx test', 'should have gathered the errors message')
     t.equal(error[3], 'Error', 'should have gathered the type of the error')
@@ -381,5 +380,11 @@ test('errors in background transactions are collected with correct data', functi
       'should have collected no agent attributes'
     )
     t.end()
+  })
+
+  // Create transaction generator
+  api.startBackgroundTransaction('SomeWork', 'TheGroup', function() {
+    api.noticeError(new Error('errors in tx test'))
+    // Auto-end transaction in setImmediate.
   })
 })

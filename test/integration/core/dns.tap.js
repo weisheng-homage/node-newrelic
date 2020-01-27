@@ -71,7 +71,9 @@ test('resolveCname', function(t) {
 test('resolveMx', function(t) {
   var agent = setupAgent(t)
   helper.runInTransaction(agent, function() {
-    dns.resolveMx('example.com', function(err) {
+    // If this test breaks, blame Natalie Wolfe for adding a mailing
+    // service to encryptic.io
+    dns.resolveMx('encryptic.io', function(err) {
       t.equal(err.code, 'ENODATA')
       verifySegments(t, agent, 'dns.resolveMx')
     })
@@ -128,7 +130,9 @@ test('reverse', function(t) {
         }
       }
 
-      t.deepEqual(names, expected, 'should have expected results')
+      expected.forEach((name) => {
+        t.notEqual(names.indexOf(name), -1, 'should have expected name')
+      })
       verifySegments(t, agent, 'dns.reverse')
     })
   })

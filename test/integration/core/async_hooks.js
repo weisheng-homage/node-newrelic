@@ -32,17 +32,16 @@ test('await', function(t) {
     )
 
     var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
-    txn.end(function afterTransactionEnd() {
-      // Segments won't be cleared till a gc cycle clears the promises
-      // they are related with.
-      t.ok(segmentMap.size, 'segments should still be in the map')
-      if (global.gc) {
-        // Unroll all the stack frames to let go of the refs to the
-        // promises we want to gc, then call the segment tester.
-        return setImmediate(testSegments, t, segmentMap)
-      }
-      t.end()
-    })
+    txn.end()
+    // Segments won't be cleared till a gc cycle clears the promises
+    // they are related with.
+    t.ok(segmentMap.size, 'segments should still be in the map')
+    if (global.gc) {
+      // Unroll all the stack frames to let go of the refs to the
+      // promises we want to gc, then call the segment tester.
+      return setImmediate(testSegments, t, segmentMap)
+    }
+    t.end()
   })
 })
 
@@ -68,10 +67,9 @@ test("the agent's async hook", function(t) {
   t.autoend()
   t.test('does not crash on multiple resolve calls', function(t) {
     var agent = setupAgent(t)
-    helper.runInTransaction(agent, function(txn) {
-      var called = false
-      t.doesNotThrow(function () {
-        new Promise(function(res, rej) {
+    helper.runInTransaction(agent, function() {
+      t.doesNotThrow(function() {
+        new Promise(function(res) {
           res()
           res()
         }).then(t.end)
@@ -79,24 +77,29 @@ test("the agent's async hook", function(t) {
     })
   })
 
-  t.test('does not restore a segment for a resource created outside a transaction', function(t) {
-    var agent = setupAgent(t)
-    var res = new TestResource(1)
-    helper.runInTransaction(agent, function(txn) {
-      var root = agent.tracer.segment
-      var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
-      t.equal(segmentMap.size, 0, 'no segments should be tracked')
-      res.doStuff(function() {
-        t.ok(agent.tracer.segment, 'should be in a transaction')
-        t.equal(
-          agent.tracer.segment.name,
-          root.name,
-          'the agent loses transaction state for resources created outside of a transaction'
-        )
-        t.end()
+  t.test(
+    'does not restore a segment for a resource created outside a transaction',
+    function(t) {
+      var agent = setupAgent(t)
+      var res = new TestResource(1)
+      helper.runInTransaction(agent, function() {
+        var root = agent.tracer.segment
+        var segmentMap =
+          require('../../../lib/instrumentation/core/async_hooks').segmentMap
+
+        t.equal(segmentMap.size, 0, 'no segments should be tracked')
+        res.doStuff(function() {
+          t.ok(agent.tracer.segment, 'should be in a transaction')
+          t.equal(
+            agent.tracer.segment.name,
+            root.name,
+            'loses transaction state for resources created outside of a transaction'
+          )
+          t.end()
+        })
       })
-    })
-  })
+    }
+  )
 
   t.test('restores context in inactive transactions', function(t) {
     var agent = setupAgent(t)
@@ -260,7 +263,7 @@ test("the agent's async hook", function(t) {
   t.test('handles multientry callbacks correctly', function(t) {
     var agent = setupAgent(t)
     var segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
-    helper.runInTransaction(agent, function(txn) {
+    helper.runInTransaction(agent, function() {
       var root = agent.tracer.segment
 
       var aSeg = agent.tracer.createSegment('A')
@@ -350,7 +353,7 @@ test('promise hooks', function(t) {
 
   var promiseIds = {}
   var hook = asyncHooks.createHook({
-    init: function initHook(id, type, triggerAsyncId) {
+    init: function initHook(id, type) {
       if (type === 'PROMISE') {
         promiseIds[id] = true
         testMetrics.initCalled++
@@ -375,7 +378,7 @@ test('promise hooks', function(t) {
   hook.enable()
 
   t.test('are only called once during the lifetime of a promise', function(t) {
-    new Promise(function(res, rej) {
+    new Promise(function(res) {
       setTimeout(res, 10)
     }).then(function() {
       setImmediate(checkCallMetrics, t, testMetrics)
@@ -385,7 +388,7 @@ test('promise hooks', function(t) {
 
 function setupAgent(t) {
   var agent = helper.instrumentMockedAgent({
-    await_support: true
+    feature_flag: {await_support: true}
   })
   t.tearDown(function() {
     helper.unloadAgent(agent)

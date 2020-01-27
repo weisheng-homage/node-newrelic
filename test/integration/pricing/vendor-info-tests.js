@@ -55,11 +55,24 @@ function makeTest(testCase, vendor, getInfo) {
 
     function timeoutMock(urlToTimeout) {
       var timeoutCallback
+      let onErrorCallback = null
+
       var res = {
         setTimeout: function(timeout, fn) {
           timeoutCallback = fn
         },
-        on: function() {}
+        on: function(event, cb) {
+          if (event === 'error') {
+            onErrorCallback = cb
+          }
+        },
+        abort: () => {
+          // not particularly accurate invoking sync
+          // but trying to keep parity.
+          const error = new Error('ECONNRESET')
+          error.code = 'ECONNRESET'
+          onErrorCallback(error)
+        }
       }
       return function wrappedGet(options, callback) {
         setTimeout(function makeRequest() {
@@ -118,7 +131,7 @@ function makeTest(testCase, vendor, getInfo) {
 
   function checkMetrics(t, expectedMetrics) {
     if (!expectedMetrics) {
-      t.equal(agent.metrics.toJSON().length, 0, 'should not have any metrics')
+      t.equal(agent.metrics._metrics.toJSON().length, 0, 'should not have any metrics')
       return
     }
 

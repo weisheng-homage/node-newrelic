@@ -45,11 +45,83 @@ describe('Trace', function() {
     expect(function() { trace.add('Custom/Test17/Child1') }).to.not.throw()
   })
 
-  it('should produce a transaction trace in the expected format', function(done) {
-    makeTrace(agent, function(err, details) {
-      if (err) {
-        return done(err)
+  describe('when serializing synchronously', () => {
+    var details
+
+    beforeEach(function(done) {
+      makeTrace(agent, function(err, _details) {
+        details = _details
+        done(err)
+      })
+    })
+
+    it('should produce a transaction trace in the expected format', function(done) {
+      const traceJSON = details.trace.generateJSONSync()
+      codec.decode(traceJSON[4], function(derr, reconstituted) {
+        if (derr) {
+          return done(derr)
+        }
+
+        expect(traceJSON, 'full trace JSON')
+          .to.deep.equal(details.expectedEncoding)
+
+        expect(reconstituted, 'reconstituted trace segments')
+          .to.deep.equal(details.rootNode)
+
+        return done()
+      })
+    })
+
+    it('should send response time', function() {
+      details.transaction.getResponseTimeInMillis = function() {
+        return 1234
       }
+
+      const json = details.trace.generateJSONSync()
+      expect(json[1]).to.equal(1234)
+    })
+
+    describe('when `simple_compression` is `false`', function() {
+      it('should compress the segment arrays', function(done) {
+        const json = details.trace.generateJSONSync()
+
+        expect(json[4])
+          .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+
+        codec.decode(json[4], function(err, data) {
+          if (err) {
+            return done(err)
+          }
+
+          expect(data).to.deep.equal(details.rootNode)
+          done()
+        })
+      })
+    })
+
+    describe('when `simple_compression` is `true`', function() {
+      beforeEach(function() {
+        agent.config.simple_compression = true
+      })
+
+      it('should not compress the segment arrays', function() {
+        const json = details.trace.generateJSONSync()
+        expect(json[4]).to.deep.equal(details.rootNode)
+      })
+    })
+  })
+
+  describe('when serializing asynchronously', () => {
+    var details
+
+    beforeEach(function(done) {
+      makeTrace(agent, function(err, _details) {
+        details = _details
+        done(err)
+      })
+    })
+
+    it('should produce a transaction trace in the expected format', function(done) {
       details.trace.generateJSON(function(err, traceJSON) {
         if (err) {
           return done(err)
@@ -70,51 +142,100 @@ describe('Trace', function() {
         })
       })
     })
-  })
 
-  it('should have DT attributes on transaction end', function(done) {
-    agent.config.distributed_tracing.enabled = true
-    agent.config.application_id = 'test'
-    agent.config.account_id = 1
-    helper.runInTransaction(agent, function(tx) {
-      tx.end(() => {
-        const attributes = tx.trace.intrinsics
-        expect(attributes.traceId).to.equal(tx.id)
-        expect(attributes.guid).to.equal(tx.id)
-        expect(attributes.priority).to.equal(tx.priority)
-        expect(attributes.sampled).to.equal(tx.sampled)
-        expect(attributes.parentId).to.be.undefined
-        expect(attributes.parentSpanId).to.be.undefined
-        expect(tx.sampled).to.equal(true)
-        expect(tx.priority).to.be.greaterThan(1)
+    it('should send response time', function(done) {
+      details.transaction.getResponseTimeInMillis = function() {
+        return 1234
+      }
+
+      details.trace.generateJSON(function(err, json, trace) {
+        expect(err).to.not.exist
+        expect(json[1]).to.equal(1234)
+        expect(trace).to.equal(details.trace)
         done()
+      })
+    })
+
+    describe('when `simple_compression` is `false`', function() {
+      it('should compress the segment arrays', function(done) {
+        details.trace.generateJSON(function(err, json) {
+          if (err) {
+            return done(err)
+          }
+
+          expect(json[4])
+            .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+
+          codec.decode(json[4], function(err, data) {
+            if (err) {
+              return done(err)
+            }
+
+            expect(data).to.deep.equal(details.rootNode)
+            done()
+          })
+        })
+      })
+    })
+
+    describe('when `simple_compression` is `true`', function() {
+      beforeEach(function() {
+        agent.config.simple_compression = true
+      })
+
+      it('should not compress the segment arrays', function(done) {
+        details.trace.generateJSON(function(err, json) {
+          if (err) {
+            return done(err)
+          }
+
+          expect(json[4]).to.deep.equal(details.rootNode)
+          done()
+        })
       })
     })
   })
 
-  it('should have DT parent attributes on payload accept', function(done) {
+  it('should have DT attributes on transaction end', function(done) {
     agent.config.distributed_tracing.enabled = true
-    agent.config.application_id = 'test'
+    agent.config.primary_application_id = 'test'
+    agent.config.account_id = 1
+    helper.runInTransaction(agent, function(tx) {
+      tx.end()
+      const attributes = tx.trace.intrinsics
+      expect(attributes.traceId).to.equal(tx.id)
+      expect(attributes.guid).to.equal(tx.id)
+      expect(attributes.priority).to.equal(tx.priority)
+      expect(attributes.sampled).to.equal(tx.sampled)
+      expect(attributes.parentId).to.be.undefined
+      expect(attributes.parentSpanId).to.be.undefined
+      expect(tx.sampled).to.equal(true)
+      expect(tx.priority).to.be.greaterThan(1)
+      done()
+    })
+  })
+
+  it('should have DT parent attributes on payload accept', function() {
+    agent.config.distributed_tracing.enabled = true
+    agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
     helper.runInTransaction(agent, function(tx) {
       const payload = tx.createDistributedTracePayload().text()
       tx.isDistributedTrace = null
       tx.acceptDistributedTracePayload(payload)
-      tx.end(() => {
-        const attributes = tx.trace.intrinsics
-        expect(attributes.traceId).to.equal(tx.id)
-        expect(attributes.guid).to.equal(tx.id)
-        expect(attributes.priority).to.equal(tx.priority)
-        expect(attributes.sampled).to.equal(tx.sampled)
-        expect(attributes['parent.type']).to.equal('App')
-        expect(attributes['parent.app']).to.equal(agent.config.application_id)
-        expect(attributes['parent.account']).to.equal(agent.config.account_id)
-        expect(attributes.parentId).to.be.undefined
-        expect(attributes.parentSpanId).to.be.undefined
-        expect(tx.sampled).to.equal(true)
-        expect(tx.priority).to.be.greaterThan(1)
-        done()
-      })
+      tx.end()
+      const attributes = tx.trace.intrinsics
+      expect(attributes.traceId).to.equal(tx.id)
+      expect(attributes.guid).to.equal(tx.id)
+      expect(attributes.priority).to.equal(tx.priority)
+      expect(attributes.sampled).to.equal(tx.sampled)
+      expect(attributes['parent.type']).to.equal('App')
+      expect(attributes['parent.app']).to.equal(agent.config.primary_application_id)
+      expect(attributes['parent.account']).to.equal(agent.config.account_id)
+      expect(attributes.parentId).to.be.undefined
+      expect(attributes.parentSpanId).to.be.undefined
+      expect(tx.sampled).to.equal(true)
+      expect(tx.priority).to.be.greaterThan(1)
     })
   })
 
@@ -135,28 +256,30 @@ describe('Trace', function() {
     transaction.end()
     trace.generateSpanEvents()
 
-    var events = agent.spans.getEvents()
+    var events = agent.spanEventAggregator.getEvents()
     var nested = events[0]
     var testSpan = events[1]
+    expect(nested).to.have.property('intrinsics')
+    expect(testSpan).to.have.property('intrinsics')
 
-    expect(nested).to.have.property('parentId', testSpan.guid)
-    expect(nested).to.have.property('category', 'generic')
-    expect(nested).to.have.property('priority', transaction.priority)
-    expect(nested).to.have.property('transactionId', transaction.id)
-    expect(nested).to.have.property('sampled', transaction.sampled)
-    expect(nested).to.have.property('name', 'nested')
-    expect(nested).to.have.property('traceId', transaction.id)
-    expect(nested).to.have.property('timestamp', child1.timer.start)
+    expect(nested.intrinsics).to.have.property('parentId', testSpan.intrinsics.guid)
+    expect(nested.intrinsics).to.have.property('category', 'generic')
+    expect(nested.intrinsics).to.have.property('priority', transaction.priority)
+    expect(nested.intrinsics).to.have.property('transactionId', transaction.id)
+    expect(nested.intrinsics).to.have.property('sampled', transaction.sampled)
+    expect(nested.intrinsics).to.have.property('name', 'nested')
+    expect(nested.intrinsics).to.have.property('traceId', transaction.id)
+    expect(nested.intrinsics).to.have.property('timestamp')
 
-    expect(testSpan).to.have.property('parentId', null)
-    expect(testSpan).to.have.property('nr.entryPoint').and.be.true
-    expect(testSpan).to.have.property('category', 'generic')
-    expect(testSpan).to.have.property('priority', transaction.priority)
-    expect(testSpan).to.have.property('transactionId', transaction.id)
-    expect(testSpan).to.have.property('sampled', transaction.sampled)
-    expect(testSpan).to.have.property('name', 'test')
-    expect(testSpan).to.have.property('traceId', transaction.id)
-    expect(testSpan).to.have.property('timestamp', child2.timer.start)
+    expect(testSpan.intrinsics).to.have.property('parentId', null)
+    expect(testSpan.intrinsics).to.have.property('nr.entryPoint').and.be.true
+    expect(testSpan.intrinsics).to.have.property('category', 'generic')
+    expect(testSpan.intrinsics).to.have.property('priority', transaction.priority)
+    expect(testSpan.intrinsics).to.have.property('transactionId', transaction.id)
+    expect(testSpan.intrinsics).to.have.property('sampled', transaction.sampled)
+    expect(testSpan.intrinsics).to.have.property('name', 'test')
+    expect(testSpan.intrinsics).to.have.property('traceId', transaction.id)
+    expect(testSpan.intrinsics).to.have.property('timestamp')
   })
 
   it('should not generate span events on end if span_events is disabled', function() {
@@ -175,7 +298,7 @@ describe('Trace', function() {
     trace.root.end()
     transaction.end()
 
-    var events = agent.spans.getEvents()
+    var events = agent.spanEventAggregator.getEvents()
     expect(events.length).to.equal(0)
   })
 
@@ -195,7 +318,7 @@ describe('Trace', function() {
     trace.root.end()
     transaction.end()
 
-    var events = agent.spans.getEvents()
+    var events = agent.spanEventAggregator.getEvents()
     expect(events.length).to.equal(0)
   })
 
@@ -218,7 +341,7 @@ describe('Trace', function() {
     transaction.sampled = false
     transaction.end()
 
-    var events = agent.spans.getEvents()
+    var events = agent.spanEventAggregator.getEvents()
     expect(events.length).to.equal(0)
   })
 
@@ -296,65 +419,35 @@ describe('Trace', function() {
       expect(trace.getTotalTimeDurationInMillis()).equal(48)
     })
 
-    it('should report the expected trees for trees with uncollected segments',
-        function() {
-      var expectedTrace = [
+    it('should report the expected trees for trees with uncollected segments', () => {
+      const expectedTrace = [
         0,
         27,
         "Root",
-        {
-          "nr_exclusive_duration_millis": 3
-        },
+        {"nr_exclusive_duration_millis": 3},
         [
           [
             1,
             10,
             "first",
-            {
-              "nr_exclusive_duration_millis": 9
-            },
+            {"nr_exclusive_duration_millis": 9},
             [
-              [
-                16,
-                25,
-                "first-first",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ]
+              [16, 25, "first-first", {"nr_exclusive_duration_millis": 9},[]]
             ]
           ],
           [
             1,
             14,
             "second",
-            {
-              "nr_exclusive_duration_millis": 13
-            },
+            {"nr_exclusive_duration_millis": 13},
             [
-              [
-                16,
-                25,
-                "second-first",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ],
-              [
-                16,
-                25,
-                "second-second",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ]
+              [16, 25, "second-first", {"nr_exclusive_duration_millis": 9}, []],
+              [16, 25, "second-second", {"nr_exclusive_duration_millis": 9}, []]
             ]
           ]
         ]
       ]
+
       trace.setDurationInMillis(40, 0)
       var child = trace.add('Root')
       child.setDurationInMillis(27, 0)
@@ -371,72 +464,37 @@ describe('Trace', function() {
       seg.setDurationInMillis(9, 16)
       seg = seg2.add('second-second')
       seg.setDurationInMillis(9, 16)
+
+      trace.end()
+
       expect(child.toJSON()).deep.equal(expectedTrace)
     })
 
     it('should report the expected trees for branched trees', function() {
-      var expectedTrace = [
+      const expectedTrace = [
         0,
         27,
         "Root",
-        {
-          "nr_exclusive_duration_millis": 3
-        },
+        {"nr_exclusive_duration_millis": 3},
         [
           [
             1,
             10,
             "first",
-            {
-              "nr_exclusive_duration_millis": 9
-            },
+            {"nr_exclusive_duration_millis": 9},
             [
-              [
-                16,
-                25,
-                "first-first",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ],
-              [
-                16,
-                30,
-                "first-second",
-                {
-                  "nr_exclusive_duration_millis": 14
-                },
-                []
-              ]
+              [16, 25, "first-first", {"nr_exclusive_duration_millis": 9},[]],
+              [16, 30, "first-second", {"nr_exclusive_duration_millis": 14}, []]
             ]
           ],
           [
             1,
             14,
             "second",
-            {
-              "nr_exclusive_duration_millis": 13
-            },
+            {"nr_exclusive_duration_millis": 13},
             [
-              [
-                16,
-                25,
-                "second-first",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ],
-              [
-                16,
-                25,
-                "second-second",
-                {
-                  "nr_exclusive_duration_millis": 9
-                },
-                []
-              ]
+              [16, 25, "second-first", {"nr_exclusive_duration_millis": 9}, []],
+              [16, 25, "second-second", {"nr_exclusive_duration_millis": 9},[]]
             ]
           ]
         ]
@@ -456,11 +514,13 @@ describe('Trace', function() {
       seg.setDurationInMillis(9, 16)
       seg = seg2.add('second-second')
       seg.setDurationInMillis(9, 16)
+
+      trace.end()
+
       expect(child.toJSON()).deep.equal(expectedTrace)
     })
 
-    it('should measure exclusive time vs total time at each level of the graph',
-       function() {
+    it('should measure exclusive time vs total time at each level of the graph', () => {
       var child = trace.add('Custom/Test18/Child1')
 
       trace.setDurationInMillis(42)
@@ -490,6 +550,33 @@ describe('Trace', function() {
       child4.setDurationInMillis(4, now + 35)
 
       expect(trace.getExclusiveDurationInMillis()).equal(5)
+    })
+
+    it('should accurately sum overlapping subtrees', function() {
+      trace.setDurationInMillis(42)
+
+      var now = Date.now()
+
+      // create a long child on its own
+      var child1 = trace.add('Custom/Test20/Child1')
+      child1.setDurationInMillis(33, now)
+
+      // add another, short child as a sibling
+      var child2 = child1.add('Custom/Test20/Child2')
+      child2.setDurationInMillis(5, now)
+
+      // add two disjoint children of the second segment encompassed by the first segment
+      var child3 = child2.add('Custom/Test20/Child3')
+      child3.setDurationInMillis(11, now)
+
+      var child4 = child2.add('Custom/Test20/Child3')
+      child4.setDurationInMillis(11, now + 16)
+
+      expect(trace.getExclusiveDurationInMillis()).equal(9)
+      expect(child4.getExclusiveDurationInMillis()).equal(11)
+      expect(child3.getExclusiveDurationInMillis()).equal(11)
+      expect(child2.getExclusiveDurationInMillis()).equal(0)
+      expect(child1.getExclusiveDurationInMillis()).equal(11)
     })
 
     it('should accurately sum partially overlapping segments', function() {
@@ -548,90 +635,6 @@ describe('Trace', function() {
       function noop() {}
     })
   })
-
-  describe('#addAttribute', function() {
-    var trace = null
-
-    beforeEach(function() {
-      agent.config.attributes.enabled = true
-      trace = new Transaction(agent).trace
-    })
-
-    it('does not add attribute if key length limit is exceeded', function() {
-      var tooLong = [
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        'Cras id lacinia erat. Suspendisse mi nisl, sodales vel est eu,',
-        'rhoncus lacinia ante. Nulla tincidunt efficitur diam, eget vulputate',
-        'lectus facilisis sit amet. Morbi hendrerit commodo quam, in nullam.'
-      ].join(' ')
-      trace.addAttribute(DESTINATIONS.ALL, tooLong, 'will fail')
-      var attributes = Object.keys(trace.attributes.attributes)
-      expect(attributes.length).to.equal(0)
-    })
-  })
-
-  describe('#generateJSON', function() {
-    var details
-
-    beforeEach(function(done) {
-      makeTrace(agent, function(err, _details) {
-        details = _details
-        done(err)
-      })
-    })
-
-    it('should send response time', function(done) {
-      details.transaction.getResponseTimeInMillis = function() {
-        return 1234
-      }
-
-      details.trace.generateJSON(function(err, json, trace) {
-        expect(err).to.not.exist
-        expect(json[1]).to.equal(1234)
-        expect(trace).to.equal(details.trace)
-        done()
-      })
-    })
-
-    describe('when `simple_compression` is `false`', function() {
-      it('should compress the segment arrays', function(done) {
-        details.trace.generateJSON(function(err, json) {
-          if (err) {
-            return done(err)
-          }
-
-          expect(json[4])
-            .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
-
-          codec.decode(json[4], function(err, data) {
-            if (err) {
-              return done(err)
-            }
-
-            expect(data).to.deep.equal(details.rootNode)
-            done()
-          })
-        })
-      })
-    })
-
-    describe('when `simple_compression` is `true`', function() {
-      beforeEach(function() {
-        agent.config.simple_compression = true
-      })
-
-      it('should not compress the segment arrays', function(done) {
-        details.trace.generateJSON(function(err, json) {
-          if (err) {
-            return done(err)
-          }
-
-          expect(json[4]).to.deep.equal(details.rootNode)
-          done()
-        })
-      })
-    })
-  })
 })
 
 function makeTrace(agent, callback) {
@@ -642,7 +645,11 @@ function makeTrace(agent, callback) {
   agent.config.emit('attributes.include')
 
   var transaction = new Transaction(agent)
-  transaction.trace.addAttribute(DESTINATIONS.COMMON, 'request.uri', URL)
+  transaction.trace.attributes.addAttribute(
+    DESTINATIONS.TRANS_COMMON,
+    'request.uri',
+    URL
+  )
   transaction.url  = URL
   transaction.verb = 'GET'
 
@@ -665,6 +672,8 @@ function makeTrace(agent, callback) {
   var memcache = web.add('Datastore/operation/Memcache/lookup')
   memcache.setDurationInMillis(20, 8)
 
+  trace.end()
+
   /*
    * Segment data repeats the outermost data, nested, with the scope for the
    * outermost version having its scope always set to 'ROOT'. The null bits
@@ -681,9 +690,9 @@ function makeTrace(agent, callback) {
         DURATION,
         'WebTransaction/NormalizedUri/*',
         {
-          'nr_exclusive_duration_millis': 8,
           'request.uri': '/test?test=value',
-          'request.parameters.test': 'value'
+          'request.parameters.test': 'value',
+          'nr_exclusive_duration_millis': 8
         },
         [
           // TODO: ensure that the ordering is correct WRT start time
@@ -697,9 +706,7 @@ function makeTrace(agent, callback) {
   var rootNode = [
     trace.root.timer.start / 1000,
     {},
-    {
-      nr_flatten_leading: false
-    },
+    {nr_flatten_leading: false},
     rootSegment,
     {
       agentAttributes: {
@@ -718,17 +725,17 @@ function makeTrace(agent, callback) {
     }
 
     callback(null, {
-      transaction: transaction,
-      trace: trace,
-      rootSegment: rootSegment,
-      rootNode: rootNode,
+      transaction,
+      trace,
+      rootSegment,
+      rootNode,
       expectedEncoding: [
         0,
         DURATION,
         'WebTransaction/NormalizedUri/*', // scope
         '/test',  // URI path
         encoded,  // compressed segment / segment data
-        '',       // FIXME: depends on RUM token in session
+        transaction.id, // guid
         null,     // reserved, always NULL
         false,    // FIXME: RUM2 session persistence, not worrying about it for now
         null,     // FIXME: xraysessionid

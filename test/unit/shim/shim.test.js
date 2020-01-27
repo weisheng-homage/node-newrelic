@@ -5,7 +5,6 @@ var EventEmitter = require('events').EventEmitter
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
 var Promise = global.Promise || require('bluebird')
-var semver = require('semver')
 var sinon = require('sinon')
 var Shim = require('../../../lib/shim/shim')
 
@@ -409,14 +408,14 @@ describe('Shim', function() {
     })
 
     it('should not blow up when wrapping a non-object prototype', function() {
-      function noProto(){}
+      function noProto() {}
       noProto.prototype = undefined
       var instance = shim.wrapReturn(noProto, function() {}).bind({})
       expect(instance).to.not.throw()
     })
 
     it('should not blow up when wrapping a non-object prototype', function() {
-      function noProto(){}
+      function noProto() {}
       noProto.prototype = undefined
       var instance = shim.wrapReturn(noProto, function() {}).bind(null)
       expect(instance).to.not.throw()
@@ -476,6 +475,52 @@ describe('Shim', function() {
         expect(executed).to.be.true
         expect(res.context).to.equal(toWrap)
         expect(res.args).to.eql(['a', 'b', 'c'])
+      })
+
+      it('should pass properties through', function() {
+        const original = toWrap.foo
+        original.testSymbol = Symbol('test')
+        shim.wrapReturn(toWrap, 'foo', function() {})
+
+        // wrapper is not the same function reference
+        expect(original).to.not.equal(toWrap.foo)
+        // set on original
+        expect(toWrap.foo.testSymbol).to.equal(original.testSymbol)
+      })
+
+      it('should pass assignments to the wrapped method', function() {
+        const original = toWrap.foo
+        shim.wrapReturn(toWrap, 'foo', function() {})
+        toWrap.foo.testProp = 1
+
+        // wrapper is not the same function reference
+        expect(original).to.not.equal(toWrap.foo)
+        // set via wrapper
+        expect(original.testProp).to.equal(1)
+      })
+
+      it('should pass defined properties to the wrapped method', function() {
+        const original = toWrap.foo
+        shim.wrapReturn(toWrap, 'foo', function() {})
+        Object.defineProperty(toWrap.foo, 'testDefProp', {value: 4})
+
+        // wrapper is not the same function reference
+        expect(original).to.not.equal(toWrap.foo)
+        // set with defineProperty via wrapper
+        expect(original.testDefProp).to.equal(4)
+      })
+
+
+      it('should have the same key enumeration', function() {
+        const original = toWrap.foo
+        original.testSymbol = Symbol('test')
+        shim.wrapReturn(toWrap, 'foo', function() {})
+        toWrap.foo.testProp = 1
+
+        // wrapper is not the same function reference
+        expect(original).to.not.equal(toWrap.foo)
+        // should have the same keys
+        expect(Object.keys(original)).to.deep.equal(Object.keys(toWrap.foo))
       })
 
       it('should call the spec with returned value', function() {
@@ -729,7 +774,7 @@ describe('Shim', function() {
             }
           })
           expect(function() {
-            wrapped(function(){})
+            wrapped(function() {})
           }).to.not.throw()
         })
       })
@@ -876,28 +921,24 @@ describe('Shim', function() {
         var eventSegment = stream.segment.children[0]
         expect(eventSegment).to.have.property('name')
           .match(/Event callback: foobar/)
-        expect(eventSegment.parameters).to.have.property('count')
-          .equals(1)
+
+        expect(eventSegment.getAttributes()).to.have.property('count', 1)
 
         // Emit it again and see if the name updated.
         stream.emit('foobar')
         expect(stream.segment.children).to.have.length(1)
         expect(stream.segment.children[0]).to.equal(eventSegment)
-        expect(eventSegment.parameters).to.have.property('count')
-          .equals(2)
+        expect(eventSegment.getAttributes()).to.have.property('count', 2)
 
         // Emit it once more and see if the name updated again.
         stream.emit('foobar')
         expect(stream.segment.children).to.have.length(1)
         expect(stream.segment.children[0]).to.equal(eventSegment)
-        expect(eventSegment.parameters).to.have.property('count')
-          .equals(3)
+        expect(eventSegment.getAttributes()).to.have.property('count', 3)
       })
     })
 
     describe('with a promise', function() {
-      var itUnhandled = semver.satisfies(process.version, '>=1.4.1') ? it : xit
-
       var promise = null
       var toWrap = null
 
@@ -1017,7 +1058,7 @@ describe('Shim', function() {
         }, 5)
       })
 
-      itUnhandled('should not affect unhandledRejection event', function(done) {
+      it('should not affect unhandledRejection event', function(done) {
         var wrapped = shim.record(toWrap, function() {
           return {name: 'test segment', promise: true}
         })
@@ -1710,7 +1751,6 @@ describe('Shim', function() {
       it('should make the `parentSegment` translucent after running', function() {
         helper.runInTransaction(agent, function() {
           var args = [wrappable.getActiveSegment]
-          var segment = wrappable.getActiveSegment()
           var parent = shim.createSegment('test segment')
           parent.opaque = true
           shim.bindCallbackSegment(args, shim.LAST, parent)
@@ -1803,6 +1843,24 @@ describe('Shim', function() {
       expect(activeSegment).to.equal(segment)
     })
 
+    describe('when `func` has no `.apply` method', () => {
+      let func = null
+      beforeEach(() => {
+        func = function() {}
+        func.__proto__ = {}
+      })
+
+      it('should not throw in a transaction', () => {
+        expect(func).to.not.have.property('apply')
+        expect(() => shim.applySegment(func, segment)).to.not.throw()
+      })
+
+      it('should not throw out of a transaction', () => {
+        expect(func).to.not.have.property('apply')
+        expect(() => shim.applySegment(func, null)).to.not.throw()
+      })
+    })
+
     describe('when `func` throws an exception', function() {
       var func = null
 
@@ -1857,6 +1915,17 @@ describe('Shim', function() {
       })
     })
 
+    it('should allow `recorder` to be null', function() {
+      helper.runInTransaction(agent, function() {
+        var parent = shim.createSegment('parent')
+        var child = shim.createSegment('child', null, parent)
+        expect(child).to.have.property('name', 'child')
+        expect(parent)
+          .to.have.property('children')
+          .that.deep.equals([child])
+      })
+    })
+
     it('should not create children for opaque segments', function() {
       helper.runInTransaction(agent, function() {
         var parent = shim.createSegment('parent')
@@ -1869,13 +1938,47 @@ describe('Shim', function() {
       })
     })
 
-    it('should default to the current segment as the parent', function() {
-      helper.runInTransaction(agent, function() {
-        var parent = shim.getSegment()
-        var child = shim.createSegment('child')
-        expect(parent)
-          .to.have.property('children')
-          .that.deep.equals([child])
+    describe('when parent passed in args', () => {
+      it('should not modify returned parent for opaque segments', () => {
+        helper.runInTransaction(agent, () => {
+          const parent = shim.createSegment('parent')
+          parent.opaque = true
+          parent.internal = true
+
+          const child = shim.createSegment('child', parent)
+
+          expect(child).to.equal(parent)
+          expect(parent).to.have.property('opaque', true)
+          expect(parent).to.have.property('internal', true)
+        })
+      })
+    })
+
+    describe('when parent not passed in args', () => {
+      it('should default to the current segment as the parent', function() {
+        helper.runInTransaction(agent, function() {
+          var parent = shim.getSegment()
+          var child = shim.createSegment('child')
+          expect(parent)
+            .to.have.property('children')
+            .that.deep.equals([child])
+        })
+      })
+
+      it('should not modify returned parent for opaque segments', () => {
+        helper.runInTransaction(agent, () => {
+          const parent = shim.createSegment('parent')
+          parent.opaque = true
+          parent.internal = true
+
+          shim.setActiveSegment(parent)
+
+          const child = shim.createSegment('child')
+
+          expect(child).to.equal(parent)
+          expect(parent).to.have.property('opaque', true)
+          expect(parent).to.have.property('internal', true)
+        })
       })
     })
 
@@ -1922,21 +2025,21 @@ describe('Shim', function() {
         })
 
         it('should copy parameters provided into `segment.parameters`', function() {
-          expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.have.property('foo', 'bar')
-          expect(segment.parameters).to.have.property('fiz', 'bang')
+          expect(segment).to.have.property('attributes')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.have.property('foo', 'bar')
+          expect(attributes).to.have.property('fiz', 'bang')
         })
 
-        it('should not be affected by `attributes.exclude`', function() {
-          expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.have.property('ignore_me')
-        })
-
-        it('allows datastore instance attrs despite `attributes.exclude`', function() {
-          expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.have.property('host', 'my awesome host')
-          expect(segment.parameters).to.have.property('port_path_or_id', 1234)
-          expect(segment.parameters).to.have.property('database_name', 'my_db')
+        it('should be affected by `attributes.exclude`', function() {
+          expect(segment).to.have.property('attributes')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.have.property('foo', 'bar')
+          expect(attributes).to.have.property('fiz', 'bang')
+          expect(attributes).to.not.have.property('ignore_me')
+          expect(attributes).to.not.have.property('host')
+          expect(attributes).to.not.have.property('port_path_or_id')
+          expect(attributes).to.not.have.property('database_name')
         })
       })
 
@@ -1944,22 +2047,19 @@ describe('Shim', function() {
         beforeEach(function() {
           agent.config.attributes.enabled = false
           helper.runInTransaction(agent, function() {
-            segment = shim.createSegment({name: 'child', parameters: parameters})
+            segment = shim.createSegment({name: 'child', parameters})
           })
         })
 
-        it('should still copy parameters provided into `segment.parameters`', function() {
-          expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.have.property('foo')
-          expect(segment.parameters).to.have.property('fiz')
-          expect(segment.parameters).to.have.property('ignore_me')
-        })
-
-        it('should still allow datastore instance attrs', function() {
-          expect(segment).to.have.property('parameters')
-          expect(segment.parameters).to.have.property('host', 'my awesome host')
-          expect(segment.parameters).to.have.property('port_path_or_id', 1234)
-          expect(segment.parameters).to.have.property('database_name', 'my_db')
+        it('should not copy parameters into segment attributes', function() {
+          expect(segment).to.have.property('attributes')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.not.have.property('foo')
+          expect(attributes).to.not.have.property('fiz')
+          expect(attributes).to.not.have.property('ignore_me')
+          expect(attributes).to.not.have.property('host')
+          expect(attributes).to.not.have.property('port_path_or_id')
+          expect(attributes).to.not.have.property('database_name')
         })
       })
     })
@@ -2064,6 +2164,21 @@ describe('Shim', function() {
       expect(shim.isArray(1234)).to.be.false
       expect(shim.isArray(null)).to.be.false
       expect(shim.isArray(undefined)).to.be.false
+    })
+  })
+
+  describe('#isNull', function() {
+    it('should detect if an item is null', function() {
+      expect(shim.isNull(null)).to.be.true
+      expect(shim.isNull({})).to.be.false
+      expect(shim.isNull([])).to.be.false
+      expect(shim.isNull(arguments)).to.be.false
+      expect(shim.isNull(function() {})).to.be.false
+      expect(shim.isNull(true)).to.be.false
+      expect(shim.isNull(false)).to.be.false
+      expect(shim.isNull('foobar')).to.be.false
+      expect(shim.isNull(1234)).to.be.false
+      expect(shim.isNull(undefined)).to.be.false
     })
   })
 

@@ -1,6 +1,7 @@
 'use strict'
 
 var http = require('http')
+var url = require('url')
 var events = require('events')
 var expect = require('chai').expect
 var helper = require('../../../lib/agent_helper')
@@ -63,6 +64,49 @@ describe('instrumentOutbound', function() {
     })
   })
 
+  it('should omit query parameters from path if attributes.enabled is false', function() {
+    helper.unloadAgent(agent)
+    agent = helper.loadMockedAgent({
+      attributes: {
+        enabled: false
+      }
+    })
+    var req = new events.EventEmitter()
+    helper.runInTransaction(agent, function(transaction) {
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({})
+
+      function makeFakeRequest() {
+        req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
+        return req
+      }
+    })
+    helper.unloadAgent(agent)
+    agent = helper.loadMockedAgent()
+  })
+
+  it('should omit query parameters from path if high_security is true', function() {
+    helper.unloadAgent(agent)
+    agent = helper.loadMockedAgent({
+      high_security: true
+    })
+    var req = new events.EventEmitter()
+    helper.runInTransaction(agent, function(transaction) {
+      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
+        'procedure': 'GET',
+        'url': `http://${HOSTNAME}:${PORT}/asdf`,
+      })
+
+      function makeFakeRequest() {
+        req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
+        return req
+      }
+    })
+    helper.unloadAgent(agent)
+    agent = helper.loadMockedAgent()
+  })
+
   it('should strip query parameters from path in transaction trace segment', function() {
     var req = new events.EventEmitter()
     helper.runInTransaction(agent, function(transaction) {
@@ -84,9 +128,9 @@ describe('instrumentOutbound', function() {
     helper.runInTransaction(agent, function(transaction) {
       agent.config.attributes.enabled = true
       instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
-      expect(transaction.trace.root.children[0].parameters).to.deep.equal({
-        'nr_exclusive_duration_millis': null,
+      expect(transaction.trace.root.children[0].getAttributes()).to.deep.equal({
         'url': `http://${HOSTNAME}:${PORT}/asdf`,
+        'procedure': 'GET',
         'request.parameters.a': 'b',
         'request.parameters.another': 'yourself',
         'request.parameters.thing': true,
@@ -232,7 +276,7 @@ describe('should add data from cat header to segment', function() {
   ]
 
   before(function(done) {
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       cross_application_tracer: {enabled: true},
       encoding_key: encKey,
       trusted_account_ids: [123]
@@ -266,7 +310,7 @@ describe('should add data from cat header to segment', function() {
         expect(segment.catId).equal('123#456')
         expect(segment.catTransaction).equal('abc')
         expect(segment.name).equal('ExternalTransaction/localhost:4123/123#456/abc')
-        expect(segment.parameters.transaction_guid).equal('xyz')
+        expect(segment.getAttributes().transaction_guid).equal('xyz')
         res.resume()
         agent.getTransaction().end()
         done()
@@ -285,7 +329,7 @@ describe('should add data from cat header to segment', function() {
 
         // TODO: port in metric is a known bug. issue #142
         expect(segment.name).equal('ExternalTransaction/localhost:4123/123#456/abc')
-        expect(segment.parameters.transaction_guid).equal('xyz')
+        expect(segment.getAttributes().transaction_guid).equal('xyz')
         res.resume()
         agent.getTransaction().end()
         done()
@@ -369,6 +413,27 @@ describe('when working with http.request', function() {
     })
   })
 
+  it('should conform to external segment spec', function(done) {
+    var host = 'http://www.google.com'
+    var path = '/index.html'
+    nock(host).post(path).reply(200)
+
+    helper.runInTransaction(agent, function(transaction) {
+      var opts = url.parse(`${host}${path}`)
+      opts.method = 'POST'
+
+      var req = http.request(opts, function(res) {
+        var attributes = transaction.trace.root.children[0].getAttributes()
+        expect(attributes.url).equal('http://www.google.com/index.html')
+        expect(attributes.procedure).equal('POST')
+        res.resume()
+        transaction.end()
+        done()
+      })
+      req.end()
+    })
+  })
+
   it('should start and end segment', function(done) {
     var host = 'http://www.google.com'
     var path = '/index.html'
@@ -386,6 +451,80 @@ describe('when working with http.request', function() {
           expect(segment.timer.hrDuration).instanceof(Array)
           expect(segment.timer.getDurationInMillis()).above(0)
           transaction.end()
+          done()
+        })
+      })
+    })
+  })
+
+  describe('when parent segment opaque', () => {
+    it('should not modify parent segment', (done) => {
+      const host = 'http://www.google.com'
+      const paramName = 'testParam'
+      const path = `/index.html?${paramName}=value`
+
+      nock(host).get(path).reply(200, 'Hello from Google')
+
+      helper.runInTransaction(agent, (transaction) => {
+        const parentSegment = agent.tracer.createSegment('ParentSegment')
+        parentSegment.opaque = true
+        agent.tracer.segment = parentSegment // make the current active segment
+
+        http.get(`${host}${path}`, (res) => {
+          const segment = agent.tracer.getSegment()
+
+          expect(segment).to.equal(parentSegment)
+          expect(segment.name).to.equal('ParentSegment')
+
+          const attributes = segment.getAttributes()
+
+          expect(attributes).to.not.have.property('url')
+
+          expect(attributes)
+            .to.not.have.property(`request.parameters.${paramName}`)
+
+          res.resume()
+          transaction.end()
+          done()
+        })
+      })
+    })
+  })
+
+  describe('generates w3c trace context headers', () => {
+    it('should add header to outbound request', (done) => {
+      helper.unloadAgent(agent)
+      agent = helper.instrumentMockedAgent({
+        distributed_tracing: {
+          enabled: true
+        },
+        feature_flag: {
+          dt_format_w3c: true
+        }
+      })
+      agent.config.trusted_account_key = 190
+      agent.config.account_id = 190
+      agent.config.primary_application_id = '389103'
+      const host = 'http://www.google.com'
+      const path = '/index.html'
+      let headers
+
+      nock(host).get(path).reply(200, function() {
+        headers = this.req.headers
+        expect(headers.traceparent).to.exist
+        expect(headers.traceparent.split('-').length).to.equal(4)
+        expect(headers.tracestate).to.exist
+        expect(headers.tracestate.includes('null')).to.be.false
+        expect(headers.tracestate.includes('true')).to.be.false
+      })
+
+      helper.runInTransaction(agent, (transaction) => {
+        http.get(`${host}${path}`, (res) => {
+          res.resume()
+          transaction.end()
+          const tc = transaction.traceContext
+          const valid = tc._validateTraceStateHeader(headers.tracestate)
+          expect(valid).to.be.ok
           done()
         })
       })

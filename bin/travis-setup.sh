@@ -1,9 +1,10 @@
 #! /bin/bash
 
-function get_gcc_version {
-  local gcc_version_match='[[:digit:]]\.[[:digit:]]\.[[:digit:]]'
-  local gcc_version=`$CC --version 2>/dev/null | grep -o "$gcc_version_match" | head -1`
-  echo $gcc_version | grep -o '[[:digit:]]' | head -1
+
+function get_version {
+  local num='[[:digit:]][[:digit:]]*' # Grep doesn't have `+` operator.
+  local version=`$1 --version 2>/dev/null | grep -o "$num\.$num\.$num" | head -1`
+  echo $version | grep -o "$num" | head -1
 }
 
 TOOLCHAIN_ADDED="false"
@@ -15,15 +16,25 @@ function add_toolchain {
   TOOLCHAIN_ADDED="true"
 }
 
-# Only upgrade GCC if we need to.
+# npm 5 introduced 'ci' and 6 introduce 'audit', so just default to latest
+if (("$(get_version npm)" < "6" )); then
+  echo " --- upgrading npm to 6 --- "
+  npm install -g npm@6
+else
+  echo " --- not upgrading npm ($(npm --version)) --- "
+fi
 
 if [ "$SUITE" = "versioned" ]; then
-  if [ "$(get_gcc_version)" != "5" ]; then
+  echo " --- installing cassandra --- "
+  ./bin/cassandra-setup.sh
+
+  # GCC 5 is the lowest version of GCC we can use.
+  if [ "$(get_version gcc)" == "4" ]; then
     echo " --- upgrading GCC --- "
     add_toolchain
     ./bin/travis-install-gcc5.sh > /dev/null
   else
-    echo " --- not upgrading GCC --- "
+    echo " --- not upgrading GCC ($(gcc --version)) --- "
   fi
 
   echo " --- installing $SUITE requirements --- "
@@ -31,17 +42,9 @@ if [ "$SUITE" = "versioned" ]; then
   # MongoDB is always installed in integrations and versioned.
   echo " --- installing mongodb --- "
   add_toolchain
-  ./bin/travis-install-mongo.sh > /dev/null
+  ./bin/travis-install-mongo.sh
 
   echo " --- done installing $SUITE requirements --- "
 else
-  echo " --- not installing $SUITE requirements --- "
+  echo " --- no $SUITE installation requirements --- "
 fi
-
-if [ "$SUITE" = "security" ]; then
-  echo " --- installing nsp  --- "
-  npm install --no-save nsp
-fi
-
-# Always install time.
-sudo apt-get install -qq time

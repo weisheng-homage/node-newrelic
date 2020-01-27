@@ -28,7 +28,7 @@ tap.test('amqplib callback instrumentation', function(t) {
   var api = null
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true
       }
@@ -95,7 +95,7 @@ tap.test('amqplib callback instrumentation', function(t) {
     })
 
     helper.runInTransaction(agent, function transactionInScope(tx) {
-      channel.sendToQueue('testQueue', new Buffer('hello'), {
+      channel.sendToQueue('testQueue', Buffer.from('hello'), {
         replyTo: 'my.reply.queue',
         correlationId: 'correlation-id'
       })
@@ -125,7 +125,7 @@ tap.test('amqplib callback instrumentation', function(t) {
           channel.bindQueue(queueName, exchange, '', null, function(err) {
             t.error(err, 'should not error binding queue')
             amqpUtils.verifyTransaction(t, tx, 'bindQueue')
-            channel.publish(exchange, '', new Buffer('hello'))
+            channel.publish(exchange, '', Buffer.from('hello'))
             setImmediate(function() { tx.end() })
           })
         })
@@ -154,7 +154,7 @@ tap.test('amqplib callback instrumentation', function(t) {
           channel.bindQueue(queueName, exchange, 'key1', null, function(err) {
             t.error(err, 'should not error binding queue')
             amqpUtils.verifyTransaction(t, tx, 'bindQueue')
-            channel.publish(exchange, 'key1', new Buffer('hello'))
+            channel.publish(exchange, 'key1', Buffer.from('hello'))
             setImmediate(function() { tx.end() })
           })
         })
@@ -213,7 +213,7 @@ tap.test('amqplib callback instrumentation', function(t) {
             channel.publish(
               exchange,
               'consume-tx-key',
-              new Buffer('hello')
+              Buffer.from('hello')
             )
             channel.get(queue, {}, function(err, msg) {
               t.notOk(err, 'should not cause an error')
@@ -225,10 +225,9 @@ tap.test('amqplib callback instrumentation', function(t) {
 
               channel.ack(msg)
               setImmediate(function() {
-                tx.end(function() {
-                  amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
-                  t.end()
-                })
+                tx.end()
+                amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
+                t.end()
               })
             })
           })
@@ -262,19 +261,18 @@ tap.test('amqplib callback instrumentation', function(t) {
               t.equal(body, 'hello', 'should receive expected body')
 
               channel.ack(msg)
-              tx.end(function() {
-                amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-                consumeTxnHandle.end(function() {
-                  amqpUtils.verifyConsumeTransaction(
-                    t,
-                    consumeTxn,
-                    exchange,
-                    queue,
-                    'consume-tx-key'
-                  )
-                  amqpUtils.verifyCAT(t, tx, consumeTxn)
-                  t.end()
-                })
+              tx.end()
+              amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+              consumeTxnHandle.end(function() {
+                amqpUtils.verifyConsumeTransaction(
+                  t,
+                  consumeTxn,
+                  exchange,
+                  queue,
+                  'consume-tx-key'
+                )
+                amqpUtils.verifyCAT(t, tx, consumeTxn)
+                t.end()
               })
             }, null, function(err) {
               t.error(err, 'should not error subscribing consumer')
@@ -283,7 +281,7 @@ tap.test('amqplib callback instrumentation', function(t) {
               channel.publish(
                 exchange,
                 'consume-tx-key',
-                new Buffer('hello')
+                Buffer.from('hello')
               )
             })
           })
@@ -296,7 +294,7 @@ tap.test('amqplib callback instrumentation', function(t) {
     agent.config.distributed_tracing.enabled = true
     agent.config.span_events.enabled = true
     agent.config.account_id = 1234
-    agent.config.application_id = 4321
+    agent.config.primary_application_id = 4321
 
     var exchange = amqpUtils.DIRECT_EXCHANGE
     var queue = null
@@ -324,19 +322,18 @@ tap.test('amqplib callback instrumentation', function(t) {
               t.equal(body, 'hello', 'should receive expected body')
 
               channel.ack(msg)
-              tx.end(function() {
-                amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-                consumeTxnHandle.end(function() {
-                  amqpUtils.verifyConsumeTransaction(
-                    t,
-                    consumeTxn,
-                    exchange,
-                    queue,
-                    'consume-tx-key'
-                  )
-                  amqpUtils.verifyDistributedTrace(t, tx, consumeTxn)
-                  t.end()
-                })
+              tx.end()
+              amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+              consumeTxnHandle.end(function() {
+                amqpUtils.verifyConsumeTransaction(
+                  t,
+                  consumeTxn,
+                  exchange,
+                  queue,
+                  'consume-tx-key'
+                )
+                amqpUtils.verifyDistributedTrace(t, tx, consumeTxn)
+                t.end()
               })
             }, null, function(err) {
               t.error(err, 'should not error subscribing consumer')
@@ -345,7 +342,7 @@ tap.test('amqplib callback instrumentation', function(t) {
               channel.publish(
                 exchange,
                 'consume-tx-key',
-                new Buffer('hello')
+                Buffer.from('hello')
               )
             })
           })
@@ -389,7 +386,7 @@ tap.test('amqplib callback instrumentation', function(t) {
             channel.publish(
               amqpUtils.DIRECT_EXCHANGE,
               'consume-tx-key',
-              new Buffer('hello')
+              Buffer.from('hello')
             )
           })
         })
@@ -432,7 +429,7 @@ tap.test('amqplib callback instrumentation', function(t) {
             channel.publish(
               amqpUtils.DIRECT_EXCHANGE,
               'consume-tx-key',
-              new Buffer('hello')
+              Buffer.from('hello')
             )
           })
         })

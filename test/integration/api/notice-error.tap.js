@@ -1,13 +1,14 @@
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
+const test = require('tap').test
+const helper = require('../../lib/agent_helper')
 
 test('http errors are noticed correctly', function testError(t) {
-  var agent = helper.loadTestAgent(t)
+  const agent = helper.loadTestAgent(t)
+
   t.plan(3)
-  var http = require('http')
-  var server = http.createServer(handler)
+  const http = require('http')
+  const server = http.createServer(handler)
 
   server.listen(0)
 
@@ -29,8 +30,8 @@ test('http errors are noticed correctly', function testError(t) {
   }
 
   function check() {
-    t.equal(agent.errors.errors.length, 1, 'should be 1 error')
-    var error = agent.errors.errors[0]
+    t.equal(agent.errors.traceAggregator.errors.length, 1, 'should be 1 error')
+    var error = agent.errors.traceAggregator.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have correct transaction')
     t.equal(error[2], 'notice me!', 'should have right name')
     t.end()

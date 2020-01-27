@@ -39,13 +39,12 @@ test('Collector API should send errors to staging-collector.newrelic.com', funct
 
     var payload = [
       agent.config.run_id,
-      agent.errors.errors
+      agent.errors.traceAggregator.errors
     ]
 
-    api.errorData(payload, function(error, response, json) {
+    api.error_data(payload, function(error, command) {
       t.error(error, 'sent errors without error')
-      t.notOk(response, 'return value is null')
-      t.deepEqual(json, {return_value: null}, 'got raw return value')
+      t.notOk(command.returned, 'return value is null')
 
       agent.stop((err) => {
         t.error(err, 'should not fail to stop')

@@ -59,7 +59,7 @@ function cassSetup(runTest) {
 
   function done(err) {
     if (err) {
-     throw err
+      throw err
     }
     setupClient.shutdown()
     runTest()
@@ -116,8 +116,12 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
             var trace = transaction.trace
             t.ok(trace, 'trace should exist')
             t.ok(trace.root, 'root element should exist')
-            t.equals(trace.root.children.length, 1,
-                   'there should be only one child of the root')
+
+            t.equals(
+              trace.root.children.length,
+              1,
+              'there should be only one child of the root'
+            )
 
             var setSegment = trace.root.children[0]
             t.ok(setSegment, 'trace segment for insert should exist')
@@ -150,24 +154,24 @@ test('Cassandra instrumentation', {timeout: 5000}, function testInstrumentation(
               }
             }
 
-            transaction.end(function end() {
-              checkMetric('Datastore/operation/Cassandra/insert', 1)
-              checkMetric('Datastore/allWeb', 2)
-              checkMetric('Datastore/Cassandra/allWeb', 2)
-              checkMetric('Datastore/Cassandra/all', 2)
-              checkMetric('Datastore/all', 2)
-              checkMetric('Datastore/statement/Cassandra/test.testFamily/insert', 1)
-              checkMetric('Datastore/operation/Cassandra/select', 1)
-              checkMetric('Datastore/statement/Cassandra/test.testFamily/select', 1)
+            transaction.end()
+            checkMetric('Datastore/operation/Cassandra/insert', 1)
+            checkMetric('Datastore/allWeb', 2)
+            checkMetric('Datastore/Cassandra/allWeb', 2)
+            checkMetric('Datastore/Cassandra/all', 2)
+            checkMetric('Datastore/all', 2)
+            checkMetric('Datastore/statement/Cassandra/test.testFamily/insert', 1)
+            checkMetric('Datastore/operation/Cassandra/select', 1)
+            checkMetric('Datastore/statement/Cassandra/test.testFamily/select', 1)
 
-              t.end()
-            })
+            t.end()
           })
         })
       })
 
       function checkMetric(name, count, scoped) {
-        var metric = agent.metrics[scoped ? 'scoped' : 'unscoped'][name]
+        const agentMetrics = agent.metrics._metrics
+        var metric = agentMetrics[scoped ? 'scoped' : 'unscoped'][name]
         t.ok(metric, 'metric "' + name + '" should exist')
         if (!metric) {
           return

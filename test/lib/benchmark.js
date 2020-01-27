@@ -1,7 +1,5 @@
 'use strict'
 
-var benchmark = require('benchmark')
-var copy = require('../../lib/util/copy')
 var helper = require('./agent_helper')
 var async = require('async')
 
@@ -39,7 +37,7 @@ class Benchmark {
   }
 
   print() {
-    console.log(JSON.stringify(this.processSamples(), null, 2))
+    console.log(JSON.stringify(this.processSamples(), null, 2)) // eslint-disable-line
   }
 
   run(cb) {
@@ -48,7 +46,7 @@ class Benchmark {
 
     async.eachSeries(this.tests, function startTest(test, callback) {
       if (test.agent) {
-        agent = helper.instrumentMockedAgent(test.agent.feature_flag, test.agent.conig)
+        agent = helper.instrumentMockedAgent(test.agent.config)
       }
 
       var testName = test.name
@@ -64,18 +62,21 @@ class Benchmark {
         }
 
         if (typeof test.before === 'function') {
-          test.before()
+          test.before(agent)
         }
 
         if (agent && test.runInTransaction) {
           return helper.runInTransaction(agent, function inTransaction(txn) {
-            execute(txn.end.bind(txn))
+            execute(function afterExecute(execCallback) {
+              txn.end()
+              execCallback(txn)
+            })
           })
         }
-  
+
         execute()
 
-        function execute(callback) {
+        function execute(cb) {
           var prevCpu = process.cpuUsage()
           if (test.async) {
             testFn(agent, after)
@@ -84,15 +85,16 @@ class Benchmark {
             after()
           }
           function after() {
-            // The cpu delta is reported in microseconds, so we turn them into milliseconds
+            // The cpu delta is reported in microseconds, so we turn them into
+            // milliseconds
             var delta = process.cpuUsage(prevCpu).user / 1000
 
             if (typeof test.after === 'function') {
               test.after()
             }
 
-            if (typeof callback === 'function') {
-              return callback(afterCallback)
+            if (typeof cb === 'function') {
+              return cb(afterCallback)
             }
 
             afterCallback()
@@ -115,7 +117,7 @@ class Benchmark {
       })
     }, function onSuiteFinish() {
       if (typeof cb === 'function') {
-        return cb(samples)
+        return cb(suite.samples)
       }
       return suite.print()
     })

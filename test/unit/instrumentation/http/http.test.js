@@ -8,9 +8,7 @@ var EventEmitter = require('events').EventEmitter
 var helper = require('../../../lib/agent_helper')
 var hashes = require('../../../../lib/util/hashes')
 var Segment = require('../../../../lib/transaction/trace/segment')
-var semver = require('semver')
 var Shim = require('../../../../lib/shim').Shim
-
 
 var NEWRELIC_ID_HEADER = 'x-newrelic-id'
 var NEWRELIC_APP_DATA_HEADER = 'x-newrelic-app-data'
@@ -109,6 +107,7 @@ describe('built-in http module instrumentation', function() {
 
     beforeEach(function(done) {
       agent = helper.instrumentMockedAgent()
+
       http = require('http')
       agent.config.attributes.enabled = true
       hookCalled = false
@@ -309,8 +308,7 @@ describe('built-in http module instrumentation', function() {
         expect(agent.environment.get('Dispatcher')).to.include('http')
       })
 
-      it('should record unscoped HTTP dispatcher stats after a normal request',
-         function() {
+      it('should record unscoped HTTP dispatcher stats after a normal request', () => {
         var stats = agent.metrics.getOrCreateMetric('HttpDispatcher')
         expect(stats.callCount).equal(2)
       })
@@ -377,13 +375,17 @@ describe('built-in http module instrumentation', function() {
 
     describe('for http.createServer', function() {
       it('should trace errors in top-level handlers', function(done) {
-        var server
+        let server
+        let request
+
         process.once('uncaughtException', function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           expect(errors).to.have.property('length', 1)
 
-          server.close()
-          return done()
+          // abort request to close connection and
+          // allow server to close fast instead of after timeout
+          request.abort()
+          server.close(done)
         })
 
         server = http.createServer(function cb_createServer() {
@@ -391,26 +393,26 @@ describe('built-in http module instrumentation', function() {
         })
 
         server.listen(8182, function() {
-          http.get({host: 'localhost', port: 8182}, function() {
+          request = http.get({host: 'localhost', port: 8182}, function() {
             done('actually got response')
+          })
+
+          request.on('error', function swallowError(err) {
+            // eslint-disable-next-line no-console
+            console.log('swallowed error: ', err)
           })
         })
       })
     })
 
     describe('for http.request', function() {
-      // this scenario is specifically broken on Node 5.7.1, see
-      // https://github.com/nodejs/node/issues/5555
-      if (!semver.satisfies(process.versions.node, '==5.7.1')) return
-
       it('should trace errors in listeners', function(done) {
         var server
         process.once('uncaughtException', function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           expect(errors.length).equal(1)
 
-          server.close()
-          return done()
+          server.close(done)
         })
 
         server = http.createServer(function cb_createServer(request, response) {
@@ -431,7 +433,7 @@ describe('built-in http module instrumentation', function() {
     var encKey = 'gringletoes'
 
     beforeEach(function() {
-      agent = helper.instrumentMockedAgent(null, {
+      agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: true},
         encoding_key: encKey
       })
@@ -516,7 +518,7 @@ describe('built-in http module instrumentation', function() {
     var encKey = 'gringletoes'
 
     before(function() {
-      agent = helper.instrumentMockedAgent(null, {
+      agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: false},
         encoding_key: encKey
       })
@@ -533,7 +535,7 @@ describe('built-in http module instrumentation', function() {
         should.not.exist(transaction.incomingAppData)
         should.not.exist(transaction.tripId)
         should.not.exist(transaction.referringPathHash)
-        should.not.exist(agent.tracer.getSegment().parameters.transaction_guid)
+        should.not.exist(agent.tracer.getSegment().getAttributes().transaction_guid)
 
         res.end()
         req.socket.end()
@@ -564,7 +566,7 @@ describe('built-in http module instrumentation', function() {
     var encKey = 'gringletoes'
 
     beforeEach(function() {
-      agent = helper.instrumentMockedAgent(null, {
+      agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: true},
         encoding_key: encKey,
         trusted_account_ids: [123],
@@ -660,12 +662,55 @@ describe('built-in http module instrumentation', function() {
     })
   })
 
+  describe('Should accept w3c traceparent header when present on request',
+    function() {
+      beforeEach(function() {
+        agent = helper.instrumentMockedAgent({
+          distributed_tracing: {
+            enabled: true
+          },
+          feature_flag: {
+            dt_format_w3c: true
+          }
+        })
+      })
+
+      it('should set header correctly when all data is present', function(done) {
+        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+        const priority = 0.789
+        // eslint-disable-next-line
+        const tracestate = `190@nr=0-0-709288-8599547-f85f42fd82a4cf1d-164d3b4b0d09cb05-1-${priority}-1563574856827`
+        http = require('http')
+        agent.config.trusted_account_key = 190
+
+        var server = http.createServer(function(req, res) {
+          const txn = agent.getTransaction()
+          expect(txn.traceContext.traceparent).to.equal(traceparent)
+          expect(txn.traceContext._traceStateIntrinsics.priority).to.equal(priority)
+          res.writeHead(200, {'Content-Length': 3})
+          res.end('hi!')
+        })
+
+        var headers = {
+          traceparent: traceparent,
+          tracestate: tracestate
+        }
+
+        server.listen(4123, function() {
+          http.get({host: 'localhost', port: 4123, headers: headers}, function(res) {
+            res.resume()
+            server.close(done)
+          })
+        })
+      })
+    })
+
   describe('response headers for outbound requests when cat is enabled', function() {
     var encKey = 'gringletoes'
     var server
 
     beforeEach(function(done) {
-      agent = helper.instrumentMockedAgent(null, {
+      agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: true},
         encoding_key: encKey,
         obfuscatedId: 'o123'
@@ -806,7 +851,7 @@ describe('built-in http module instrumentation', function() {
     it('should preserve headers regardless of format', function(done) {
       var encKey = 'gringletoes'
 
-      agent = helper.instrumentMockedAgent(null, {
+      agent = helper.instrumentMockedAgent({
         cross_application_tracer: {enabled: true},
         encoding_key: encKey,
         obfuscatedId: 'o123'

@@ -11,16 +11,15 @@ var assertMetrics = require('../../lib/metrics_helper').assertMetrics
  * CONSTANTS
  *
  */
-var METRIC = 'WebTransaction/Restify/GET//hello/:name'
-
+const METRIC = 'WebTransaction/Restify/GET//hello/:name'
+const MAX_PORT_ATTEMPTS = 5
 
 tap.test('should not crash when Restify handles a connection', function(t) {
   t.plan(7)
 
-  var agent   = helper.instrumentMockedAgent()
-  var restify = require('restify')
-  var server  = restify.createServer()
-
+  const agent   = helper.instrumentMockedAgent()
+  const restify = require('restify')
+  const server  = restify.createServer()
 
   t.tearDown(function cb_tearDown() {
     helper.unloadAgent(agent)
@@ -33,10 +32,36 @@ tap.test('should not crash when Restify handles a connection', function(t) {
     next()
   })
 
-  server.listen(8765, function() {
+  let attempts = 0
+  server.on('error', (e) => {
+    // server port not guranteed to be not in use
+    if (e.code === 'EADDRINUSE') {
+      if (attempts >= MAX_PORT_ATTEMPTS) {
+        console.log('Exceeded max attempts (%s), bailing out.', MAX_PORT_ATTEMPTS)
+        throw new Error('Unable to get unused port')
+      }
+
+      attempts++
+
+      console.log('Address in use, retrying...')
+      setTimeout(() => {
+        server.close()
+
+        // start the server using a random port
+        server.listen()
+      }, 1000)
+    }
+  })
+
+  // start the server using a random port
+  server.listen()
+
+  server.on('listening', function() {
     t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
-    request.get('http://localhost:8765/hello/friend', function(error, response, body) {
+    const port = server.address().port
+
+    request.get(`http://localhost:${port}/hello/friend`, function(error, response, body) {
       if (error) return t.fail(error)
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into external request")
 
@@ -60,10 +85,9 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
       t.end()
     }
 
-    var agent   = helper.instrumentMockedAgent()
-    var restify = require('restify')
-    var server  = restify.createServer({key : key, certificate : certificate})
-
+    const agent   = helper.instrumentMockedAgent()
+    const restify = require('restify')
+    const server  = restify.createServer({key, certificate})
 
     t.tearDown(function cb_tearDown() {
       helper.unloadAgent(agent)
@@ -79,23 +103,28 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
     server.listen(8443, function() {
       t.notOk(agent.getTransaction(), "transaction shouldn't leak into server")
 
-      request.get({url : 'https://ssl.lvh.me:8443/hello/friend', ca : ca},
-                  function(error, response, body) {
+      const options = {
+        url : 'https://ssl.lvh.me:8443/hello/friend',
+        ca : ca
+      }
+
+      agent.on('transactionFinished', () => {
+        const metric = agent.metrics.getMetric(METRIC)
+        t.ok(metric, "request metrics should have been gathered")
+        t.equals(metric.callCount, 1, "handler should have been called")
+
+        const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
+        t.ok(isFramework, 'should indicate that restify is a framework')
+      })
+
+      request.get(options, (error, response, body) => {
         if (error) {
           t.fail(error)
           return t.end()
         }
-
-        t.notOk(agent.getTransaction(),
-                "transaction shouldn't leak into external request")
-
-        var metric = agent.metrics.getMetric(METRIC)
-        t.ok(metric, "request metrics should have been gathered")
-        t.equals(metric.callCount, 1, "handler should have been called")
+        const transaction = agent.getTransaction()
+        t.notOk(transaction, "transaction shouldn't leak into external request")
         t.equals(body, '"hello friend"', 'should return expected data')
-
-        var isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
-        t.ok(isFramework, 'should indicate that restify is a framework')
       })
     })
   })
@@ -104,9 +133,9 @@ tap.test('Restify should still be instrumented when run with SSL', function(t) {
 tap.test('Restify should generate middleware metrics', function(t) {
   t.plan(5)
 
-  var agent = helper.instrumentMockedAgent()
-  var restify = require('restify')
-  var server = restify.createServer()
+  const agent = helper.instrumentMockedAgent()
+  const restify = require('restify')
+  const server = restify.createServer()
 
   t.tearDown(function() {
     helper.unloadAgent(agent)

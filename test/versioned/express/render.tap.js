@@ -24,18 +24,20 @@ var BODY = "<!DOCTYPE html>\n" +
 
 
 runTests({
-  express_segments: false
+  license_key: 'test',
+  feature_flag: {express_segments: false}
 })
 
 runTests({
-  express_segments:  true
+  license_key: 'test',
+  feature_flag: {express_segments:  true}
 })
 
-function runTests(flags) {
+function runTests(conf) {
   // Regression test for issue 154
   // https://github.com/newrelic/node-newrelic/pull/154
   test("using only the express router", function(t) {
-    var agent = helper.instrumentMockedAgent(flags)
+    var agent = helper.instrumentMockedAgent(conf)
     var router = require('express').Router() // eslint-disable-line new-cap
 
     t.tearDown(function cb_tearDown() {
@@ -55,7 +57,7 @@ function runTests(flags) {
   })
 
   test("the express router should go through a whole request lifecycle", function(t) {
-    var agent = helper.instrumentMockedAgent(flags)
+    var agent = helper.instrumentMockedAgent(conf)
     var router = require('express').Router() // eslint-disable-line new-cap
     var server
 
@@ -90,7 +92,8 @@ function runTests(flags) {
     var server = null
 
     t.beforeEach(function(done) {
-      agent = helper.instrumentMockedAgent(flags)
+      agent = helper.instrumentMockedAgent(conf)
+
       app = require('express')()
       server = require('http').createServer(app)
       done()
@@ -120,8 +123,11 @@ function runTests(flags) {
         request.get(TEST_URL + port + TEST_PATH, function(error, response, body) {
           t.error(error, 'should not fail making request')
 
-          t.ok(/application\/json/.test(response.headers['content-type']),
-               "got correct content type")
+          t.ok(
+            /application\/json/.test(response.headers['content-type']),
+            "got correct content type"
+          )
+
           t.deepEqual(JSON.parse(body), {"yep":true}, "Express correctly serves.")
 
           var stats
@@ -144,9 +150,11 @@ function runTests(flags) {
           t.ok(stats, "found HTTP dispatcher statistics")
           t.equal(stats.callCount, 1, "only one HTTP-dispatched request was made")
 
-          var serialized = JSON.stringify(agent.metrics)
-          t.ok(serialized.match(/WebTransaction\/Expressjs\/GET\/\/test/),
-               "serialized metrics as expected")
+          var serialized = JSON.stringify(agent.metrics._toPayloadSync())
+          t.ok(
+            serialized.match(/WebTransaction\/Expressjs\/GET\/\/test/),
+            "serialized metrics as expected"
+          )
 
           t.end()
         })
@@ -225,8 +233,11 @@ function runTests(flags) {
           // route middleware doesn't have a name, sentinel is our error handler,
           // neither should be wrapped.
           if (layer.route === undefined && layer.handle.name !== 'sentinel') {
-            t.equal(typeof layer.handle.__NR_original, 'function',
-                    'all middlewares are wrapped')
+            t.equal(
+              typeof layer.handle.__NR_original,
+              'function',
+              'all middlewares are wrapped'
+            )
           }
         }
 
@@ -237,15 +248,18 @@ function runTests(flags) {
           t.ok(response, "got a response from Express")
           t.ok(body, "got back a body")
 
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.ok(errors, "errors were found")
           t.equal(errors.length, 1, "Only one error thrown.")
 
           var first = errors[0]
           t.ok(first, "have the first error")
 
-          t.equal(first[2], "Cannot read property 'ohno' of undefined",
-                  "got the expected error")
+          t.equal(
+            first[2],
+            "Cannot read property 'ohno' of undefined",
+            "got the expected error"
+          )
 
           t.end()
         })
@@ -309,7 +323,7 @@ function runTests(flags) {
     t.autoend()
 
     t.test('collects the actual error object that is thrown', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      const agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -326,7 +340,7 @@ function runTests(flags) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, "there should be one error")
           t.equal(errors[0][2], "some error", "got the expected error")
           t.ok(errors[0][4].stack_trace, "has stack trace")
@@ -340,7 +354,7 @@ function runTests(flags) {
     })
 
     t.test('does not occur with custom defined error handlers', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      const agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -363,7 +377,7 @@ function runTests(flags) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 0, "there should be no errors")
 
           var metric = agent.metrics.getMetric('Apdex')
@@ -375,7 +389,7 @@ function runTests(flags) {
     })
 
     t.test('does not occur with custom defined error handlers', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      const agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -398,7 +412,7 @@ function runTests(flags) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 0, "there should be no errors")
 
           var metric = agent.metrics.getMetric('Apdex')
@@ -410,7 +424,7 @@ function runTests(flags) {
     })
 
     t.test('collects the error message when string is thrown', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      const agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -427,7 +441,7 @@ function runTests(flags) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, "there should be one error")
           t.equal(errors[0][2], "some error", "got the expected error")
 
@@ -440,7 +454,7 @@ function runTests(flags) {
     })
 
     t.test('collects the actual error object when error handler is used', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      const agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -461,7 +475,7 @@ function runTests(flags) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, "there should be one error")
           t.equal(errors[0][2], "some error", "got the expected error")
           t.ok(errors[0][4].stack_trace, "has stack trace")
@@ -479,7 +493,7 @@ function runTests(flags) {
     // We use message and stack properties to identify an Error object, so in this case
     // we want to at least collect the HTTP error based on the status code.
     t.test('should report errors without message or stack sent to res.send', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      const agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -503,7 +517,7 @@ function runTests(flags) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, "there should be one error")
           t.equal(errors[0][2], "HttpError 400", "got the expected error")
 
@@ -516,7 +530,7 @@ function runTests(flags) {
     })
 
     t.test('should report errors without message or stack sent to next', function(t) {
-      var agent = helper.instrumentMockedAgent(flags)
+      const agent = helper.instrumentMockedAgent(conf)
 
       var app    = require('express')()
       var server = require('http').createServer(app)
@@ -540,7 +554,7 @@ function runTests(flags) {
       server.listen(0, TEST_HOST, function() {
         var port = server.address().port
         request.get(TEST_URL + port + TEST_PATH, function() {
-          var errors = agent.errors.errors
+          var errors = agent.errors.traceAggregator.errors
           t.equal(errors.length, 1, "there should be one error")
           t.equal(errors[0][2], "HttpError 500", "got the expected error")
 
@@ -557,7 +571,7 @@ function runTests(flags) {
     t.plan(1)
 
     // Set up the test.
-    var agent = helper.instrumentMockedAgent(flags)
+    var agent = helper.instrumentMockedAgent(conf)
     var app = require('express')()
     var server = require('http').createServer(app)
     t.tearDown(function cb_tearDown() {

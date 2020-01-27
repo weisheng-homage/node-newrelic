@@ -7,11 +7,11 @@ var expect = chai.expect
 var nock = require('nock')
 var helper = require('../../lib/agent_helper')
 var sampler = require('../../../lib/sampler')
-var semver = require('semver')
 var configurator = require('../../../lib/config')
 var Agent = require('../../../lib/agent')
 var Transaction = require('../../../lib/transaction')
 var clearAWSCache = require('../../../lib/utilization/aws-info').clearCache
+const CollectorResponse = require('../../../lib/collector/response')
 
 
 /*
@@ -37,12 +37,12 @@ var awsResponses = {
 var awsRedirect
 
 function refreshAWSEndpoints() {
-    clearAWSCache()
-    awsRedirect = nock(awsHost)
-    for (var awsPath in awsResponses) { // eslint-disable-line guard-for-in
-      var redirect = awsRedirect.get('/2016-09-02/' + awsPath)
-      redirect.reply(200, awsResponses[awsPath])
-    }
+  clearAWSCache()
+  awsRedirect = nock(awsHost)
+  for (var awsPath in awsResponses) { // eslint-disable-line guard-for-in
+    var redirect = awsRedirect.get('/2016-09-02/' + awsPath)
+    redirect.reply(200, awsResponses[awsPath])
+  }
 }
 
 
@@ -71,7 +71,8 @@ describe('the New Relic agent', function() {
     var agent
 
     beforeEach(function() {
-      agent = helper.loadMockedAgent()
+      // Load agent with default 'stopped' state
+      agent = helper.loadMockedAgent(null, false)
     })
 
     afterEach(function() {
@@ -149,11 +150,7 @@ describe('the New Relic agent', function() {
         // Rules are reversed by default
         expect(rules[2].pattern.source).equal('^\\/u')
 
-        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-            expect(rules[1].pattern.source).equal('^\\/t')
-        } else {
-            expect(rules[1].pattern.source).equal('^/t')
-        }
+        expect(rules[1].pattern.source).equal('^\\/t')
       })
     })
 
@@ -178,7 +175,7 @@ describe('the New Relic agent', function() {
     })
 
     describe('when forcing transaction ignore status', function() {
-      var agent
+      var agentInstance
 
       beforeEach(function() {
         var config = configurator.initialize({
@@ -186,11 +183,11 @@ describe('the New Relic agent', function() {
             /^\/ham_snadwich\/ignore/
           ]}
         })
-        agent = new Agent(config)
+        agentInstance = new Agent(config)
       })
 
       it('should not error when forcing an ignore', function() {
-        var transaction = new Transaction(agent)
+        var transaction = new Transaction(agentInstance)
         transaction.forceIgnore = true
         transaction.finalizeNameFromUri('/ham_snadwich/attend', 200)
         expect(transaction.ignore).equal(true)
@@ -199,7 +196,7 @@ describe('the New Relic agent', function() {
       })
 
       it('should not error when forcing a non-ignore', function() {
-        var transaction = new Transaction(agent)
+        var transaction = new Transaction(agentInstance)
         transaction.forceIgnore = false
         transaction.finalizeNameFromUri('/ham_snadwich/ignore', 200)
         expect(transaction.ignore).equal(false)
@@ -208,10 +205,59 @@ describe('the New Relic agent', function() {
       })
 
       it('should ignore when finalizeNameFromUri is not called', function() {
-        var transaction = new Transaction(agent)
+        var transaction = new Transaction(agentInstance)
         transaction.forceIgnore = true
-        agent._transactionFinished(transaction)
+        agentInstance._transactionFinished(transaction)
         expect(transaction.ignore).equal(true)
+      })
+    })
+
+    describe('aggregator methods', function() {
+      beforeEach(function() {
+        agent.config.distributed_tracing.enabled = true // for span events
+
+        agent.startAggregators()
+      })
+
+      describe('#stopAggregators', function() {
+        it('should stop all the aggregators', function() {
+          expect(agent.traces.sendTimer).to.not.be.null
+          expect(agent.errors.traceAggregator.sendTimer).to.not.be.null
+          expect(agent.errors.eventAggregator.sendTimer).to.not.be.null
+          expect(agent.spanEventAggregator.sendTimer).to.not.be.null
+          expect(agent.transactionEventAggregator.sendTimer).to.not.be.null
+          expect(agent.customEventAggregator.sendTimer).to.not.be.null
+        })
+      })
+
+      describe('#stopAggregators', function() {
+        it('should stop all the aggregators', function() {
+          agent.stopAggregators()
+          expect(agent.traces.sendTimer).to.be.null
+          expect(agent.errors.traceAggregator.sendTimer).to.be.null
+          expect(agent.errors.eventAggregator.sendTimer).to.be.null
+          expect(agent.spanEventAggregator.sendTimer).to.be.null
+          expect(agent.transactionEventAggregator.sendTimer).to.be.null
+          expect(agent.customEventAggregator.sendTimer).to.be.null
+        })
+      })
+      describe('#onConnect', function() {
+        const EXPECTED_AGG_COUNT = 8
+        it('should reconfigure all the aggregators', function() {
+          // mock out the base reconfigure method
+          const proto = agent.traces.__proto__.__proto__.__proto__
+          const mock = sinon.mock(proto)
+
+          agent.config.event_harvest_config = {
+            report_period_ms: 5000,
+            harvest_limits: {
+              span_event_data: 1
+            }
+          }
+          mock.expects('reconfigure').exactly(EXPECTED_AGG_COUNT)
+          agent.onConnect()
+          mock.verify()
+        })
       })
     })
 
@@ -274,7 +320,7 @@ describe('the New Relic agent', function() {
 
         agent.collector.connect = function(callback) {
           should.exist(callback)
-          callback()
+          done()
         }
 
         agent.start(done)
@@ -283,7 +329,7 @@ describe('the New Relic agent', function() {
       it('should call connect when config is correct', function(done) {
         agent.collector.connect = function(callback) {
           should.exist(callback)
-          callback()
+          done()
         }
 
         agent.start(done)
@@ -309,7 +355,8 @@ describe('the New Relic agent', function() {
           .reply(200, {return_value: []})
 
         agent.collector.connect = function(callback) {
-          callback(null, {agent_run_id: RUN_ID})
+          agent.collector.isConnected = () => true
+          callback(null, CollectorResponse.success(null, {agent_run_id: RUN_ID}))
         }
 
         agent.config.run_id = RUN_ID
@@ -324,10 +371,10 @@ describe('the New Relic agent', function() {
         })
       })
 
-      it('should not blow up when harvest cycle runs', function(done) {
+      it('should not blow up when harvest cycle runs', (done) => {
         var origInterval = global.setInterval
-        global.setInterval = function(callback) {
-          return Object.assign({unref: function() {}}, setImmediate(callback))
+        global.setInterval = (callback) => {
+          return Object.assign({unref: () => {}}, setImmediate(callback))
         }
 
         // manually harvesting
@@ -348,9 +395,53 @@ describe('the New Relic agent', function() {
           .post(helper.generateCollectorPath('agent_settings', RUN_ID))
           .reply(200, {return_value: []})
 
-        agent.start(function cb_start() {
-          setTimeout(function() {
+        agent.start(() => {
+          setTimeout(() => {
             global.setInterval = origInterval
+
+            redirect.done()
+            awsRedirect.done()
+            connect.done()
+            settings.done()
+            done()
+          }, 15)
+        })
+      })
+
+      it('should start aggregators after initial harvest', (done) => {
+        var origInterval = global.setInterval
+        global.setInterval = (callback) => {
+          return Object.assign({unref: () => {}}, setImmediate(callback))
+        }
+
+        let aggregatorsStarted = false
+
+        agent.config.no_immediate_harvest = false
+
+        agent.startAggregators = () => {
+          aggregatorsStarted = true
+        }
+
+        var redirect = nock(URL)
+          .post(helper.generateCollectorPath('preconnect'))
+          .reply(200, {
+            return_value: {
+              redirect_host: 'collector.newrelic.com',
+              security_policies: {}
+            }
+          })
+        var connect = nock(URL)
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, {return_value: {agent_run_id: RUN_ID}})
+        var settings = nock(URL)
+          .post(helper.generateCollectorPath('agent_settings', RUN_ID))
+          .reply(200, {return_value: []})
+
+        agent.start(() => {
+          setTimeout(() => {
+            global.setInterval = origInterval
+
+            expect(aggregatorsStarted).to.be.true
 
             redirect.done()
             awsRedirect.done()
@@ -383,7 +474,6 @@ describe('the New Relic agent', function() {
           .reply(200, {return_value: []})
         var metrics = nock(URL)
           .post(helper.generateCollectorPath('metric_data', RUN_ID))
-          .times(2)
           .reply(503)
 
         agent.start(function cb_start() {
@@ -406,28 +496,6 @@ describe('the New Relic agent', function() {
 
       it('should require a callback', function() {
         expect(function() { agent.stop() }).throws('callback required!')
-      })
-
-      it('should not error if no harvester handle is set', function() {
-        agent.harvesterHandle = undefined
-        agent.collector.shutdown = nop
-
-        expect(function() { agent.stop(nop) }).not.throws()
-      })
-
-      it('should not error if a harvester handle is set', function() {
-        agent.harvesterHandle = setInterval(function() { throw new Error('nope') }, 5)
-        agent.collector.shutdown = nop
-
-        expect(function() { agent.stop(nop) }).not.throws()
-      })
-
-      it('should clear harvester handle is set', function() {
-        agent.harvesterHandle = setInterval(function() { throw new Error('nope') }, 5)
-        agent.collector.shutdown = nop
-
-        agent.stop(nop)
-        should.not.exist(agent.harvesterHandle)
       })
 
       it('should stop sampler', function() {
@@ -463,22 +531,21 @@ describe('the New Relic agent', function() {
 
           agent.stop(function cb_stop(error) {
             should.not.exist(error)
+            expect(agent.config.run_id).to.be.undefined
 
             shutdown.done()
             done()
           })
         })
 
-        it('should pass through error if shutdown fails', function(done) {
+        it('should pass through error if shutdown fails', (done) => {
           agent.config.run_id = RUN_ID
-          var shutdown =
-            nock(URL)
-              .post(helper.generateCollectorPath('shutdown', RUN_ID))
-              .reply(503)
+          var shutdown = nock(URL)
+            .post(helper.generateCollectorPath('shutdown', RUN_ID))
+            .replyWithError('whoops!')
 
-          agent.stop(function cb_stop(error) {
-            should.exist(error)
-            expect(error.message).equal('No body found in response to shutdown.')
+          agent.stop((error) => {
+            expect(error).to.exist.and.have.property('message', 'whoops!')
 
             shutdown.done()
             done()
@@ -488,25 +555,24 @@ describe('the New Relic agent', function() {
     })
 
     describe('when calling out to the collector', function() {
-      it('should update the metrics\' apdex tolerating value when configuration changes',
-         function(done) {
-        expect(agent.metrics.apdexT).equal(0.1)
+      it('should update the metric apdexT value after connect', (done) => {
+        expect(agent.metrics._apdexT).equal(0.1)
         process.nextTick(function cb_nextTick() {
-          should.exist(agent.metrics.apdexT)
-          expect(agent.metrics.apdexT).equal(0.666)
+          should.exist(agent.metrics._apdexT)
+          expect(agent.metrics._apdexT).equal(0.666)
+          expect(agent.metrics._metrics.apdexT).equal(0.666)
 
           done()
         })
 
-        agent.config.emit('apdex_t', 0.666)
+        agent.config.apdex_t = 0.666
+        agent.onConnect()
       })
 
-      it('should reset the configuration and metrics normalizer on connection',
-         function(done) {
+      it('should reset the config and metrics normalizer on connection', (done) => {
         var config = {
           agent_run_id: 404,
           apdex_t: 0.742,
-          data_report_period: 69,
           url_rules: []
         }
 
@@ -519,17 +585,17 @@ describe('the New Relic agent', function() {
             }
           })
         var handshake = nock(URL)
-            .post(helper.generateCollectorPath('connect'))
-            .reply(200, {return_value: config})
+          .post(helper.generateCollectorPath('connect'))
+          .reply(200, {return_value: config})
         var settings = nock(URL)
-            .post(helper.generateCollectorPath('agent_settings', 404))
-            .reply(200, {return_value: config})
+          .post(helper.generateCollectorPath('agent_settings', 404))
+          .reply(200, {return_value: config})
         var metrics = nock(URL)
-            .post(helper.generateCollectorPath('metric_data', 404))
-            .reply(200, {return_value: []})
+          .post(helper.generateCollectorPath('metric_data', 404))
+          .reply(200, {return_value: []})
         var shutdown = nock(URL)
-            .post(helper.generateCollectorPath('shutdown', 404))
-            .reply(200, {return_value: null})
+          .post(helper.generateCollectorPath('shutdown', 404))
+          .reply(200, {return_value: null})
 
         agent.start(function cb_start(error) {
           should.not.exist(error)
@@ -538,8 +604,7 @@ describe('the New Relic agent', function() {
 
           expect(agent._state).equal('started')
           expect(agent.config.run_id).equal(404)
-          expect(agent.config.data_report_period).equal(69)
-          expect(agent.metrics.apdexT).equal(0.742)
+          expect(agent.metrics._apdexT).equal(0.742)
           expect(agent.urlNormalizer.rules).deep.equal([])
 
           agent.stop(function cb_stop() {
@@ -593,18 +658,6 @@ describe('the New Relic agent', function() {
       })
     })
 
-    describe('when apdex_t changes', function() {
-      var APDEX_T = 0.9876
-
-      it('should update the current metrics collection\'s apdexT', function() {
-        expect(agent.metrics.apdexT).not.equal(APDEX_T)
-
-        agent._apdexTChange(APDEX_T)
-
-        expect(agent.metrics.apdexT).equal(APDEX_T)
-      })
-    })
-
     describe('when handling finished transactions', function() {
       var transaction
 
@@ -643,71 +696,6 @@ describe('the New Relic agent', function() {
       })
     })
 
-    describe('when tweaking the harvest cycle', function() {
-      afterEach(function() {
-        agent._stopHarvester()
-      })
-
-      it('should begin with no harvester active', function() {
-        should.not.exist(agent.harvesterHandle)
-      })
-
-      it('should start a harvester without throwing', function() {
-        expect(function() { agent._startHarvester(10) }).not.throws()
-        should.exist(agent.harvesterHandle)
-      })
-
-      it('should stop an unstarted harvester without throwing', function() {
-        expect(function() { agent._startHarvester(10) }).not.throws()
-      })
-
-      it('should stop a started harvester', function() {
-        agent._startHarvester(10)
-        agent._stopHarvester()
-        should.not.exist(agent.harvesterHandle)
-      })
-
-      it('should restart an unstarted harvester without throwing', function() {
-        expect(function() { agent._restartHarvester(10) }).not.throws()
-        should.exist(agent.harvesterHandle)
-      })
-
-      it('should restart a started harvester', function() {
-        agent._startHarvester(10)
-        var before = agent.harvesterHandle
-        should.exist(before)
-        agent._restartHarvester(10)
-        expect(agent.harvesterHandle).not.equal(before)
-      })
-
-      it('should not alter interval when harvester\'s not running', function(done) {
-        should.not.exist(agent.harvesterHandle)
-        agent._harvesterIntervalChange(13, function() {
-          should.not.exist(agent.harvesterHandle)
-
-          done()
-        })
-      })
-
-      it('should not crash when no callback is passed on interval change', function() {
-        agent.harvesterHandle = setInterval(function() {}, 2 << 40)
-        expect(function() { agent._harvesterIntervalChange(69) }).not.throws()
-      })
-
-      it('should alter interval when harvester\'s not running', function(done) {
-        agent._startHarvester(10)
-        var before = agent.harvesterHandle
-        should.exist(before)
-
-        agent._harvesterIntervalChange(13, function(error) {
-          expect(error.message).equal('Not connected to New Relic!')
-          expect(agent.harvesterHandle).not.equal(before)
-
-          done()
-        })
-      })
-    })
-
     describe('when sampling_target changes', function() {
       it('should adjust the current sampling target', () => {
         expect(agent.transactionSampler.samplingTarget).to.not.equal(5)
@@ -719,6 +707,66 @@ describe('the New Relic agent', function() {
         expect(agent.transactionSampler.samplingPeriod).to.not.equal(100)
         agent.config.onConnect({sampling_target_period_in_seconds: 0.1})
         expect(agent.transactionSampler.samplingPeriod).to.equal(100)
+      })
+    })
+
+    describe('when event_harvest_config updated on connect', () => {
+      describe('with a valid config', () => {
+        const validHarvestConfig = {
+          report_period_ms: 5000,
+          harvest_limits: {
+            analytic_event_data: 833,
+            custom_event_data: 833,
+            error_event_data: 8
+          }
+        }
+
+        beforeEach(() => {
+          agent.config.onConnect({event_harvest_config: validHarvestConfig})
+          agent.onConnect()
+        })
+
+        it('should generate ReportPeriod supportability', () => {
+          const expectedMetricName = 'Supportability/EventHarvest/ReportPeriod'
+
+          const metric = agent.metrics.getMetric(expectedMetricName)
+
+          expect(metric).to.exist
+          expect(metric.total).to.equal(validHarvestConfig.report_period_ms)
+        })
+
+        it('should generate AnalyticEventData/HarvestLimit supportability', () => {
+          const expectedMetricName =
+            'Supportability/EventHarvest/AnalyticEventData/HarvestLimit'
+
+          const metric = agent.metrics.getMetric(expectedMetricName)
+
+          expect(metric).to.exist
+          expect(metric.total)
+            .to.equal(validHarvestConfig.harvest_limits.analytic_event_data)
+        })
+
+        it('should generate CustomEventData/HarvestLimit supportability', () => {
+          const expectedMetricName =
+            'Supportability/EventHarvest/CustomEventData/HarvestLimit'
+
+          const metric = agent.metrics.getMetric(expectedMetricName)
+
+          expect(metric).to.exist
+          expect(metric.total)
+            .to.equal(validHarvestConfig.harvest_limits.custom_event_data)
+        })
+
+        it('should generate ErrorEventData/HarvestLimit supportability', () => {
+          const expectedMetricName =
+            'Supportability/EventHarvest/ErrorEventData/HarvestLimit'
+
+          const metric = agent.metrics.getMetric(expectedMetricName)
+
+          expect(metric).to.exist
+          expect(metric.total)
+            .to.equal(validHarvestConfig.harvest_limits.error_event_data)
+        })
       })
     })
   })

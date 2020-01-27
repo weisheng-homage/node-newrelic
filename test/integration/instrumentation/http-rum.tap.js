@@ -23,11 +23,13 @@ test('custom naming rules should be applied early for RUM', function(t) {
       enable: true,
       debug: false
     },
-    application_id: 12345,
   }
 
-  var agent = helper.instrumentMockedAgent(null, conf)
-  var api = new API(agent)
+  const agent = helper.instrumentMockedAgent(conf)
+
+  agent.config.application_id = 12345
+
+  const api = new API(agent)
 
   // These can't be set at config time as they are server only options
   agent.config.browser_monitoring.browser_key = 1234
@@ -87,11 +89,13 @@ test('custom web transactions should have rules applied for RUM', function(t) {
       enable: true,
       debug: false
     },
-    application_id: 12345,
   }
 
-  var agent = helper.instrumentMockedAgent(null, conf)
-  var api = new API(agent)
+  const agent = helper.instrumentMockedAgent(conf)
+
+  agent.config.application_id = 12345
+
+  const api = new API(agent)
 
   // These can't be set at config time as they are server only options
   agent.config.browser_monitoring.browser_key = 1234

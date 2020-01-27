@@ -73,11 +73,11 @@ Here's the list of the most important variables and their values:
 * `NEW_RELIC_LICENSE_KEY`: Your New Relic license key. This is a required
   setting with no default value.
 * `NEW_RELIC_APP_NAME`: The name of this application, for reporting to New
-  Relic's servers. This value can be also be a comma-delimited list of names.
-  This is a required setting with no default value. (NOTE: as a convenience to
-  Azure users, the module will use `APP_POOL_ID` as the application name if
-  it's set, so you can use the name you chose for your Azure Web Server without
-  setting it twice.)
+  Relic's servers. This value can be also be a comma-delimited, or
+  semicolon-delimited, list of names.  This is a required setting with no
+  default value. (NOTE: as a convenience to Azure users, the module will use
+  `APP_POOL_ID` as the application name if it's set, so you can use the name
+  you chose for your Azure Web Server without setting it twice.)
 * `NEW_RELIC_NO_CONFIG_FILE`: Inhibit loading of the configuration file
   altogether. Use with care. This presumes that all important configuration
   will be available via environment variables, and some log messages assume
@@ -109,15 +109,15 @@ enable browser timings.
 
 - Insert the result of `newrelic.getBrowserTimingHeader()` into your html page.
 - The browser timing headers should be placed in the beginning of your `<head>` tag.
-  - As an exception to the above, for maximum IE compatability, the results of
+  - As an exception to the above, for maximum IE compatibility, the results of
     `getBrowserTimingHeader()` should be placed *after* any
     `X-UA-COMPATIBLE HTTP-EQUIV` meta tags.
 - Do *not* cache the header, call it once for every request.
 
 ### Example
 
-Below is an example using `express` and `jade`; Express is a popular web
-application framework, and `jade` is a popular template module. Although the
+Below is an example using `express` and `pug`; Express is a popular web
+application framework, and `pug` is a popular template module. Although the
 specifics are different for other frameworks, the general approach described
 below should work in most cases.
 
@@ -140,9 +140,9 @@ app.get('/user/:id', function (req, res) {
 app.listen(process.env.PORT);
 ```
 
-*layout.jade:*
+*layout.pug:*
 
-```jade
+```pug
 doctype html
 html
   head
@@ -518,22 +518,22 @@ configuration. The pattern is mandatory.
 
 ### Other API calls
 
-#### newrelic.addCustomParameter(name, value)
+#### newrelic.addCustomAttribute(name, value)
 
-Set a custom parameter value to be attached to a transaction trace and/or error
+Set a custom attribute value to be attached to a transaction trace and/or error
 in the New Relic UI. This must be called within the context of a transaction,
-so it has a place to set the custom parameters.
+so it has a place to set the custom attributes.
 
-#### newrelic.addCustomParameters(params)
+#### newrelic.addCustomAttributes(params)
 
-Set multiple custom parameter values to be attached to a transaction trace and/or
+Set multiple custom attribute values to be attached to a transaction trace and/or
 error in the New Relic UI. This must be called within the context of a transaction,
-so it has a place to set the custom parameters.
+so it has a place to set the custom attribute.
 
-Example of setting multiple custom parameters at once:
+Example of setting multiple custom attribute at once:
 
 ```js
-newrelic.addCustomParameters({test: 'value', test2: 'value2'});
+newrelic.addCustomAttributes({test: 'value', test2: 'value2'});
 ```
 
 #### newrelic.setIgnoreTransaction(ignored)
@@ -647,9 +647,10 @@ of a transaction it will just pass through.
 
 #### newrelic.recordMetric(name, value)
 
-`name` is the metric name to record, it must be a string that begins with
-`Custom/` typically followed by segments for `category` and `label`.
-(eg. `Custom/my_category/my_label`).
+`name` is the metric name to record. it must be a string and may be prepended
+with segments for `category` and `label`. (eg. `/my_category/my_label/my_name`).
+Custom metrics are automatically prepended with `Custom`, resulting in metrics of
+the form: `Custom/${name}`.
 
 `value` is either a numerical value to associate with the metric sample,
 or an object representing multiple samples for the metric. If `value` is
@@ -675,7 +676,7 @@ Support, you see discussion of "metric explosion", this is what they're talking
 about.
 
 While we have a variety of strategies for dealing with these issues, the most
-severe is simply to blacklist offending applications. The main reason for you
+severe is simply to block offending applications. The main reason for you
 to be careful in using our request-naming tools is to prevent that from
 happening to your applications. We will do everything in our power to ensure
 that you have a good experience with New Relic even if your application is
@@ -686,7 +687,7 @@ part of our team, and this can take a little while.
 
 We owe a debt to all of the beta testers and users who have provided us with
 feedback, and in some cases significant pieces of code. (If you wish to
-contribute, please see CONTRIBUTING.md in this directory.) In particular, we're
+contribute, please see [CONTRIBUTING.md](CONTRIBUTING.md) in this directory.) In particular, we're
 indebted to these people:
 
 * Hernan Silberman, for his work on the memcached instrumentation.
@@ -700,7 +701,7 @@ Information about changes to the module are in [NEWS.md](NEWS.md).
 
 ### Known issues:
 
-* New Relic for Node is only supported on Node.js 4 and newer. Some features
+* New Relic for Node is only supported on Node.js 6 and newer. Some features
   may behave differently between the supported versions of Node. The agent is
   optimized for newer versions of Node.
 * There are irregularities around transaction trace capture and display. If you

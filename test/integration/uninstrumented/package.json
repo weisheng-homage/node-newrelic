@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
+    "amqplib": "*",
+    "cassandra-driver": "*",
     "connect": "*",
     "bluebird": "*",
     "director": "*",
@@ -15,13 +17,12 @@
     "mongodb": "*",
     "mysql": "*",
     "mysql2": "*",
-    "node-cassandra-cql": "*",
-    "cassandra-driver": "*",
     "pg": "*",
     "pg.js": "*",
     "q": "*",
     "redis": "*",
     "restify": "*",
+    "superagent": "*",
     "oracle": "*",
     "when": "*"
   }

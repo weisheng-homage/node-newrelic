@@ -1,12 +1,12 @@
 'use strict'
 
-var a = require('async')
-var tap = require('tap')
-var params = require('../../../lib/params')
-var helper = require('../../../lib/agent_helper')
-var findSegment = require('../../../lib/metrics_helper').findSegment
-var test = tap.test
-var getMetricHostName = require('../../../lib/metrics_helper').getMetricHostName
+const a = require('async')
+const tap = require('tap')
+const params = require('../../../lib/params')
+const helper = require('../../../lib/agent_helper')
+const {findSegment} = require('../../../lib/metrics_helper')
+const test = tap.test
+const {getMetricHostName} = require('../../../lib/metrics_helper')
 
 module.exports = function runTests(name, clientFactory) {
   // constants for table creation and db connection
@@ -59,7 +59,7 @@ module.exports = function runTests(name, clientFactory) {
         runTest()
       })
     })
-   }
+  }
 
   function verify(t, segment, selectTable) {
     verifyMetrics(t, segment, selectTable)
@@ -136,8 +136,11 @@ module.exports = function runTests(name, clientFactory) {
 
     if (!getSegment) return
 
-    t.equals(getSegment.name, 'Datastore/statement/Postgres/' + selectTable + '/select',
-             'should register the query call')
+    t.equals(
+      getSegment.name,
+      'Datastore/statement/Postgres/' + selectTable + '/select',
+      'should register the query call'
+    )
 
     t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
   }
@@ -151,31 +154,47 @@ module.exports = function runTests(name, clientFactory) {
       trace.root,
       'Datastore/statement/Postgres/' + TABLE + '/insert'
     )
+    const attributes = setSegment.getAttributes()
 
     var metricHostName = getMetricHostName(agent, params.postgres_host)
-    t.equals(setSegment.parameters.host, metricHostName,
-      'should add the host parameter')
-    t.equals(setSegment.parameters.port_path_or_id, String(params.postgres_port),
-      'should add the port parameter')
     t.equals(
-      setSegment.parameters.database_name,
+      attributes.host,
+      metricHostName,
+      'should add the host parameter'
+    )
+    t.equals(
+      attributes.port_path_or_id,
+      String(params.postgres_port),
+      'should add the port parameter'
+    )
+    t.equals(
+      attributes.database_name,
       params.postgres_db,
       'should add the database name parameter'
+    )
+    t.equals(
+      attributes.product,
+      'Postgres',
+      'should add the product attribute'
     )
   }
 
   function verifySpanEvents(t, agent) {
-    var dbSpan = agent.spans.getEvents().find(span => span.name.startsWith('Datastore'))
+    const dbSpan = agent.spanEventAggregator.getEvents()
+      .find(span => span.intrinsics.name.startsWith('Datastore'))
+    const attributes = dbSpan.attributes
+
     t.equal(
-      dbSpan['db.instance'],
+      attributes['db.instance'],
       'postgres',
-      'shuld have the correct instace'
+      'shuld have the correct instance'
     )
-    t.ok(dbSpan['peer.hostname'])
-    t.ok(dbSpan['peer.address'])
-    t.ok(dbSpan['db.statement'])
-    t.ok(dbSpan['span.kind'])
-    t.ok(dbSpan.category)
+    t.ok(attributes['peer.hostname'])
+    t.ok(attributes['peer.address'])
+    t.ok(attributes['db.statement'])
+    t.ok(dbSpan.intrinsics.component)
+    t.ok(dbSpan.intrinsics.category)
+    t.ok(dbSpan.intrinsics['span.kind'])
   }
 
   function verifySlowQueries(t, agent) {
@@ -274,10 +293,9 @@ module.exports = function runTests(name, clientFactory) {
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
               t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-              transaction.end(function() {
-                verify(t, agent.tracer.getSegment())
-                t.end()
-              })
+              transaction.end()
+              verify(t, agent.tracer.getSegment())
+              t.end()
             })
           })
         })
@@ -285,7 +303,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test("simple query using query.on() events", function(t) {
-      t.plan(35)
+      t.plan(36)
       var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
@@ -332,9 +350,8 @@ module.exports = function runTests(name, clientFactory) {
             selQuery.on('end', function() {
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
 
-              transaction.end(function() {
-                verify(t, agent.tracer.getSegment())
-              })
+              transaction.end()
+              verify(t, agent.tracer.getSegment())
             })
           })
         })
@@ -342,7 +359,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test("simple query using query.addListener() events", function(t) {
-      t.plan(35)
+      t.plan(36)
       var client = new pg.Client(CON_OBJ)
 
       t.tearDown(function() {
@@ -387,9 +404,8 @@ module.exports = function runTests(name, clientFactory) {
             selQuery.addListener('end', function() {
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
 
-              transaction.end(function() {
-                verify(t, agent.tracer.getSegment())
-              })
+              transaction.end()
+              verify(t, agent.tracer.getSegment())
             })
           })
         })
@@ -397,7 +413,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('client pooling query', function(t) {
-      t.plan(39)
+      t.plan(40)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -432,10 +448,9 @@ module.exports = function runTests(name, clientFactory) {
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
               t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-              transaction.end(function() {
-                done(true) // Pass true in here to destroy the client
-                verify(t, agent.tracer.getSegment())
-              })
+              transaction.end()
+              done(true) // Pass true in here to destroy the client
+              verify(t, agent.tracer.getSegment())
             })
           })
         })
@@ -443,7 +458,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('using Pool constructor', function(t) {
-      t.plan(39)
+      t.plan(40)
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -487,14 +502,13 @@ module.exports = function runTests(name, clientFactory) {
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
               t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-              transaction.end(function() {
-                if (pool.end instanceof Function) {
-                  pool.end(function() {})
-                }
+              transaction.end()
+              if (pool.end instanceof Function) {
+                pool.end(function() {})
+              }
 
-                done(true)
-                verify(t, agent.tracer.getSegment())
-              })
+              done(true)
+              verify(t, agent.tracer.getSegment())
             })
           })
         })
@@ -502,8 +516,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     // https://github.com/newrelic/node-newrelic/pull/223
-    t.test("query using an config object with `text` getter instead of property",
-        function(t) {
+    t.test("query using an config object with `text` getter instead of property", (t) => {
       t.plan(3)
       var client = new pg.Client(CON_OBJ)
 
@@ -577,17 +590,16 @@ module.exports = function runTests(name, clientFactory) {
               return t.end()
             }
 
-            transaction.end(function() {
-              verifySlowQueries(t, agent)
-              t.end()
-            })
+            transaction.end()
+            verifySlowQueries(t, agent)
+            t.end()
           })
         })
       })
     })
 
     t.test("should add datastore instance parameters to db spans", function(t) {
-      t.plan(13)
+      t.plan(14)
       // enable slow queries
       agent.config.transaction_tracer.record_sql = 'raw'
       agent.config.distributed_tracing.enabled = true
@@ -611,11 +623,10 @@ module.exports = function runTests(name, clientFactory) {
               return t.end()
             }
 
-            transaction.end(function() {
-              verifySlowQueries(t, agent)
-              verifySpanEvents(t, agent)
-              t.end()
-            })
+            transaction.end()
+            verifySlowQueries(t, agent)
+            verifySpanEvents(t, agent)
+            t.end()
           })
         })
       })
@@ -651,27 +662,26 @@ module.exports = function runTests(name, clientFactory) {
               return t.end()
             }
 
-            transaction.end(function() {
-              const queryParams = agent.queries.samples.values().next().value
+            transaction.end()
+            const queryParams = agent.queries.samples.values().next().value
 
-              t.equal(
-                queryParams.host,
-                undefined,
-                'should not have host parameter'
-              )
+            t.equal(
+              queryParams.host,
+              undefined,
+              'should not have host parameter'
+            )
 
-              t.equal(
-                queryParams.port_path_or_id,
-                undefined,
-                'should not have port parameter'
-              )
+            t.equal(
+              queryParams.port_path_or_id,
+              undefined,
+              'should not have port parameter'
+            )
 
-              t.equal(
-                queryParams.database_name,
-                undefined,
-                'should not have database name parameter'
-              )
-            })
+            t.equal(
+              queryParams.database_name,
+              undefined,
+              'should not have database name parameter'
+            )
           })
         })
       })

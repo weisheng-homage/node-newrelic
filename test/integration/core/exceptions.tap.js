@@ -1,19 +1,22 @@
 'use strict'
 
-var test = require('tap').test
-var cp = require('child_process')
-var path = require('path')
+const tap = require('tap')
+const cp = require('child_process')
+const path = require('path')
+const helper = require('../../lib/agent_helper')
+const helpersDir = path.join(path.resolve(__dirname, '../../'), 'helpers')
 
-
-test("Uncaught exceptions", function(t) {
+tap.test('Uncaught exceptions', (t) => {
   var proc = startProc()
 
   var timer = setTimeout(function() {
     t.fail('child did not exit')
     proc.kill()
+    t.end()
   }, 10000)
 
   proc.on('exit', function() {
+    t.ok(true, 'Did not timeout')
     clearTimeout(timer)
     t.end()
   })
@@ -21,13 +24,14 @@ test("Uncaught exceptions", function(t) {
   proc.send({name: 'uncaughtException'})
 })
 
-test("Caught uncaught exceptions", function(t) {
+tap.test('Caught uncaught exceptions', (t) => {
   var proc = startProc()
 
   var theRightStuff = 31415927
   var timer = setTimeout(function() {
     t.fail('child hung')
     proc.kill()
+    t.end()
   }, 10000)
 
   proc.on('message', function(code) {
@@ -40,7 +44,7 @@ test("Caught uncaught exceptions", function(t) {
   proc.send({name: 'caughtUncaughtException', args: theRightStuff})
 })
 
-test("Report uncaught exceptions", function(t) {
+tap.test('Report uncaught exceptions', (t) => {
   t.plan(3)
 
   var proc = startProc()
@@ -62,7 +66,54 @@ test("Report uncaught exceptions", function(t) {
   proc.send({name: 'checkAgent', args: message})
 })
 
-test("Don't report domained exceptions", function(t) {
+tap.test('Triggers harvest while in serverless mode', (t) => {
+  t.plan(9)
+
+  var proc = startProc({
+    'NEW_RELIC_SERVERLESS_MODE_ENABLED': 'y',
+    'NEW_RELIC_LOG_ENABLED': 'false',
+    'NEW_RELIC_DISTRIBUTED_TRACING_ENABLED': 'false',
+    'NEW_RELIC_HOME': helpersDir
+  })
+  var message = 'I am a test error'
+  var messageReceived = false
+  var payload = ''
+  proc.stdout.on('data', function bufferData(data) {
+    payload += data.toString('utf8')
+  })
+
+  proc.on('message', function(errors) {
+    messageReceived = true
+    t.equal(errors.count, 0, 'should have harvested the error')
+
+    const lambdaPayload = findLambdaPayload(payload)
+    t.ok(lambdaPayload, 'should find lambda payload log line')
+
+    const parsed = JSON.parse(lambdaPayload)
+
+    helper.decodeServerlessPayload(t, parsed[2], function testDecoded(err, decoded) {
+      t.error(err, 'should not run into errors decoding serverless payload')
+      t.ok(decoded.metadata, 'metadata should be present')
+      t.ok(decoded.data, 'data should be present')
+      const error = decoded.data.error_data[1][0]
+      t.equal(error[2], message)
+      const transactionEvents = decoded.data.analytic_event_data
+      t.ok(transactionEvents, 'should have a transaction event')
+      const transactionEvent = transactionEvents[2][0]
+      t.ok(transactionEvent[0].error, 'should be errored')
+      proc.kill()
+    })
+  })
+
+  proc.on('exit', function() {
+    t.ok(messageReceived, 'should receive message')
+    t.end()
+  })
+
+  proc.send({name: 'runServerlessTransaction', args: message})
+})
+
+tap.test('Do not report domained exceptions', (t) => {
   t.plan(3)
   var proc = startProc()
   var message = 'I am a test error'
@@ -85,7 +136,7 @@ test("Don't report domained exceptions", function(t) {
 
 // only available on Node >=9.3
 if (process.setUncaughtExceptionCaptureCallback) {
-  test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+  tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
     t.plan(3)
     const proc = startProc()
     let messageReceived = false
@@ -105,7 +156,7 @@ if (process.setUncaughtExceptionCaptureCallback) {
     proc.send({ name: 'setUncaughtExceptionCallback' })
   })
 
-  test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+  tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
     t.plan(3)
     const proc = startProc()
     let messageReceived = false
@@ -126,7 +177,19 @@ if (process.setUncaughtExceptionCaptureCallback) {
   })
 }
 
-function startProc() {
-  var testDir = path.resolve(__dirname, '../../')
-  return cp.fork(path.join(testDir, 'helpers/exceptions.js'), {silent: true})
+function startProc(env) {
+  return cp.fork(path.join(helpersDir, 'exceptions.js'), {
+    stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+    env: env
+  })
+}
+
+function findLambdaPayload(rawLogData) {
+  const logLines = rawLogData.split('\n')
+  for (let i = 0; i < logLines.length; i++) {
+    const logLine = logLines[i]
+    if (logLine.includes("NR_LAMBDA_MONITORING")) {
+      return logLine
+    }
+  }
 }

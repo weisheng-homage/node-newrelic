@@ -1,11 +1,16 @@
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
-var testPromiseSegments = require('./promises/segments')
-var testTransactionState = require('./promises/transaction-state')
+const helper = require('../../lib/agent_helper')
+const testPromiseSegments = require('./promises/segments')
+const testTransactionState = require('./promises/transaction-state')
 
-var runMultiple = testTransactionState.runMultiple
+// grab process emit before tap / async-hooks-domain can mess with it
+const originalEmit = process.emit
+
+const tap = require('tap')
+const test = tap.test
+
+const runMultiple = testTransactionState.runMultiple
 
 
 test('Promise constructor retains all properties', function(t) {
@@ -45,14 +50,11 @@ test('no transaction', function(t) {
 
   when.resolve(0).then(function step1() {
     return 1
-  })
-  .then(function step2() {
+  }).then(function step2() {
     return 2
-  })
-  .then(function finalHandler(res) {
+  }).then(function finalHandler(res) {
     t.equal(res, 2, 'should be the correct result')
-  })
-  .finally(function finallyHandler() {
+  }).finally(function finallyHandler() {
     t.end()
   })
 })
@@ -141,6 +143,11 @@ test('when.defer', function(t) {
 })
 
 test('when debug API', function(t) {
+  // Once on node 10+ only, may be able to replace with below.
+  // t.expectUncaughtException(fn, [expectedError], message, extra)
+  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+  helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
   t.plan(2)
   setupAgent(t)
   var when = require('when')
@@ -162,6 +169,18 @@ test('when debug API', function(t) {
   t.test('should not break onPotentiallyUnhandledRejectionHandled', function(t) {
     t.plan(2)
     helper.temporarilyRemoveListeners(t, process, 'unhandledRejection')
+
+    // avoid async hook domain emit so `when` can behave normally.
+    // seems like *should not* have negative consequences but it may.
+    // https://github.com/isaacs/async-hook-domain/issues/3
+    const asyncHookDomainEmit = process.emit
+    process.emit = (event, ...args) => {
+      return originalEmit.call(process, event, ...args)
+    }
+
+    t.tearDown(() => {
+      process.emit = asyncHookDomainEmit
+    })
 
     when.Promise.onPotentiallyUnhandledRejectionHandled = function testOPURH(e) {
       t.equal(e.value, error, 'should have passed error through')
@@ -564,7 +583,7 @@ test('all', function(t) {
   var p1, p2
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
 
@@ -602,7 +621,7 @@ test('any', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -645,7 +664,7 @@ test('some', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -694,7 +713,7 @@ test('map', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -739,7 +758,7 @@ test('reduce', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -784,7 +803,7 @@ test('filter', function(t) {
   var agent, when, Promise
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent({promise_segments: false})
+    agent = helper.instrumentMockedAgent({feature_flag: {promise_segments: false}})
     when = require('when')
     Promise = when.Promise
     done()
@@ -800,8 +819,7 @@ test('filter', function(t) {
       when.filter([1, 2, 3, 4], function(value) {
         // filter out even numbers
         return (value % 2)
-      })
-      .then(function(result) {
+      }).then(function(result) {
         t.equal(result.length, 2)
         t.equal(agent.getTransaction(), transaction, 'has the right transaction')
         t.end()
@@ -814,8 +832,7 @@ test('filter', function(t) {
       Promise.filter([1, 2, 3, 4], function(value) {
         // filter out even numbers
         return (value % 2)
-      })
-      .then(function(result) {
+      }).then(function(result) {
         t.equal(result.length, 2)
         t.equal(agent.getTransaction(), transaction, 'has the right transaction')
         t.end()
@@ -860,7 +877,9 @@ test('node.apply', function(t) {
 })
 
 function setupAgent(t, enableSegments) {
-  var agent = helper.instrumentMockedAgent({promise_segments: enableSegments})
+  var agent = helper.instrumentMockedAgent({
+    feature_flag: {promise_segments: enableSegments}
+  })
   t.tearDown(function tearDown() {
     helper.unloadAgent(agent)
   })

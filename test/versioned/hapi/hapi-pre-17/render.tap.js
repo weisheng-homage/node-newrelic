@@ -18,6 +18,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
+
     done()
   })
 
@@ -69,7 +70,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
         t.ok(stats, 'found HTTP dispatcher statistics')
         t.equal(stats.callCount, 1, 'only one HTTP-dispatched request was made')
 
-        var serialized = JSON.stringify(agent.metrics)
+        var serialized = JSON.stringify(agent.metrics._toPayloadSync())
         t.ok(
           serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
           'serialized metrics as expected'
@@ -169,6 +170,9 @@ tap.test('agent instrumentation of Hapi', function(t) {
   })
 
   t.test('should trap errors correctly', function(t) {
+    // Prevent tap from noticing the ohno failure.
+    helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
     server = utils.getServer({ options: {debug: false} })
 
     server.route({
@@ -188,7 +192,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
         t.ok(response, 'got a response from Express')
         t.ok(body, 'got back a body')
 
-        var errors = agent.errors.errors
+        var errors = agent.errors.traceAggregator.errors
         t.ok(errors, 'errors were found')
         t.equal(errors.length, 1, 'should be 1 error')
 

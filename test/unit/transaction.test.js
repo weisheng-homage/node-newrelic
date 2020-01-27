@@ -18,7 +18,7 @@ describe('Transaction', function() {
   var trans = null
 
   beforeEach(function() {
-    agent = helper.loadMockedAgent(null, {
+    agent = helper.loadMockedAgent({
       attributes: {enabled: true}
     })
     trans = new Transaction(agent)
@@ -53,6 +53,46 @@ describe('Transaction', function() {
     })
 
     trans.end()
+  })
+
+  describe('when distributed tracing is enabled', function() {
+    beforeEach(function() {
+      agent.config.distributed_tracing.enabled = true
+    })
+
+    afterEach(function() {
+      agent.config.distributed_tracing.enabled = false
+    })
+
+    it('should produce span events when finalizing', function(done) {
+      agent.once('transactionFinished', function() {
+        expect(agent.spanEventAggregator.length).to.equal(1)
+
+        return done()
+      })
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.end()
+      })
+    })
+
+    it('should not produce span events when ignored', function(done) {
+      agent.once('transactionFinished', function() {
+        expect(agent.spanEventAggregator.length).to.equal(0)
+
+        return done()
+      })
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.ignore = true
+        txn.end()
+      })
+    })
   })
 
   it('should hand itself off to the agent upon finalization', function(done) {
@@ -114,11 +154,11 @@ describe('Transaction', function() {
   describe('with associated metrics', function() {
     it('should manage its own independent of the agent', function() {
       expect(trans.metrics).instanceOf(Metrics)
-      expect(trans.metrics).not.equal(agent.metrics)
+      expect(trans.metrics).not.equal(getMetrics(agent))
     })
 
     it('should have the same apdex threshold as the agent', function() {
-      expect(agent.metrics.apdexT).equal(trans.metrics.apdexT)
+      expect(getMetrics(agent).apdexT).equal(trans.metrics.apdexT)
     })
 
     it('should have the same metrics mapper as the agent', function() {
@@ -401,14 +441,31 @@ describe('Transaction', function() {
         expect(trans.name).equal('WebTransaction/Expressjs/GET/(not found)')
       })
 
-      it('produces a regular name when status is 501', function() {
-        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
-        expect(trans.name).equal('WebTransaction/NormalizedUri/*')
+      it('passes through status code when status is 405', function() {
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 405)
+        expect(trans.statusCode).equal(405)
       })
 
-      it('produces a regular partial name when status is 501', function() {
+      it('produces a `method not allowed` partial name when status is 405', function() {
+        trans.nameState.setName('Expressjs', 'GET', '/')
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 405)
+        expect(trans._partialName).equal('Expressjs/GET/(method not allowed)')
+      })
+
+      it('produces a `method not allowed` name when status is 405', function() {
+        trans.nameState.setName('Expressjs', 'GET', '/')
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 405)
+        expect(trans.name).equal('WebTransaction/Expressjs/GET/(method not allowed)')
+      })
+
+      it('produces a name based on 501 status code message', function() {
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
-        expect(trans._partialName).equal('NormalizedUri/*')
+        expect(trans.name).equal('WebTransaction/WebFrameworkUri/(not implemented)')
+      })
+
+      it('produces a regular partial name based on 501 status code message', function() {
+        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 501)
+        expect(trans._partialName).equal('WebFrameworkUri/(not implemented)')
       })
 
       it('passes through status code when status is 501', function() {
@@ -601,6 +658,25 @@ describe('Transaction', function() {
     })
   })
 
+  describe('isSampled', function() {
+    let transaction
+
+    beforeEach(function() {
+      transaction = new Transaction(agent)
+    })
+
+    it('should be true when the transaction is sampled', function() {
+      // the first 10 transactions are sampled so this should be true
+      expect(transaction.isSampled()).to.be.true
+    })
+
+    it('should be false when the transaction is not sampled', function() {
+      transaction.priority = Infinity
+      transaction.sampled = false
+      expect(transaction.isSampled()).to.be.false
+    })
+  })
+
   describe('getIntrinsicAttributes', function() {
     var transaction
 
@@ -662,43 +738,37 @@ describe('Transaction', function() {
     })
 
     describe('for web transactions', function() {
-      it('should use the time until transaction.end() is called', function(done) {
+      it('should use the time until transaction.end() is called', function() {
         transaction.url = 'someUrl'
 
         // add a segment that will end after the transaction ends
         var childSegment = transaction.trace.add('child')
         childSegment.start()
 
-        transaction.end(function() {
-          childSegment.end()
+        transaction.end()
+        childSegment.end()
 
-          // response time should equal the transaction timer duration
-          expect(transaction.getResponseTimeInMillis()).to.equal(
-            transaction.timer.getDurationInMillis()
-          )
-
-          done()
-        })
+        // response time should equal the transaction timer duration
+        expect(transaction.getResponseTimeInMillis()).to.equal(
+          transaction.timer.getDurationInMillis()
+        )
       })
     })
 
     describe('for background transactions', function() {
-      it('should report response time equal to trace duration', function(done) {
+      it('should report response time equal to trace duration', function() {
         // add a segment that will end after the transaction ends
         transaction.type = Transaction.TYPES.BG
         var bgTransactionSegment = transaction.trace.add('backgroundWork')
         bgTransactionSegment.start()
 
-        transaction.end(function() {
-          bgTransactionSegment.end()
+        transaction.end()
+        bgTransactionSegment.end()
 
-          // response time should equal the full duration of the trace
-          expect(transaction.getResponseTimeInMillis()).to.equal(
-            transaction.trace.getDurationInMillis()
-          )
-
-          done()
-        })
+        // response time should equal the full duration of the trace
+        expect(transaction.getResponseTimeInMillis()).to.equal(
+          transaction.trace.getDurationInMillis()
+        )
       })
     })
   })
@@ -708,7 +778,6 @@ describe('Transaction', function() {
 
     beforeEach(function() {
       agent.recordSupportability = sinon.spy()
-      agent.config.cross_application_tracer.enabled = true
       agent.config.distributed_tracing.enabled = true
       agent.config.trusted_account_key = '1'
 
@@ -751,16 +820,62 @@ describe('Transaction', function() {
       })
     })
 
-    it('short circuits if config is invalid', function() {
-      tx.agent.config.cross_application_tracer.enabled = false
-      tx.agent.config.distributed_tracing.enabled = false
+    it('should not accept payload if no configured trusted key', function() {
       tx.agent.config.trusted_account_key = null
+      tx.agent.config.account_id = null
 
-      tx.acceptDistributedTracePayload({})
+      const data = {
+        ac: '1',
+        ty: 'App',
+        tx: tx.id,
+        tr: tx.id,
+        ap: 'test',
+        ti: Date.now() - 1
+      }
+
+      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Exception'
       )
       expect(tx.isDistributedTrace).to.not.be.true
+    })
+
+    it('should not accept payload if DT disabled', function() {
+      tx.agent.config.distributed_tracing.enabled = false
+
+      const data = {
+        ac: '1',
+        ty: 'App',
+        tx: tx.id,
+        tr: tx.id,
+        ap: 'test',
+        ti: Date.now() - 1
+      }
+
+      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+
+      expect(tx.agent.recordSupportability.args[0][0]).to.equal(
+        'DistributedTrace/AcceptPayload/Exception'
+      )
+      expect(tx.isDistributedTrace).to.not.be.true
+    })
+
+    it('should accept payload if config valid and CAT disabled', function() {
+      tx.agent.config.cross_application_tracer.enabled = false
+
+      const data = {
+        ac: '1',
+        ty: 'App',
+        tx: tx.id,
+        tr: tx.id,
+        ap: 'test',
+        ti: Date.now() - 1
+      }
+
+      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+
+      expect(tx.isDistributedTrace).to.be.true
     })
 
     it('fails if payload version is above agent-supported version', function() {
@@ -934,10 +1049,9 @@ describe('Transaction', function() {
 
     beforeEach(function() {
       agent.recordSupportability = sinon.spy()
-      agent.config.cross_application_tracer.enabled = true
       agent.config.distributed_tracing.enabled = true
       agent.config.account_id = '5678'
-      agent.config.application_id = '1234'
+      agent.config.primary_application_id = '1234'
       agent.config.trusted_account_key = '5678'
 
       // Clear deprecated values just to be extra sure.
@@ -951,14 +1065,22 @@ describe('Transaction', function() {
       agent.recordSupportability.restore && agent.recordSupportability.restore()
     })
 
-    it('short circuits if config is invalid', function() {
-      tx.agent.config.cross_application_tracer.enabled = false
+    it('should not create payload when DT disabled', function() {
       tx.agent.config.distributed_tracing.enabled = false
 
       const payload = tx.createDistributedTracePayload().text()
       expect(payload).to.equal('')
       expect(tx.agent.recordSupportability.callCount).to.equal(0)
       expect(tx.isDistributedTrace).to.not.be.true
+    })
+
+    it('should create payload when DT enabled and CAT disabled', function() {
+      tx.agent.config.cross_application_tracer.enabled = false
+
+      const payload = tx.createDistributedTracePayload().text()
+
+      expect(payload).to.not.be.null
+      expect(payload).to.not.equal('')
     })
 
     it('generates a priority for entry-point transactions', () => {
@@ -1017,6 +1139,134 @@ describe('Transaction', function() {
     })
   })
 
+  describe('acceptTraceContextPayload', () => {
+    it('should accept a valid trace context traceparent header', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = '1'
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const goodParent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        txn.traceContext.acceptTraceContextPayload(goodParent, 'stuff')
+
+        expect(txn.traceContext.traceparent).to.equal(goodParent)
+        txn.end()
+      })
+    })
+
+    it('should not accept invalid trace context traceparent header', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = '1'
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      helper.runInTransaction(agent, function(txn) {
+        var childSegment = txn.trace.add('child')
+        childSegment.start()
+
+        const orig_traceparent = txn.traceContext.traceparent
+        const traceparent = 'asdlkfjasdl;fkja'
+        const tracestate = 'stuff'
+
+        txn.traceContext.acceptTraceContextPayload(traceparent, tracestate)
+
+        expect(txn.traceContext.traceparent).to.equal(orig_traceparent)
+        txn.end()
+      })
+    })
+  })
+
+  describe('createTraceParentHeader', () => {
+    it('should generate a valid new trace context traceparent header', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = '1'
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c
+
+      const tx = new Transaction(agent)
+
+      agent.tracer.segment = tx.trace.root
+
+      const traceparent = tx.traceContext.traceparent
+      const traceparentParts = traceparent.split('-')
+
+      const lowercaseHexRegex = /^[a-f0-9]+/
+
+      expect(traceparentParts.length).to.equal(4)
+      expect(traceparentParts[0], 'version').to.equal('00')
+      expect(traceparentParts[1].length, 'traceId').to.equal(32)
+      expect(traceparentParts[2].length, 'parentId').to.equal(16)
+      expect(traceparentParts[3], 'flags').to.equal('00')
+
+      expect(traceparentParts[1], 'traceId is lowercase hex').to.match(lowercaseHexRegex)
+      expect(traceparentParts[2], 'parentId is lowercase hex').to.match(lowercaseHexRegex)
+
+      agent.tracer.segment = null
+    })
+
+    it('should generate new parentId when spans_events disabled', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = '1'
+      agent.config.span_events.enabled = false
+
+      const tx = new Transaction(agent)
+      const lowercaseHexRegex = /^[a-f0-9]+/
+
+      agent.tracer.segment = tx.trace.root
+
+      const traceparent = tx.traceContext.traceparent
+      const traceparentParts = traceparent.split('-')
+
+      expect(traceparentParts[2].length, 'parentId').to.equal(16)
+
+      expect(traceparentParts[2], 'parentId is lowercase hex').to.match(lowercaseHexRegex)
+    })
+
+    it('should set traceparent sample part to 01 for sampled transaction', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = '1'
+      agent.config.span_events.enabled = true
+
+      const tx = new Transaction(agent)
+
+      agent.tracer.segment = tx.trace.root
+      tx.sampled = true
+
+      const traceparent = tx.traceContext.traceparent
+      const traceparentParts = traceparent.split('-')
+
+      expect(traceparentParts[3], 'flags').to.equal('01')
+
+      agent.tracer.segment = null
+    })
+
+    it('should set traceparent traceid if traceparent exists on transaction', () => {
+      agent.config.distributed_tracing.enabled = true
+      agent.config.trusted_account_key = '1'
+      agent.config.span_events.enabled = true
+      agent.config.feature_flag.dt_format_w3c = true
+
+      const tx = new Transaction(agent)
+      const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+      const tracestate = '323322332234234234423'
+
+      tx.traceContext.acceptTraceContextPayload(traceparent, tracestate)
+
+      agent.tracer.segment = tx.trace.root
+
+      const traceparentParts = traceparent.split('-')
+
+      expect(traceparentParts[1], 'traceId').to.equal('4bf92f3577b34da6a3ce929d0e0e4736')
+
+      agent.tracer.segment = null
+    })
+  })
+
   describe('addDistributedTraceIntrinsics', function() {
     var tx = null
     var attributes = null
@@ -1059,9 +1309,8 @@ describe('Transaction', function() {
 
     it('adds DT attributes if payload was accepted', function() {
       tx.agent.config.account_id = '5678'
-      tx.agent.config.application_id = '1234'
+      tx.agent.config.primary_application_id = '1234'
       tx.agent.config.trusted_account_key = '5678'
-      tx.agent.config.cross_application_tracer.enabled = true
       tx.agent.config.distributed_tracing.enabled = true
 
       const payload = tx.createDistributedTracePayload().text()
@@ -1078,3 +1327,7 @@ describe('Transaction', function() {
     })
   })
 })
+
+function getMetrics(agent) {
+  return agent.metrics._metrics
+}

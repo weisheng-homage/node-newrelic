@@ -9,27 +9,34 @@ var sinon = require('sinon')
 var Config = require('../../../lib/config')
 var securityPolicies = require('../../lib/fixtures').securityPolicies
 
+function idempotentEnv(envConfig, initialConfig, callback) {
+  let saved = {}
 
-function idempotentEnv(name, value, callback) {
-  var is
-  var saved
-
-  // process.env is not a normal object
-  if (Object.hasOwnProperty.call(process.env, name)) {
-    is = true
-    saved = process.env[name]
+  // Allow idempotentEnv to be called w/o initialConfig
+  if (typeof initialConfig === 'function') {
+    callback = initialConfig
+    initialConfig = {}
   }
 
-  process.env[name] = value
+  Object.keys(envConfig).forEach((key) => {
+    // process.env is not a normal object
+    if (Object.hasOwnProperty.call(process.env, key)) {
+      saved[key] = process.env[key]
+    }
+
+    process.env[key] = envConfig[key]
+  })
   try {
-    var tc = Config.initialize({})
+    var tc = Config.initialize(initialConfig)
     callback(tc)
   } finally {
-    if (is) {
-      process.env[name] = saved
-    } else {
-      delete process.env[name]
-    }
+    Object.keys(envConfig).forEach((finalKey) => {
+      if (saved[finalKey]) {
+        process.env[finalKey] = saved[finalKey]
+      } else {
+        delete process.env[finalKey]
+      }
+    })
   }
 }
 
@@ -44,56 +51,61 @@ describe('the agent configuration', function() {
 
   describe('when overriding configuration values via environment variables', function() {
     it('should pick up the application name', function() {
-      idempotentEnv('NEW_RELIC_APP_NAME', 'feeling testy,and schizophrenic',
-                    function(tc) {
-        should.exist(tc.app_name)
-        expect(tc.app_name).eql(['feeling testy', 'and schizophrenic'])
-      })
-    })
-
-    it('should trim spaces from multiple application names ', function() {
-      idempotentEnv(
-        'NEW_RELIC_APP_NAME',
-        'zero,one, two,  three,   four',
-        function(tc) {
+      idempotentEnv({'NEW_RELIC_APP_NAME': 'app one,app two;and app three'},
+        (tc) => {
           should.exist(tc.app_name)
-          expect(tc.app_name).eql(['zero', 'one', 'two', 'three', 'four'])
+          expect(tc.app_name).eql(['app one', 'app two', 'and app three'])
         }
       )
     })
 
+    it('should trim spaces from multiple application names ', function() {
+      idempotentEnv({'NEW_RELIC_APP_NAME': 'zero,one, two,  three;   four'}, (tc) => {
+        should.exist(tc.app_name)
+        expect(tc.app_name).eql(['zero', 'one', 'two', 'three', 'four'])
+      })
+    })
+
     it('should pick up the license key', function() {
-      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'hambulance', function(tc) {
+      idempotentEnv({'NEW_RELIC_LICENSE_KEY': 'hambulance'}, function(tc) {
         should.exist(tc.license_key)
         expect(tc.license_key).to.equal('hambulance')
         expect(tc.host).to.equal('collector.newrelic.com')
       })
     })
 
+    it('should pick up the apdex_t', function() {
+      idempotentEnv({'NEW_RELIC_APDEX_T': '111'}, function(tc) {
+        should.exist(tc.apdex_t)
+        expect(tc.apdex_t).to.be.a('number')
+        expect(tc.apdex_t).to.equal(111)
+      })
+    })
+
     it('should pick up the collector host', function() {
-      idempotentEnv('NEW_RELIC_HOST', 'localhost', function(tc) {
+      idempotentEnv({'NEW_RELIC_HOST': 'localhost'}, function(tc) {
         should.exist(tc.host)
         expect(tc.host).equal('localhost')
       })
     })
 
     it('should parse the region off the license key', function() {
-      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'eu01xxhambulance', function(tc) {
+      idempotentEnv({'NEW_RELIC_LICENSE_KEY': 'eu01xxhambulance'}, function(tc) {
         should.exist(tc.host)
         expect(tc.host).equal('collector.eu01.nr-data.net')
       })
     })
 
     it('should pick up the security policies token', function() {
-      idempotentEnv( 'NEW_RELIC_SECURITY_POLICIES_TOKEN', 'super secure', function(tc) {
+      idempotentEnv({'NEW_RELIC_SECURITY_POLICIES_TOKEN': 'super secure'}, function(tc) {
         should.exist(tc.security_policies_token)
         expect(tc.security_policies_token).equal('super secure')
       })
     })
 
     it('should take an explicit host over the license key parsed host', function() {
-      idempotentEnv('NEW_RELIC_LICENSE_KEY', 'eu01xxhambulance', function() {
-        idempotentEnv('NEW_RELIC_HOST', 'localhost', function(tc) {
+      idempotentEnv({'NEW_RELIC_LICENSE_KEY': 'eu01xxhambulance'}, function() {
+        idempotentEnv({'NEW_RELIC_HOST': 'localhost'}, function(tc) {
           should.exist(tc.host)
           expect(tc.host).equal('localhost')
         })
@@ -102,46 +114,79 @@ describe('the agent configuration', function() {
 
     it('should pick up on feature flags set via environment variables', function() {
       const ffNamePrefix = 'NEW_RELIC_FEATURE_FLAG_'
-      idempotentEnv(ffNamePrefix + 'AWAIT_SUPPORT', 'false', function(tc) {
+      const awaitFeatureFlag = ffNamePrefix + 'AWAIT_SUPPORT'
+      idempotentEnv({[awaitFeatureFlag]: 'false'}, function(tc) {
         expect(tc.feature_flag.await_support).equal(false)
       })
     })
 
     it('should pick up the collector port', function() {
-      idempotentEnv('NEW_RELIC_PORT', 7777, function(tc) {
+      idempotentEnv({'NEW_RELIC_PORT': 7777}, function(tc) {
         should.exist(tc.port)
         expect(tc.port).equal('7777')
       })
     })
 
     it('should pick up exception message omission settings', function() {
-      idempotentEnv('NEW_RELIC_STRIP_EXCEPTION_MESSAGES_ENABLED', 'please', function(tc) {
+      idempotentEnv({'NEW_RELIC_STRIP_EXCEPTION_MESSAGES_ENABLED': 'please'}, (tc) => {
         should.exist(tc.strip_exception_messages.enabled)
         expect(tc.strip_exception_messages.enabled).equal(true)
       })
     })
 
     it('should pick up the proxy host', function() {
-      idempotentEnv('NEW_RELIC_PROXY_HOST', 'proxyhost', function(tc) {
+      idempotentEnv({'NEW_RELIC_PROXY_HOST': 'proxyhost'}, function(tc) {
         should.exist(tc.proxy_host)
         expect(tc.proxy_host).equal('proxyhost')
       })
     })
 
     it('should pick up on the DT env var', function() {
-      idempotentEnv('NEW_RELIC_DISTRIBUTED_TRACING_ENABLED', 'true', function(tc) {
+      idempotentEnv({'NEW_RELIC_DISTRIBUTED_TRACING_ENABLED': 'true'}, function(tc) {
         expect(tc.distributed_tracing.enabled).equal(true)
       })
     })
 
-    it('should pick up on the spans env var', function() {
-      idempotentEnv('NEW_RELIC_SPAN_EVENTS_ENABLED', 'true', function(tc) {
-        expect(tc.span_events.enabled).equal(true)
+    it('should pick up on the span events env vars', () => {
+      const env = {
+        NEW_RELIC_SPAN_EVENTS_ENABLED: true,
+        NEW_RELIC_SPAN_EVENTS_ATTRIBUTES_ENABLED: true,
+        NEW_RELIC_SPAN_EVENTS_ATTRIBUTES_INCLUDE: 'one,two,three',
+        NEW_RELIC_SPAN_EVENTS_ATTRIBUTES_EXCLUDE: 'four,five,six'
+      }
+      idempotentEnv(env, (tc) => {
+        expect(tc.span_events.enabled).to.be.true
+        expect(tc.span_events.attributes.enabled).to.be.true
+        expect(tc.span_events.attributes.include).to.deep.equal(['one', 'two', 'three'])
+        expect(tc.span_events.attributes.exclude).to.deep.equal(['four', 'five', 'six'])
+      })
+    })
+
+    it('should pick up on the transaction segments env vars', () => {
+      const env = {
+        NEW_RELIC_TRANSACTION_SEGMENTS_ATTRIBUTES_ENABLED: true,
+        NEW_RELIC_TRANSACTION_SEGMENTS_ATTRIBUTES_INCLUDE: 'one,two,three',
+        NEW_RELIC_TRANSACTION_SEGMENTS_ATTRIBUTES_EXCLUDE: 'four,five,six'
+      }
+      idempotentEnv(env, (tc) => {
+        expect(tc.transaction_segments.attributes.enabled)
+          .to.be.true
+        expect(tc.transaction_segments.attributes.include)
+          .to.deep.equal(['one', 'two', 'three'])
+        expect(tc.transaction_segments.attributes.exclude)
+          .to.deep.equal(['four', 'five', 'six'])
+      })
+    })
+
+    it('should pick up on diagnostics code injection', function() {
+      idempotentEnv({'NEW_RELIC_DIAGNOSTICS_CODE_INJECTOR_ENABLED': true}, function(tc) {
+        should.exist(tc.diagnostics.code_injector.enabled)
+        expect(tc.diagnostics.code_injector.enabled).to.equal(true)
       })
     })
 
     it('should pick up the billing hostname', function() {
-      idempotentEnv('NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS', 123, function(tc) {
+      idempotentEnv({'NEW_RELIC_UTILIZATION_LOGICAL_PROCESSORS': 123}, function(tc) {
         should.exist(tc.utilization.logical_processors)
         expect(tc.utilization.logical_processors).equal('123')
       })
@@ -149,21 +194,21 @@ describe('the agent configuration', function() {
 
     it('should pick up the total ram of the system', function() {
       var env = 'NEW_RELIC_UTILIZATION_BILLING_HOSTNAME'
-      idempotentEnv(env, 'a test string', function(tc) {
+      idempotentEnv({[env]: 'a test string'}, function(tc) {
         should.exist(tc.utilization.billing_hostname)
         expect(tc.utilization.billing_hostname).equal('a test string')
       })
     })
 
     it('should pick up the number of logical processors of the system', function() {
-      idempotentEnv('NEW_RELIC_UTILIZATION_TOTAL_RAM_MIB', 123, function(tc) {
+      idempotentEnv({'NEW_RELIC_UTILIZATION_TOTAL_RAM_MIB': 123}, function(tc) {
         should.exist(tc.utilization.total_ram_mib)
         expect(tc.utilization.total_ram_mib).equal('123')
       })
     })
 
     it('should pick up the proxy port', function() {
-      idempotentEnv('NEW_RELIC_PROXY_PORT', 7777, function(tc) {
+      idempotentEnv({'NEW_RELIC_PROXY_PORT': 7777}, function(tc) {
         should.exist(tc.proxy_port)
         expect(tc.proxy_port).equal('7777')
       })
@@ -171,7 +216,7 @@ describe('the agent configuration', function() {
 
     it('should pick up instance reporting', function() {
       var env = 'NEW_RELIC_DATASTORE_INSTANCE_REPORTING_ENABLED'
-      idempotentEnv(env, false, function(tc) {
+      idempotentEnv({[env]: false}, function(tc) {
         should.exist(tc.datastore_tracer.instance_reporting.enabled)
         expect(tc.datastore_tracer.instance_reporting.enabled).equal(false)
       })
@@ -179,14 +224,14 @@ describe('the agent configuration', function() {
 
     it('should pick up instance database name reporting', function() {
       var env = 'NEW_RELIC_DATASTORE_DATABASE_NAME_REPORTING_ENABLED'
-      idempotentEnv(env, false, function(tc) {
+      idempotentEnv({[env]: false}, function(tc) {
         should.exist(tc.datastore_tracer.database_name_reporting.enabled)
         expect(tc.datastore_tracer.database_name_reporting.enabled).equal(false)
       })
     })
 
     it('should pick up the log level', function() {
-      idempotentEnv('NEW_RELIC_LOG_LEVEL', 'XXNOEXIST', function(tc) {
+      idempotentEnv({'NEW_RELIC_LOG_LEVEL': 'XXNOEXIST'}, function(tc) {
         should.exist(tc.logging.level)
         expect(tc.logging.level).equal('XXNOEXIST')
       })
@@ -200,78 +245,57 @@ describe('the agent configuration', function() {
         'err': 'error'
       }
       for (var key in logAliases) { // eslint-disable-line guard-for-in
-        idempotentEnv('NEW_RELIC_LOG_LEVEL', key, function(tc) {
+        idempotentEnv({'NEW_RELIC_LOG_LEVEL': key}, function(tc) {
           should.exist(tc.logging.level)
-            expect(tc.logging.level).equal(logAliases[key])
+          expect(tc.logging).to.have.property('level', logAliases[key])
         })
       }
     })
 
     it('should pick up the log filepath', function() {
-      idempotentEnv('NEW_RELIC_LOG', '/highway/to/the/danger/zone', function(tc) {
+      idempotentEnv({'NEW_RELIC_LOG': '/highway/to/the/danger/zone'}, function(tc) {
         should.exist(tc.logging.filepath)
         expect(tc.logging.filepath).equal('/highway/to/the/danger/zone')
       })
     })
 
-    it('should pick up whether server-side config is enabled', function() {
-      idempotentEnv('NEW_RELIC_IGNORE_SERVER_CONFIGURATION', 'yeah', function(tc) {
-        should.exist(tc.ignore_server_configuration)
-        expect(tc.ignore_server_configuration).equal(true)
-      })
-    })
-
     it('should pick up whether the agent is enabled', function() {
-      idempotentEnv('NEW_RELIC_ENABLED', 0, function(tc) {
+      idempotentEnv({'NEW_RELIC_ENABLED': 0}, function(tc) {
         should.exist(tc.agent_enabled)
         expect(tc.agent_enabled).equal(false)
       })
     })
 
-    it("should pick up whether to capture request parameters", function() {
-      idempotentEnv('NEW_RELIC_CAPTURE_PARAMS', 'yes', function(tc) {
-        should.exist(tc.capture_params)
-        expect(tc.capture_params).equal(true)
-      })
-    })
-
     it('should pick up whether to capture attributes', function() {
-      idempotentEnv('NEW_RELIC_ATTRIBUTES_ENABLED', 'yes', function(tc) {
+      idempotentEnv({'NEW_RELIC_ATTRIBUTES_ENABLED': 'yes'}, function(tc) {
         should.exist(tc.attributes.enabled)
         expect(tc.attributes.enabled).equal(true)
       })
     })
 
     it('should pick up whether to add attribute include rules', function() {
-      idempotentEnv('NEW_RELIC_ATTRIBUTES_INCLUDE_ENABLED', 'yes', function(tc) {
+      idempotentEnv({'NEW_RELIC_ATTRIBUTES_INCLUDE_ENABLED': 'yes'}, function(tc) {
         should.exist(tc.attributes.include_enabled)
         expect(tc.attributes.include_enabled).equal(true)
       })
     })
 
-    it('should pick up ignored request parameters', function() {
-      idempotentEnv('NEW_RELIC_IGNORED_PARAMS', 'one,two,three', function(tc) {
-        should.exist(tc.ignored_params)
-        expect(tc.ignored_params).eql(['one', 'two', 'three'])
-      })
-    })
-
     it('should pick up excluded attributes', function() {
-      idempotentEnv('NEW_RELIC_ATTRIBUTES_EXCLUDE', 'one,two,three', function(tc) {
+      idempotentEnv({'NEW_RELIC_ATTRIBUTES_EXCLUDE': 'one,two,three'}, function(tc) {
         should.exist(tc.attributes.exclude)
         expect(tc.attributes.exclude).eql(['one', 'two', 'three'])
       })
     })
 
     it('should pick up whether the error collector is enabled', function() {
-      idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ENABLED', 'NO', function(tc) {
+      idempotentEnv({'NEW_RELIC_ERROR_COLLECTOR_ENABLED': 'NO'}, function(tc) {
         should.exist(tc.error_collector.enabled)
         expect(tc.error_collector.enabled).equal(false)
       })
     })
 
     it('should pick up whether error collector attributes are enabled', function() {
-      idempotentEnv('NEW_RELIC_ERROR_COLLECTOR_ATTRIBUTES_ENABLED', 'NO', function(tc) {
+      idempotentEnv({'NEW_RELIC_ERROR_COLLECTOR_ATTRIBUTES_ENABLED': 'NO'}, function(tc) {
         should.exist(tc.error_collector.attributes.enabled)
         expect(tc.error_collector.attributes.enabled).equal(false)
       })
@@ -279,66 +303,126 @@ describe('the agent configuration', function() {
 
     it('should pick up which status codes are ignored', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        '401,404,502',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '401,404,502'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([401, 404, 502])
-      })
+        }
+      )
     })
 
     it('should pick up which status codes are ignored when using a range', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        '401, 420-421, 502',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '401, 420-421, 502'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([401, 420, 421, 502])
-      })
+        }
+      )
     })
 
     it('should not add codes given with invalid range', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        '421-420',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '421-420'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([])
-      })
+        }
+      )
     })
 
     it('should not add codes if given out of range', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        '1 - 1776',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '1 - 1776'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([])
-      })
+        }
+      )
     })
 
     it('should allow negative status codes ', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        '-7',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': '-7'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([-7])
-      })
+        }
+      )
     })
 
     it('should not add codes that parse to NaN ', function() {
       idempotentEnv(
-        'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES',
-        'abc',
+        {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES': 'abc'},
         function(tc) {
           should.exist(tc.error_collector.ignore_status_codes)
           expect(tc.error_collector.ignore_status_codes).eql([])
-      })
+        }
+      )
+    })
+
+    it('should pick up which status codes are expected', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '401,404,502'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([401, 404, 502])
+        }
+      )
+    })
+
+    it('should pick up which status codes are expectedd when using a range', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '401, 420-421, 502'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([401, 420, 421, 502])
+        }
+      )
+    })
+
+    it('should not add codes given with invalid range', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '421-420'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([])
+        }
+      )
+    })
+
+    it('should not add codes if given out of range', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '1 - 1776'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([])
+        }
+      )
+    })
+
+    it('should allow negative status codes ', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': '-7'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([-7])
+        }
+      )
+    })
+
+    it('should not add codes that parse to NaN ', function() {
+      idempotentEnv(
+        {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERROR_CODES': 'abc'},
+        function(tc) {
+          should.exist(tc.error_collector.expected_status_codes)
+          expect(tc.error_collector.expected_status_codes).eql([])
+        }
+      )
     })
 
     it('should pick up whether the transaction tracer is enabled', function() {
-      idempotentEnv('NEW_RELIC_TRACER_ENABLED', false, function(tc) {
+      idempotentEnv({'NEW_RELIC_TRACER_ENABLED': false}, function(tc) {
         should.exist(tc.transaction_tracer.enabled)
         expect(tc.transaction_tracer.enabled).equal(false)
       })
@@ -346,21 +430,21 @@ describe('the agent configuration', function() {
 
     it('should pick up whether transaction tracer attributes are enabled', function() {
       var key = 'NEW_RELIC_TRANSACTION_TRACER_ATTRIBUTES_ENABLED'
-      idempotentEnv(key, false, function(tc) {
+      idempotentEnv({[key]: false}, function(tc) {
         should.exist(tc.transaction_tracer.attributes.enabled)
         expect(tc.transaction_tracer.attributes.enabled).equal(false)
       })
     })
 
     it('should pick up the transaction trace threshold', function() {
-      idempotentEnv('NEW_RELIC_TRACER_THRESHOLD', 0.02, function(tc) {
+      idempotentEnv({'NEW_RELIC_TRACER_THRESHOLD': 0.02}, function(tc) {
         should.exist(tc.transaction_tracer.transaction_threshold)
-        expect(tc.transaction_tracer.transaction_threshold).equal('0.02')
+        expect(tc.transaction_tracer.transaction_threshold).equal(0.02)
       })
     })
 
     it('should pick up the transaction trace Top N scale', function() {
-      idempotentEnv('NEW_RELIC_TRACER_TOP_N', 5, function(tc) {
+      idempotentEnv({'NEW_RELIC_TRACER_TOP_N': 5}, function(tc) {
         should.exist(tc.transaction_tracer.top_n)
         expect(tc.transaction_tracer.top_n).equal('5')
       })
@@ -368,8 +452,10 @@ describe('the agent configuration', function() {
 
     it('should pick up renaming rules', function() {
       idempotentEnv(
-        'NEW_RELIC_NAMING_RULES',
-        '{"name":"u","pattern":"^t"},{"name":"t","pattern":"^u"}',
+        {
+          'NEW_RELIC_NAMING_RULES':
+          '{"name":"u","pattern":"^t"},{"name":"t","pattern":"^u"}'
+        },
         function(tc) {
           should.exist(tc.rules.name)
           expect(tc.rules.name).eql([
@@ -382,8 +468,10 @@ describe('the agent configuration', function() {
 
     it('should pick up ignoring rules', function() {
       idempotentEnv(
-        'NEW_RELIC_IGNORING_RULES',
-        '^/test,^/no_match,^/socket\\.io/,^/api/.*/index$',
+        {
+          'NEW_RELIC_IGNORING_RULES':
+          '^/test,^/no_match,^/socket\\.io/,^/api/.*/index$'
+        },
         function(tc) {
           should.exist(tc.rules.ignore)
           expect(tc.rules.ignore).eql([
@@ -396,58 +484,57 @@ describe('the agent configuration', function() {
       )
     })
 
-    it('should pick up whether URL backstop has been turned off',
-       function() {
-      idempotentEnv('NEW_RELIC_ENFORCE_BACKSTOP', 'f', function(tc) {
+    it('should pick up whether URL backstop has been turned off', () => {
+      idempotentEnv({'NEW_RELIC_ENFORCE_BACKSTOP': 'f'}, function(tc) {
         should.exist(tc.enforce_backstop)
         expect(tc.enforce_backstop).equal(false)
       })
     })
 
     it('should pick app name from APP_POOL_ID', function() {
-      idempotentEnv('APP_POOL_ID', 'Simple Azure app', function(tc) {
+      idempotentEnv({'APP_POOL_ID': 'Simple Azure app'}, function(tc) {
         should.exist(tc.app_name)
         expect(tc.applications()).eql(['Simple Azure app'])
       })
     })
 
     it('should pick up labels', function() {
-      idempotentEnv('NEW_RELIC_LABELS', 'key:value;a:b;', function(tc) {
+      idempotentEnv({'NEW_RELIC_LABELS': 'key:value;a:b;'}, function(tc) {
         should.exist(tc.labels)
         expect(tc.labels).equal('key:value;a:b;')
       })
     })
 
     it('should pickup record_sql', function() {
-      idempotentEnv('NEW_RELIC_RECORD_SQL', 'raw', function(tc) {
+      idempotentEnv({'NEW_RELIC_RECORD_SQL': 'raw'}, function(tc) {
         should.exist(tc.transaction_tracer.record_sql)
         expect(tc.transaction_tracer.record_sql).equal('raw')
       })
     })
 
     it('should pickup explain_threshold', function() {
-      idempotentEnv('NEW_RELIC_EXPLAIN_THRESHOLD', '100', function(tc) {
+      idempotentEnv({'NEW_RELIC_EXPLAIN_THRESHOLD': '100'}, function(tc) {
         should.exist(tc.transaction_tracer.explain_threshold)
         expect(tc.transaction_tracer.explain_threshold).equal(100)
       })
     })
 
     it('should pickup slow_sql.enabled', function() {
-      idempotentEnv('NEW_RELIC_SLOW_SQL_ENABLED', 'true', function(tc) {
+      idempotentEnv({'NEW_RELIC_SLOW_SQL_ENABLED': 'true'}, function(tc) {
         should.exist(tc.labels)
         expect(tc.slow_sql.enabled).equal(true)
       })
     })
 
     it('should pickup slow_sql.max_samples', function() {
-      idempotentEnv('NEW_RELIC_MAX_SQL_SAMPLES', '100', function(tc) {
+      idempotentEnv({'NEW_RELIC_MAX_SQL_SAMPLES': '100'}, function(tc) {
         should.exist(tc.slow_sql.max_samples)
         expect(tc.slow_sql.max_samples).equal(100)
       })
     })
 
     it('should pick up logging.enabled', function() {
-      idempotentEnv('NEW_RELIC_LOG_ENABLED', 'false', function(tc) {
+      idempotentEnv({'NEW_RELIC_LOG_ENABLED': 'false'}, function(tc) {
         should.exist(tc.logging.enabled)
         expect(tc.logging.enabled).equal(false)
       })
@@ -455,21 +542,107 @@ describe('the agent configuration', function() {
 
     it('should pick up message tracer segment reporting', function() {
       var env = 'NEW_RELIC_MESSAGE_TRACER_SEGMENT_PARAMETERS_ENABLED'
-      idempotentEnv(env, false, function(tc) {
+      idempotentEnv({[env]: false}, function(tc) {
         should.exist(tc.message_tracer.segment_parameters.enabled)
         expect(tc.message_tracer.segment_parameters.enabled).equal(false)
       })
     })
 
     it('should pick up disabled utilization detection', function() {
-      idempotentEnv('NEW_RELIC_UTILIZATION_DETECT_AWS', false, function(tc) {
+      idempotentEnv({'NEW_RELIC_UTILIZATION_DETECT_AWS': false}, function(tc) {
         expect(tc.utilization.detect_aws).to.be.false
       })
     })
 
     it('should reject disabling ssl', function() {
-      idempotentEnv('NEW_RELIC_USE_SSL', false, function(tc) {
+      idempotentEnv({'NEW_RELIC_USE_SSL': false}, function(tc) {
         expect(tc.ssl).to.be.true
+      })
+    })
+
+    describe('serverless mode', () => {
+      it('should should disable when feature flag false', () => {
+        idempotentEnv({
+          NEW_RELIC_FEATURE_FLAG_SERVERLESS_MODE: false,
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        }, (tc) => {
+          expect(tc.serverless_mode.enabled).to.be.false
+        })
+      })
+
+      it('should pick up serverless_mode', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true
+        }, (tc) => {
+          expect(tc.serverless_mode.enabled).to.be.true
+        })
+      })
+
+      it('should explicitly disable cross_application_tracer in serverless_mode', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true
+        }, (tc) => {
+          expect(tc.serverless_mode.enabled).to.be.true
+          expect(tc.cross_application_tracer.enabled).to.be.false
+        })
+      })
+
+      it('should enable DT in serverless_mode when account_id has been set', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_ACCOUNT_ID: '12345'
+        }, (tc) => {
+          expect(tc.serverless_mode.enabled).to.be.true
+          expect(tc.distributed_tracing.enabled).to.be.true
+        })
+      })
+
+      it('should not enable distributed tracing when account_id has not been set', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true
+        }, (tc) => {
+          expect(tc.serverless_mode.enabled).to.be.true
+          expect(tc.distributed_tracing.enabled).to.be.false
+        })
+      })
+
+      it('should default primary_application_id to Unknown when not set', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_ACCOUNT_ID: '12345'
+        }, (tc) => {
+          expect(tc.serverless_mode.enabled).to.be.true
+          expect(tc.distributed_tracing.enabled).to.be.true
+          expect(tc.primary_application_id).to.equal('Unknown')
+        })
+      })
+
+      it('should set serverless_mode from lambda-specific env var if not set by user',
+        () => {
+          idempotentEnv({
+            AWS_LAMBDA_FUNCTION_NAME: 'someFunc'
+          }, (tc) => {
+            expect(tc.serverless_mode.enabled).to.be.true
+          })
+        }
+      )
+
+      it('should pick up ignored error classes', function() {
+        idempotentEnv(
+          {'NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERRORS': 'Error, AnotherError'},
+          (tc) => {
+            should.exist(tc.error_collector.ignore_classes)
+            expect(tc.error_collector.ignore_classes).eql(['Error', 'AnotherError'])
+          })
+      })
+
+      it('should pick up expected error classes', function() {
+        idempotentEnv(
+          {'NEW_RELIC_ERROR_COLLECTOR_EXPECTED_ERRORS': 'QError, AnotherError'},
+          (tc) => {
+            should.exist(tc.error_collector.expected_classes)
+            expect(tc.error_collector.expected_classes).eql(['QError', 'AnotherError'])
+          })
       })
     })
   })
@@ -482,6 +655,335 @@ describe('the agent configuration', function() {
           security_policies_token: 'fffff'
         })
       }).throws()
+    })
+  })
+
+  describe('with a non-boolean truthy HSM setting', () => {
+    it('should enable high security mode', () => {
+      const applyHSM = Config.prototype._applyHighSecurity
+
+      let hsmApplied = false
+      Config.prototype._applyHighSecurity = () => {
+        hsmApplied = true
+      }
+      const config = Config.initialize({
+        high_security: 'true'
+      })
+      expect(!!config.high_security).to.be.true
+      expect(hsmApplied).to.be.true
+
+      Config.prototype._applyHighSecurity = applyHSM
+    })
+  })
+
+  describe('when loading from a file', () => {
+    describe('serverless mode', () => {
+      it('should be false when the feature flag is false', () => {
+        const conf = Config.initialize({
+          serverless_mode: {
+            enabled: true
+          },
+          feature_flag: {
+            serverless_mode: false
+          }
+        })
+        expect(conf.serverless_mode.enabled).to.be.false
+      })
+
+      it('should be true when config true and feature flag defaulting true', () => {
+        const conf = Config.initialize({
+          serverless_mode: {
+            enabled: true
+          }
+        })
+        expect(conf.serverless_mode.enabled).to.be.true
+      })
+    })
+  })
+
+  describe('when distributed_tracing manually set in serverless_mode', () => {
+    it('disables DT if missing required account_id', () => {
+      const config = Config.initialize({
+        distributed_tracing: {enabled: true},
+        serverless_mode: {
+          enabled: true
+        },
+        account_id: null
+      })
+      expect(config.distributed_tracing.enabled).to.be.false
+    })
+
+    it('disables DT when DT set to false', () => {
+      const config = Config.initialize({
+        distributed_tracing: {enabled: false},
+        serverless_mode: {
+          enabled: true
+        },
+      })
+      expect(config.distributed_tracing.enabled).to.be.false
+    })
+
+    it('disables DT when DT set to false and account_id is set', () => {
+      const config = Config.initialize({
+        account_id: '1234',
+        distributed_tracing: {enabled: false},
+        serverless_mode: {
+          enabled: true
+        },
+      })
+      expect(config.distributed_tracing.enabled).to.be.false
+    })
+
+    it('works if all required env vars are defined', () => {
+      const env = {
+        NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
+        NEW_RELIC_ACCOUNT_ID: 'defined',
+        NEW_RELIC_PRIMARY_APPLICATION_ID: 'defined',
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
+      }
+      expect(idempotentEnv.bind(idempotentEnv, env, () => {})).to.not.throw()
+    })
+  })
+
+  describe('with serverless_mode disabled', () => {
+    it('should clear serverless_mode dt config options', () => {
+      const env = {
+        NEW_RELIC_TRUSTED_ACCOUNT_KEY: 'defined',
+        NEW_RELIC_ACCOUNT_ID: 'defined',
+        NEW_RELIC_PRIMARY_APPLICATION_ID: 'defined',
+        NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true
+      }
+      idempotentEnv(env, (tc) => {
+        expect(tc.primary_application_id).to.equal(null)
+        expect(tc.account_id).to.equal(null)
+        expect(tc.trusted_account_key).to.equal(null)
+      })
+    })
+  })
+
+  describe('with serverless_mode enabled', () => {
+    it('should explicitly disable cross_application_tracer', () => {
+      const config = Config.initialize({
+        cross_application_tracer: {enabled: true},
+        serverless_mode: {
+          enabled: true
+        }
+      })
+      expect(config.cross_application_tracer.enabled).to.be.false
+    })
+
+    it('should pick up trusted_account_key', () => {
+      idempotentEnv({
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        NEW_RELIC_TRUSTED_ACCOUNT_KEY: '1234'
+      }, (tc) => {
+        expect(tc.trusted_account_key).to.equal('1234')
+      })
+    })
+
+    it('should pick up primary_application_id', () => {
+      idempotentEnv({
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        NEW_RELIC_PRIMARY_APPLICATION_ID: '5678'
+      }, (tc) => {
+        expect(tc.primary_application_id).to.equal('5678')
+      })
+    })
+
+    it('should pick up account_id', () => {
+      idempotentEnv({
+        NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+        NEW_RELIC_ACCOUNT_ID: '91011'
+      }, (tc) => {
+        expect(tc.account_id).to.equal('91011')
+      })
+    })
+
+    it('should explicitly disable native_metrics when ' +
+      'serverless mode disabled explicitly', () => {
+      const config = Config.initialize({
+        serverless_mode: {
+          enabled: false
+        },
+        plugins: {
+          native_metrics: {enabled: false}
+        }
+      })
+      expect(config.plugins.native_metrics.enabled).to.be.false
+    })
+
+    it('should enable native_metrics when ' +
+      'serverless mode disabled explicitly', () => {
+      const config = Config.initialize({
+        serverless_mode: {
+          enabled: false
+        }
+      })
+      expect(config.plugins.native_metrics.enabled).to.be.true
+    })
+
+    it('should disable native_metrics when ' +
+    'serverless mode enabled explicitly', () => {
+      const config = Config.initialize({
+        serverless_mode: {
+          enabled: true
+        }
+      })
+      expect(config.plugins.native_metrics.enabled).to.be.false
+    })
+
+    describe('via configuration input', () => {
+      it('should set DT config settings while in serverless_mode', () => {
+        const config = Config.initialize({
+          account_id: '1234',
+          primary_application_id: '2345',
+          serverless_mode: {enabled: true}
+        })
+
+        expect(config.account_id).to.equal('1234')
+        expect(config.trusted_account_key).to.equal('1234')
+      })
+
+      it('should not set DT config settings while not in serverless_mode', () => {
+        const config = Config.initialize({
+          account_id: '1234',
+          primary_application_id: '2345',
+          trusted_account_key: '3456',
+        })
+
+        expect(config.account_id).to.be.null
+        expect(config.primary_application_id).to.be.null
+        expect(config.trusted_account_key).to.be.null
+      })
+
+      it('should enable native_metrics via config', () => {
+        const config = Config.initialize({
+          serverless_mode: {enabled: true},
+          plugins: {
+            native_metrics: {enabled: true}
+          }
+        })
+
+        expect(config.plugins.native_metrics.enabled).to.be.true
+      })
+
+      it('should default logging to disabled', () => {
+        const config = Config.initialize({
+          serverless_mode: {enabled: true}
+        })
+
+        expect(config.logging.enabled).to.be.false
+      })
+
+      it('should allow logging to be enabled from configuration input', () => {
+        const config = Config.initialize({
+          serverless_mode: {enabled: true},
+          logging: {enabled: true}
+        })
+        expect(config.logging.enabled).to.be.true
+      })
+
+      it('should allow logging to be enabled from env ', () => {
+        const inputConfig = {
+          serverless_mode: {enabled: true}
+        }
+
+        const envVariables = {
+          NEW_RELIC_LOG_ENABLED: true
+        }
+
+        idempotentEnv(envVariables, inputConfig, (config) => {
+          expect(config.logging.enabled).to.be.true
+        })
+      })
+    })
+
+    describe('via environment variables', () => {
+      it('should default logging to disabled', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true
+        }, (config) => {
+          expect(config.logging.enabled).to.be.false
+        })
+      })
+
+      it('should allow logging to be enabled from env', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_LOG_ENABLED: true
+        }, (config) => {
+          expect(config.logging.enabled).to.be.true
+        })
+      })
+
+      it('should allow logging to be enabled from configuration ', () => {
+        const envVariables = {
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true
+        }
+
+        const inputConfig = {
+          logging: {enabled: true}
+        }
+
+        idempotentEnv(envVariables, inputConfig, (config) => {
+          expect(config.logging.enabled).to.be.true
+        })
+      })
+
+      it('should enable native_metrics via env variable', () => {
+        const envVariables = {
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_NATIVE_METRICS_ENABLED: true
+        }
+
+        const inputConfig = {
+          plugins: {
+            native_metrics: {
+              enabled: false
+            }
+          }
+        }
+
+        idempotentEnv(envVariables, inputConfig,
+          (config) => {
+            expect(config.plugins.native_metrics.enabled).to.be.true
+          })
+      })
+
+      it('should default distributed to enabled when provided with account_id', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_ACCOUNT_ID: '12345'
+        }, (config) => {
+          expect(config.distributed_tracing.enabled).to.be.true
+        })
+      })
+
+      it('should allow distributed tracing to be enabled from env', () => {
+        idempotentEnv({
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: true,
+          NEW_RELIC_ACCOUNT_ID: '12345'
+        }, (config) => {
+          expect(config.distributed_tracing.enabled).to.be.true
+        })
+      })
+
+      it('should allow distributed tracing to be enabled from configuration ', () => {
+        const envVariables = {
+          NEW_RELIC_SERVERLESS_MODE_ENABLED: true,
+          NEW_RELIC_ACCOUNT_ID: '12345'
+        }
+
+        const inputConfig = {
+          distributed_tracing: {enabled: true}
+        }
+
+        idempotentEnv(envVariables, inputConfig, (config) => {
+          expect(config.distributed_tracing.enabled).to.be.true
+        })
+      })
     })
   })
 
@@ -506,6 +1008,16 @@ describe('the agent configuration', function() {
         }
       }
     })
+
+    it('should not return serialized mergeServerConfig props from publicSettings',
+      function() {
+        var pub = configuration.publicSettings()
+        var result = Object.keys(pub).some((key) => {
+          return key.includes('mergeServerConfig')
+        })
+        expect(result).to.be.false
+      }
+    )
 
     it('should have no application name', function() {
       expect(configuration.app_name).eql([])
@@ -547,10 +1059,6 @@ describe('the agent configuration', function() {
       expect(configuration.proxy_port).equal('')
     })
 
-    it('should not ignore server-side configuration', function() {
-      expect(configuration.ignore_server_configuration).equal(false)
-    })
-
     it('should enable the agent', function() {
       expect(configuration.agent_enabled).equal(true)
     })
@@ -559,12 +1067,16 @@ describe('the agent configuration', function() {
       expect(configuration.apdex_t).equal(0.1)
     })
 
-    it('should not capture request parameters', function() {
-      expect(configuration.capture_params).equal(false)
+    it('should have a null account_id', function() {
+      expect(configuration.account_id).to.be.null
     })
 
-    it('should have no ignored request parameters', function() {
-      expect(configuration.ignored_params).eql([])
+    it('should have a null primary_application_id', function() {
+      expect(configuration.primary_application_id).to.be.null
+    })
+
+    it('should have a null trusted_account_key', function() {
+      expect(configuration.trusted_account_key).to.be.null
     })
 
     it('should have the default excluded request attributes', function() {
@@ -677,6 +1189,10 @@ describe('the agent configuration', function() {
     it('should set max_payload_size_in_bytes', function() {
       expect(configuration.max_payload_size_in_bytes).to.equal(1000000)
     })
+
+    it('should not enable serverless_mode', () => {
+      expect(configuration.serverless_mode.enabled).to.be.false
+    })
   })
 
   describe('when overriding the config file location via NR_HOME', function() {
@@ -762,6 +1278,32 @@ describe('the agent configuration', function() {
     })
   })
 
+  describe('when loading options via constructor', function() {
+    it('should properly pick up on expected_messages', function() {
+      const options = {
+        expected_messages: {
+          Error: ['oh no']
+        }
+      }
+      var config = new Config({
+        error_collector: options
+      })
+      expect(config.error_collector.expected_messages).eql(options.expected_messages)
+    })
+
+    it('should properly pick up on ignore_messages', function() {
+      const options = {
+        ignore_messages: {
+          Error: ['oh no']
+        }
+      }
+      var config = new Config({
+        error_collector: options
+      })
+      expect(config.error_collector.ignore_messages).eql(options.ignore_messages)
+    })
+  })
+
   describe('when setting log level via config constructor', function() {
     it('should have log aliases', function() {
       var config = new Config({'logging': {'level': 'verbose'}})
@@ -809,6 +1351,13 @@ describe('the agent configuration', function() {
       expect(config.collect_errors).equal(false)
     })
 
+    it('should always respect collect_span_events', () => {
+      expect(config.collect_span_events).equal(true)
+      expect(config.span_events.enabled).equal(true)
+      config.onConnect({collect_span_events: false})
+      expect(config.span_events.enabled).equal(false)
+    })
+
     it('should disable the error tracer when told to', function() {
       expect(config.error_collector.enabled).equal(true)
       config.onConnect({'error_collector.enabled': false})
@@ -846,8 +1395,7 @@ describe('the agent configuration', function() {
       config.onConnect({'metric_name_rules': [{name : 'sample_rule'}]})
     })
 
-    it('should map transaction naming rules to the transaction name normalizer',
-       function(done) {
+    it('should map txn naming rules to the txn name normalizer', (done) => {
       config.on('transaction_name_rules', function(rules) {
         expect(rules).eql([{name : 'sample_rule'}])
         done()
@@ -865,24 +1413,6 @@ describe('the agent configuration', function() {
     it('should reject high_security', function() {
       config.onConnect({'high_security': true})
       expect(config.high_security).equal(false)
-    })
-
-    it('should reject capture_params', function() {
-      expect(config.capture_params).equal(false)
-      config.onConnect({'capture_params': true})
-      expect(config.capture_params).equal(false)
-    })
-
-    it('should configure ignored params', function() {
-      expect(config.ignored_params).eql([])
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql(['a', 'b'])
-    })
-
-    it('should configure ignored params without stomping local config', function() {
-      config.ignored_params = ['b', 'c']
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql(['b', 'c', 'a'])
     })
 
     it('should configure cross application tracing', function() {
@@ -991,9 +1521,9 @@ describe('the agent configuration', function() {
       }).not.throws()
     })
 
-    it('should not blow up when cross_application_tracing is received', function() {
+    it('should not blow up with cross_application_tracer.enabled', () => {
       expect(function() {
-        config.onConnect({'cross_application_tracing': true})
+        config.onConnect({'cross_application_tracer.enabled': true})
       }).not.throws()
     })
 
@@ -1094,29 +1624,12 @@ describe('the agent configuration', function() {
       }).not.throws()
     })
 
-    it('should not blow up when collect_analytics_events is received',
-    function() {
+    it('should not blow up when collect_analytics_events is received', () => {
       config.transaction_events.enabled = true
       expect(function() {
         config.onConnect({'collect_analytics_events': false})
       }).not.throws()
       expect(config.transaction_events.enabled).equals(false)
-    })
-
-    it('should not blow up when transaction_events.max_samples_stored is received',
-    function() {
-      expect(function() {
-        config.onConnect({'transaction_events.max_samples_stored': 10})
-      }).not.throws()
-      expect(config.transaction_events.max_samples_stored).equals(10)
-    })
-
-    it('should not blow up when transaction_events.max_samples_per_minute is received',
-    function() {
-      expect(function() {
-        config.onConnect({'transaction_events.max_samples_per_minute': 1})
-      }).not.throws()
-      expect(config.transaction_events.max_samples_per_minute).equals(1)
     })
 
     it('should not blow up when transaction_events.enabled is received', function() {
@@ -1133,26 +1646,61 @@ describe('the agent configuration', function() {
       expect(config.max_payload_size_in_bytes).equals(100)
     })
 
-    describe('when data_report_period is set', function() {
-      it('should emit data_report_period when harvest interval is changed',
-         function(done) {
-        config.once('data_report_period', function(harvestInterval) {
-          expect(harvestInterval).equal(45)
+    it('should not accept serverless_mode', () => {
+      expect(() => {
+        config.onConnect({'serverless_mode.enabled': true})
+      }).not.throws()
+      expect(config.serverless_mode.enabled).to.be.false
+    })
+
+    describe('when event_harvest_config is set', function() {
+      it('should emit event_harvest_config when harvest interval is changed', (done) => {
+        const expectedHarvestConfig = {
+          report_period_ms: 5000,
+          harvest_limits: {
+            analytic_event_data: 833,
+            custom_event_data: 833,
+            error_event_data: 8
+          }
+        }
+
+        config.once('event_harvest_config', function(harvestconfig) {
+          expect(harvestconfig).deep.equal(expectedHarvestConfig)
 
           done()
         })
 
-        config.onConnect({'data_report_period': 45})
+        config.onConnect({'event_harvest_config': expectedHarvestConfig})
       })
 
-      it('should update data_report_period only when it is changed', function() {
-        expect(config.data_report_period).equal(60)
+      it('should update event_harvest_config when a sub-value changed', (done) => {
+        const originalHarvestConfig = {
+          report_period_ms: 60000,
+          harvest_limits: {
+            analytic_event_data: 10000,
+            custom_event_data: 10000,
+            error_event_data: 100
+          }
+        }
 
-        config.once('data_report_period', function() {
-          throw new Error('should never get here')
+        config.event_harvest_config = originalHarvestConfig
+
+        const expectedHarvestConfig = {
+          report_period_ms: 5000,
+          harvest_limits: {
+            analytic_event_data: 833,
+            custom_event_data: 833,
+            error_event_data: 8
+          }
+        }
+
+        config.once('event_harvest_config', function(harvestconfig) {
+          expect(harvestconfig).deep.equal(expectedHarvestConfig)
+
+          done()
         })
 
-        config.onConnect({'data_report_period': 60})
+        config.onConnect({'event_harvest_config': expectedHarvestConfig})
       })
     })
 
@@ -1176,250 +1724,6 @@ describe('the agent configuration', function() {
 
         config.onConnect({'apdex_t': 0.1})
       })
-    })
-  })
-
-  describe('when receiving server-side configuration while it is disabled', function() {
-    var config
-
-    beforeEach(function() {
-      config = new Config()
-      config.ignore_server_configuration = true
-    })
-
-    it('should still set rum properties', function() {
-      config.onConnect({
-        js_agent_loader      : 'LOADER',
-        js_agent_file        : 'FILE',
-        js_agent_loader_file : 'LOADER_FILE',
-        beacon               : 'BEACON',
-        error_beacon         : 'ERR_BEACON',
-        browser_key          : 'KEY'
-      })
-      var bm = config.browser_monitoring
-
-      expect(bm.js_agent_loader)      .equal ('LOADER')
-      expect(bm.js_agent_file)        .equal ('FILE')
-      expect(bm.js_agent_loader_file) .equal ('LOADER_FILE')
-      expect(bm.beacon)               .equal ('BEACON')
-      expect(bm.error_beacon)         .equal ('ERR_BEACON')
-      expect(bm.browser_key)          .equal ('KEY')
-    })
-
-    it('should still set agent_run_id', function() {
-      config.onConnect({'agent_run_id': 1234})
-      expect(config.run_id).equal(1234)
-    })
-
-    it('should always respect collect_traces', function() {
-      expect(config.collect_traces).equal(true)
-      config.onConnect({'collect_traces': false})
-      expect(config.collect_traces).equal(false)
-    })
-
-    it('should always respect collect_errors', function() {
-      expect(config.collect_errors).equal(true)
-      config.onConnect({'collect_errors': false})
-      expect(config.collect_errors).equal(false)
-    })
-
-    it('should still log product_level', function() {
-      expect(config.product_level).equal(0)
-      config.onConnect({'product_level': 30})
-      expect(config.product_level).equal(30)
-    })
-
-    it('should still pass url_rules to the URL normalizer', function(done) {
-      config.on('url_rules', function(rules) {
-        expect(rules).eql([{name : 'sample_rule'}])
-        done()
-      })
-
-      config.onConnect({'url_rules': [{name : 'sample_rule'}]})
-    })
-
-    it('should still pass metric_name_rules to the metric name normalizer',
-       function(done) {
-      config.on('metric_name_rules', function(rules) {
-        expect(rules).eql([{name : 'sample_rule'}])
-        done()
-      })
-
-      config.onConnect({'metric_name_rules': [{name : 'sample_rule'}]})
-    })
-
-    it('should still pass transaction_name_rules to the transaction name normalizer',
-       function(done) {
-      config.on('transaction_name_rules', function(rules) {
-        expect(rules).eql([{name : 'sample_rule'}])
-        done()
-      })
-
-      config.onConnect({'transaction_name_rules': [{name : 'sample_rule'}]})
-    })
-
-    it('should not configure apdex_t', function() {
-      expect(config.apdex_t).equal(0.1)
-      config.on('apdex_t', function() { throw new Error('should not happen') })
-      config.onConnect({'apdex_t': 0.05})
-      expect(config.apdex_t).equal(0.1)
-    })
-
-    it('should not configure named transaction apdexes', function() {
-      var apdexes = {'WebTransaction/Custom/UrlGenerator/en/betting/Football' : 7.0}
-      expect(config.web_transactions_apdex).eql({})
-      config.onConnect({'web_transactions_apdex': apdexes})
-      expect(config.web_transactions_apdex).eql({})
-    })
-
-    it('should not configure data_report_period', function() {
-      expect(config.data_report_period).equal(60)
-      config.onConnect({'data_report_period': 45})
-      expect(config.data_report_period).equal(60)
-    })
-
-    it('should not configure transaction_tracer.enabled', function() {
-      expect(config.transaction_tracer.enabled).equal(true)
-      config.onConnect({'transaction_tracer.enabled': false})
-      expect(config.transaction_tracer.enabled).equal(true)
-    })
-
-    it('should not configure transaction_tracer.attributes.enabled', function() {
-      expect(config.transaction_tracer.attributes.enabled).equal(true)
-      config.onConnect({'transaction_tracer.attributes.enabled': false})
-      expect(config.transaction_tracer.attributes.enabled).equal(true)
-    })
-
-    it('should not configure error_collector.enabled', function() {
-      expect(config.error_collector.enabled).equal(true)
-      config.onConnect({'error_collector.enabled': false})
-      expect(config.error_collector.enabled).equal(true)
-    })
-
-    it('should not configure error_collector.attributes.enabled', function() {
-      expect(config.error_collector.attributes.enabled).equal(true)
-      config.onConnect({'error_collector.attributes.enabled': false})
-      expect(config.error_collector.attributes.enabled).equal(true)
-    })
-
-    it('should not configure transaction_tracer.transaction_threshold', function() {
-      expect(config.transaction_tracer.transaction_threshold).equal('apdex_f')
-      config.onConnect({'transaction_tracer.transaction_threshold': 0.75})
-      expect(config.transaction_tracer.transaction_threshold).equal('apdex_f')
-    })
-
-    it('should not configure capture_params', function() {
-      expect(config.capture_params).equal(false)
-      config.onConnect({'capture_params': true})
-      expect(config.capture_params).equal(false)
-    })
-
-    it('should not configure attributes.enabled', function() {
-      expect(config.attributes.enabled).to.be.true
-      config.onConnect({'attributes.enabled': false})
-      expect(config.attributes.enabled).to.be.true
-    })
-
-    it('should not configure ignored_params', function() {
-      expect(config.ignored_params).eql([])
-      config.onConnect({'ignored_params': ['a', 'b']})
-      expect(config.ignored_params).eql([])
-    })
-
-    it('should not configure attributes.exclude', function() {
-      expect(config.attributes.exclude).eql([])
-      config.onConnect({'attributes.exclude': ['a', 'b']})
-      expect(config.attributes.exclude).eql([])
-    })
-
-    it('should not configure record_sql', function() {
-      expect(config.transaction_tracer.record_sql).equal('off')
-      config.onConnect({'transaction_tracer.record_sql': 'raw'})
-      expect(config.transaction_tracer.record_sql).equal('off')
-    })
-
-    it('should not configure explain_threshold', function() {
-      expect(config.transaction_tracer.explain_threshold).equal(500)
-      config.onConnect({'transaction_tracer.explain_threshold': 100})
-      expect(config.transaction_tracer.explain_threshold).equal(500)
-    })
-
-    it('should not configure slow_sql.enabled', function() {
-      expect(config.slow_sql.enabled).equal(false)
-      config.onConnect({'transaction_tracer.enabled': true})
-      expect(config.slow_sql.enabled).equal(false)
-    })
-
-    it('should not configure slow_sql.max_samples', function() {
-      expect(config.slow_sql.max_samples).equal(10)
-      config.onConnect({'transaction_tracer.max_samples': 5})
-      expect(config.slow_sql.max_samples).equal(10)
-    })
-
-    it('should ignore sampling_rate', function() {
-      expect(function() {
-        config.onConnect({'sampling_rate': 0})
-      }).not.throws()
-    })
-
-    it('should ignore ssl', function() {
-      expect(config.ssl).eql(true)
-      expect(function() {
-        config.onConnect({'ssl': false})
-      }).not.throws()
-      expect(config.ssl).eql(true)
-    })
-
-    it('should ignore cross_process_id', function() {
-      expect(function() {
-        config.onConnect({'cross_process_id': 'junk'})
-      }).not.throws()
-    })
-
-    it('should ignore cross_application_tracing', function() {
-      expect(function() {
-        config.onConnect({'cross_application_tracing': true})
-      }).not.throws()
-    })
-
-    it('should ignore encoding_key', function() {
-      expect(function() {
-        config.onConnect({'encoding_key': true})
-      }).not.throws()
-    })
-
-    it('should ignore trusted_account_ids', function() {
-      expect(config).to.have.property('trusted_account_ids', null)
-      expect(function() {
-        config.onConnect({'trusted_account_ids': [1, 2, 3]})
-      }).to.not.throw()
-      expect(config).to.have.property('trusted_account_ids').deep.equal([1, 2, 3])
-    })
-
-    it('should ignore trusted_account_key', function() {
-      expect(config).to.have.property('trusted_account_key', null)
-      expect(function() {
-        config.onConnect({'trusted_account_key': 123})
-      }).to.not.throw()
-      expect(config).to.have.property('trusted_account_key', 123)
-    })
-
-    it('should ignore transaction_tracer.record_sql', function() {
-      expect(function() {
-        config.onConnect({'transaction_tracer.record_sql': true})
-      }).not.throws()
-    })
-
-    it('should ignore slow_sql.enabled', function() {
-      expect(function() {
-        config.onConnect({'slow_sql.enabled': true})
-      }).not.throws()
-    })
-
-    it('should ignore rum.load_episodes_file', function() {
-      expect(function() {
-        config.onConnect({'rum.load_episodes_file': true})
-      }).not.throws()
     })
   })
 
@@ -1449,9 +1753,9 @@ describe('the agent configuration', function() {
   })
 
   describe('#applyLasp', function() {
-    var config
-    var policies
-    var agent
+    let config = null
+    let policies = null
+    let agent = null
 
     beforeEach(function(done) {
       agent = {
@@ -1459,7 +1763,7 @@ describe('the agent configuration', function() {
         _resetCustomEvents: sinon.spy(),
         _resetQueries: sinon.spy(),
         traces: {
-          reset: sinon.spy()
+          clear: sinon.spy()
         }
       }
       agent.config = config = new Config()
@@ -1468,47 +1772,22 @@ describe('the agent configuration', function() {
       done()
     })
 
-    it('returns null if LASP is not enabled', function(done) {
+    it('returns null if LASP is not enabled', () => {
       config.security_policies_token = ''
 
-      var cb = function(err, res) {
-        expect(err).to.be.null
-        expect(res).to.be.null
-        done()
-      }
-
-      config.applyLasp(agent, {}, cb)
+      const res = config.applyLasp(agent, {})
+      expect(res.payload).to.be.null
     })
 
-    it('returns error if required policy is not implemented or unknown', function(done) {
-      var cb = function(err) {
-        expect(err.message).to.contain('received one or more required security policies')
-        done()
-      }
-
+    it('returns fatal response if required policy is not implemented or unknown', () => {
       policies.job_arguments = { enabled: true, required: true }
       policies.test = { enabled: true, required: true }
 
-      config.applyLasp(agent, policies, cb)
+      const response = config.applyLasp(agent, policies)
+      expect(response.shouldShutdownRun()).to.be.true
     })
 
-    it('takes the most secure from local', function(done) {
-      var cb = function(err, res) {
-        expect(config.transaction_tracer.record_sql).to.equal('off')
-        expect(agent._resetQueries.callCount).to.equal(0)
-        expect(config.attributes.include_enabled).to.equal(false)
-        expect(agent.traces.reset.callCount).to.equal(0)
-        expect(config.strip_exception_messages.enabled).to.equal(true)
-        expect(agent._resetErrors.callCount).to.equal(0)
-        expect(config.api.custom_events_enabled).to.equal(false)
-        expect(agent._resetCustomEvents.callCount).to.equal(0)
-        expect(config.api.custom_attributes_enabled).to.equal(false)
-        Object.keys(res).forEach(function checkPolicy(key) {
-          expect(res[key].enabled).to.be.false
-        })
-        done()
-      }
-
+    it('takes the most secure from local', () => {
       config.transaction_tracer.record_sql = 'off'
       config.attributes.include_enabled = false
       config.strip_exception_messages.enabled = true
@@ -1519,26 +1798,24 @@ describe('the agent configuration', function() {
         policies[key].enabled = true
       })
 
-      config.applyLasp(agent, policies, cb)
+      const response = config.applyLasp(agent, policies)
+      const payload = response.payload
+
+      expect(config.transaction_tracer.record_sql).to.equal('off')
+      expect(agent._resetQueries.callCount).to.equal(0)
+      expect(config.attributes.include_enabled).to.equal(false)
+      expect(agent.traces.clear.callCount).to.equal(0)
+      expect(config.strip_exception_messages.enabled).to.equal(true)
+      expect(agent._resetErrors.callCount).to.equal(0)
+      expect(config.api.custom_events_enabled).to.equal(false)
+      expect(agent._resetCustomEvents.callCount).to.equal(0)
+      expect(config.api.custom_attributes_enabled).to.equal(false)
+      Object.keys(payload).forEach(function checkPolicy(key) {
+        expect(payload[key].enabled).to.be.false
+      })
     })
 
-    it('takes the most secure from lasp', function(done) {
-      var cb = function(err, res) {
-        expect(config.transaction_tracer.record_sql).to.equal('off')
-        expect(agent._resetQueries.callCount).to.equal(1)
-        expect(config.attributes.include_enabled).to.equal(false)
-        expect(config.strip_exception_messages.enabled).to.equal(true)
-        expect(agent._resetErrors.callCount).to.equal(1)
-        expect(config.api.custom_events_enabled).to.equal(false)
-        expect(agent._resetCustomEvents.callCount).to.equal(1)
-        expect(config.api.custom_attributes_enabled).to.equal(false)
-        expect(agent.traces.reset.callCount).to.equal(1)
-        Object.keys(res).forEach(function checkPolicy(key) {
-          expect(res[key].enabled).to.be.false
-        })
-        done()
-      }
-
+    it('takes the most secure from lasp', () => {
       config.transaction_tracer.record_sql = 'obfuscated'
       config.attributes.include_enabled = true
       config.strip_exception_messages.enabled = false
@@ -1549,22 +1826,25 @@ describe('the agent configuration', function() {
         policies[key].enabled = false
       })
 
-      config.applyLasp(agent, policies, cb)
+      const response = config.applyLasp(agent, policies)
+      const payload = response.payload
+
+      expect(config.transaction_tracer.record_sql).to.equal('off')
+      expect(agent._resetQueries.callCount).to.equal(1)
+      expect(config.attributes.include_enabled).to.equal(false)
+      expect(config.attributes.exclude).to.deep.equal(['request.parameters.*'])
+      expect(config.strip_exception_messages.enabled).to.equal(true)
+      expect(agent._resetErrors.callCount).to.equal(1)
+      expect(config.api.custom_events_enabled).to.equal(false)
+      expect(agent._resetCustomEvents.callCount).to.equal(1)
+      expect(config.api.custom_attributes_enabled).to.equal(false)
+      expect(agent.traces.clear.callCount).to.equal(1)
+      Object.keys(payload).forEach(function checkPolicy(key) {
+        expect(payload[key].enabled).to.be.false
+      })
     })
 
-    it('allow permissive settings', function(done) {
-      var cb = function(err, res) {
-        expect(config.transaction_tracer.record_sql).to.equal('obfuscated')
-        expect(config.attributes.include_enabled).to.equal(true)
-        expect(config.strip_exception_messages.enabled).to.equal(false)
-        expect(config.api.custom_events_enabled).to.equal(true)
-        expect(config.api.custom_attributes_enabled).to.equal(true)
-        Object.keys(res).forEach(function checkPolicy(key) {
-          expect(res[key].enabled).to.be.true
-        })
-        done()
-      }
-
+    it('allow permissive settings', () => {
       config.transaction_tracer.record_sql = 'obfuscated'
       config.attributes.include_enabled = true
       config.strip_exception_messages.enabled = false
@@ -1575,34 +1855,35 @@ describe('the agent configuration', function() {
         policies[key].enabled = true
       })
 
-      config.applyLasp(agent, policies, cb)
+      const response = config.applyLasp(agent, policies)
+      const payload = response.payload
+
+      expect(config.transaction_tracer.record_sql).to.equal('obfuscated')
+      expect(config.attributes.include_enabled).to.equal(true)
+      expect(config.strip_exception_messages.enabled).to.equal(false)
+      expect(config.api.custom_events_enabled).to.equal(true)
+      expect(config.api.custom_attributes_enabled).to.equal(true)
+      Object.keys(payload).forEach(function checkPolicy(key) {
+        expect(payload[key].enabled).to.be.true
+      })
     })
 
-    it('returns error if expected policy is not sent from server', function(done) {
-      var cb = function(err) {
-        expect(err.message).to.contain('did not receive one or more security policies')
-        done()
-      }
-
+    it('returns fatal response if expected policy is not received', () => {
       delete policies.record_sql
 
-      config.applyLasp(agent, policies, cb)
+      const response = config.applyLasp(agent, policies)
+      expect(response.shouldShutdownRun()).to.be.true
     })
 
-    it('should return known policies', function(done) {
-      var cb = function(err, res) {
-        expect(err).to.be.null
-        expect(res).to.deep.equal({
-          record_sql: { enabled: false, required: false },
-          attributes_include: { enabled: false, required: false },
-          allow_raw_exception_messages: { enabled: false, required: false },
-          custom_events: { enabled: false, required: false },
-          custom_parameters: { enabled: false, required: false }
-        })
-        done()
-      }
-
-      config.applyLasp(agent, policies, cb)
+    it('should return known policies', () => {
+      const response = config.applyLasp(agent, policies)
+      expect(response.payload).to.deep.equal({
+        record_sql: { enabled: false, required: false },
+        attributes_include: { enabled: false, required: false },
+        allow_raw_exception_messages: { enabled: false, required: false },
+        custom_events: { enabled: false, required: false },
+        custom_parameters: { enabled: false, required: false }
+      })
     })
   })
 })

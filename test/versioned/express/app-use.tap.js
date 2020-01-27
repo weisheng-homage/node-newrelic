@@ -30,7 +30,8 @@ test('app should be at top of stack when mounted', function(t) {
 })
 
 test('app should be at top of stack when mounted', function(t) {
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
+
   var express = require('express')
   var main = express()
   var app = express()
@@ -120,7 +121,8 @@ test('app should be at top of stack when mounted', function(t) {
 test('should not pass wrong args when transaction is not present', function(t) {
   t.plan(5)
 
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
+
   var express = require('express')
   var main = express()
   var router = new express.Router()
@@ -138,9 +140,8 @@ test('should not pass wrong args when transaction is not present', function(t) {
 
   router.get('/', function(req, res, next) {
     args = [req, res]
-    agent.getTransaction().end(function() {
-      next()
-    })
+    agent.getTransaction().end()
+    next()
   })
 
   router2.get('/', function(req, res, next) {

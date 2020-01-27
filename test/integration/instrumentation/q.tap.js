@@ -1,16 +1,17 @@
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
+const tap = require('tap')
+const test = tap.test
+const helper = require('../../lib/agent_helper')
 
 function QContext(t, agent) {
-    this.agent = agent
-    this.test = t
+  this.agent = agent
+  this.test = t
 }
 
 QContext.prototype.assertTransaction = function assertTransaction(transaction) {
-    this.test.equal(this.agent.getTransaction(), transaction)
-    this.test.equal(this.agent.getTransaction().trace.root.children.length, 0)
+  this.test.equal(this.agent.getTransaction(), transaction)
+  this.test.equal(this.agent.getTransaction().trace.root.children.length, 0)
 }
 
 test('q.ninvoke', function testQNInvoke(t) {
@@ -70,6 +71,11 @@ test('q.then', function testQNInvoke(t) {
 })
 
 test('q.then rejections', function testQNInvoke(t) {
+  // Once on node 10+ only, may be able to replace with below.
+  // t.expectUncaughtException(fn, [expectedError], message, extra)
+  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+  helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
   t.plan(4)
 
   var agent = setupAgent(t)

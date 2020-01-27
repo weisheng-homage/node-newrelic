@@ -120,26 +120,29 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
         if (seg && seg.name === 'timers.setTimeout') {
           seg = txn.trace.root.children[0].children[2]
         }
+        const attributes = seg.getAttributes()
         t.error(err, 'should not error')
         t.ok(seg, 'should have a segment (' + (seg && seg.name) + ')')
         t.equal(
-          seg.parameters.host,
+          attributes.host,
           urltils.isLocalhost(config.host)
             ? agent.config.getHostnameSafe()
             : config.host,
           'set host'
         )
         t.equal(
-          seg.parameters.database_name,
+          attributes.database_name,
           DBNAME,
           'set database name'
         )
         t.equal(
-          seg.parameters.port_path_or_id,
+          attributes.port_path_or_id,
           String(config.port),
           'set port'
         )
-        txn.end(t.end)
+        t.equal(attributes.product, 'MySQL', 'set product attribute')
+        txn.end()
+        t.end()
       })
     })
   })
@@ -151,22 +154,25 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
         var seg = getDatastoreSegment(agent.tracer.getSegment())
         t.error(err, 'should not error making query')
         t.ok(seg, 'should have a segment')
+        const attributes = seg.getAttributes()
 
         t.notOk(
-          seg.parameters.host,
+          attributes.host,
           'should have no host parameter'
         )
         t.notOk(
-          seg.parameters.port_path_or_id,
+          attributes.port_path_or_id,
           'should have no port parameter'
         )
         t.equal(
-          seg.parameters.database_name,
+          attributes.database_name,
           DBNAME,
           'should set database name'
         )
+        t.equal(attributes.product, 'MySQL', 'should set product attribute')
         agent.config.datastore_tracer.instance_reporting.enabled = true
-        txn.end(t.end)
+        txn.end()
+        t.end()
       })
     })
   })
@@ -176,26 +182,29 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
       agent.config.datastore_tracer.database_name_reporting.enabled = false
       pool.query('SELECT 1 + 1 AS solution', function(err) {
         var seg = getDatastoreSegment(agent.tracer.getSegment())
+        const attributes = seg.getAttributes()
         t.notOk(err, 'no errors')
         t.ok(seg, 'there is a segment')
         t.equal(
-          seg.parameters.host,
+          attributes.host,
           urltils.isLocalhost(config.host)
             ? agent.config.getHostnameSafe()
             : config.host,
           'set host'
         )
         t.equal(
-          seg.parameters.port_path_or_id,
+          attributes.port_path_or_id,
           String(config.port),
           'set port'
         )
         t.notOk(
-          seg.parameters.database_name,
+          attributes.database_name,
           'should have no database name parameter'
         )
+        t.equal(attributes.product, 'MySQL', 'should set product attribute')
         agent.config.datastore_tracer.database_name_reporting.enabled = true
-        txn.end(t.end)
+        txn.end()
+        t.end()
       })
     })
   })
@@ -213,19 +222,22 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
         // localhost the data will still be correctly associated
         // with the query.
         var seg = getDatastoreSegment(agent.tracer.getSegment())
+        const attributes = seg.getAttributes()
         t.ok(seg, 'there is a segment')
         t.equal(
-          seg.parameters.host,
+          attributes.host,
           agent.config.getHostnameSafe(),
           'set host'
         )
         t.equal(
-          seg.parameters.database_name,
+          attributes.database_name,
           DBNAME,
           'set database name'
         )
-        t.equal(seg.parameters.port_path_or_id, String(defaultConfig.port), 'set port')
-        txn.end(defaultPool.end.bind(defaultPool, t.end))
+        t.equal(attributes.port_path_or_id, String(defaultConfig.port), 'set port')
+        t.equal(attributes.product, 'MySQL', 'should set product attribute')
+        txn.end()
+        defaultPool.end(t.end)
       })
     })
   })
@@ -238,27 +250,30 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       defaultPool.query('SELECT 1 + 1 AS solution', function(err) {
         var seg = getDatastoreSegment(agent.tracer.getSegment())
+        const attributes = seg.getAttributes()
 
         t.error(err, 'should not error making query')
         t.ok(seg, 'should have a segment')
         t.equal(
-          seg.parameters.host,
+          attributes.host,
           urltils.isLocalhost(config.host)
             ? agent.config.getHostnameSafe()
             : config.host,
           'should set host'
         )
         t.equal(
-          seg.parameters.database_name,
+          attributes.database_name,
           DBNAME,
           'should set database name'
         )
         t.equal(
-          seg.parameters.port_path_or_id,
+          attributes.port_path_or_id,
           "3306",
           'should set port'
         )
-        txn.end(defaultPool.end.bind(defaultPool, t.end))
+        t.equal(attributes.product, 'MySQL', 'should set product attribute')
+        txn.end()
+        defaultPool.end(t.end)
       })
     })
   })
@@ -268,7 +283,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
       pool.query('BLARG', function(err) {
         t.ok(err)
         t.ok(agent.getTransaction(), 'transaction should exit')
-        txn.end(t.end)
+        txn.end()
+        t.end()
       })
     })
   })
@@ -276,7 +292,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
   t.test('lack of callback does not explode', function(t) {
     helper.runInTransaction(agent, function transactionInScope(txn) {
       pool.query('SET SESSION auto_increment_increment=1')
-      txn.end(t.end)
+      txn.end()
+      t.end()
     })
   })
 
@@ -292,7 +309,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
         t.ok(segment.timer.start > 0, 'starts at a postitive time')
         t.ok(segment.timer.start <= Date.now(), 'starts in past')
         t.equal(segment.name, 'MySQL Pool#query', 'is named')
-        txn.end(t.end)
+        txn.end()
+        t.end()
       })
     })
   })
@@ -311,7 +329,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           t.equal(segment.name, 'MySQL Pool#query', 'is named')
         }
 
-        txn.end(t.end)
+        txn.end()
+        t.end()
       })
     })
   })
@@ -333,7 +352,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
           t.ok(segment.timer.start > 0, 'starts at a postitive time')
           t.ok(segment.timer.start <= Date.now(), 'starts in past')
           t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
-          txn.end(t.end)
+          txn.end()
+          t.end()
         })
       })
     })
@@ -358,7 +378,8 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
             t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
           }
 
-          txn.end(t.end)
+          txn.end()
+          t.end()
         })
       })
     })
@@ -383,26 +404,29 @@ tap.test('mysql built-in connection pools', {timeout : 30 * 1000}, function(t) {
             t.error(err, 'should not error making query')
 
             var seg = getDatastoreSegment(agent.tracer.getSegment())
+            const attributes = seg.getAttributes()
 
             // In the case where you don't have a server running on localhost
             // the data will still be correctly associated with the query.
             t.ok(seg, 'there is a segment')
             t.equal(
-              seg.parameters.host,
+              attributes.host,
               agent.config.getHostnameSafe(),
               'set host'
             )
             t.equal(
-              seg.parameters.port_path_or_id,
+              attributes.port_path_or_id,
               socketPath,
               'set path'
             )
             t.equal(
-              seg.parameters.database_name,
+              attributes.database_name,
               DBNAME,
               'set database name'
             )
-            txn.end(socketPool.end.bind(socketPool, t.end))
+            t.equal(attributes.product, 'MySQL', 'should set product attribute')
+            txn.end()
+            socketPool.end(t.end)
           })
         })
       }
@@ -751,6 +775,64 @@ tap.test('poolCluster', {timeout : 30 * 1000}, function(t) {
 
           txn.end()
           connection.release()
+          poolCluster.end()
+          t.end()
+        })
+      })
+    })
+  })
+
+  t.test('poolCluster query', function(t) {
+    let poolCluster = mysql.createPoolCluster()
+
+    poolCluster.add(config) // anonymous group
+    poolCluster.add('MASTER', config)
+    poolCluster.add('REPLICA', config)
+
+    let masterPool = poolCluster.of('MASTER', 'RANDOM')
+    let replicaPool = poolCluster.of('REPLICA', 'RANDOM')
+    helper.runInTransaction(agent, function(txn) {
+      replicaPool.query('SELECT ? + ? AS solution', [1,1], function(err) {
+        let transxn = agent.getTransaction()
+        t.ok(transxn, 'transaction should exist')
+        t.strictEqual(transxn, txn, 'transaction must be same')
+
+        let segment = agent.tracer.getSegment().children[1]
+        t.ok(segment, 'segment should exist')
+        t.ok(segment.timer.start > 0, 'starts at a postitive time')
+        t.ok(segment.timer.start <= Date.now(), 'starts in past')
+
+        t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
+        t.ifError(err, 'no error ocurred')
+        t.ok(transxn, 'transaction should exit')
+        t.strictEqual(transxn, txn, 'transaction must be same')
+        t.ok(segment, 'segment should exit')
+        t.ok(segment.timer.start > 0, 'starts at a postitive time')
+        t.ok(segment.timer.start <= Date.now(), 'starts in past')
+        t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
+        masterPool.query('SELECT ? + ? AS solution', [1,1], function(err) {
+          transxn = agent.getTransaction()
+          t.ok(transxn, 'transaction should exist')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+
+          segment = agent.tracer.getSegment().children[1]
+          t.ok(segment, 'segment should exist')
+          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start <= Date.now(), 'starts in past')
+
+          t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
+          t.ifError(err, 'no error ocurred')
+          t.ok(transxn, 'transaction should exit')
+          t.strictEqual(transxn, txn, 'transaction must be same')
+          t.ok(segment, 'segment should exit')
+          t.ok(segment.timer.start > 0, 'starts at a postitive time')
+          t.ok(segment.timer.start <= Date.now(), 'starts in past')
+          t.equal(segment.name, 'Datastore/statement/MySQL/unknown/select', 'is named')
+
+          txn.end()
           poolCluster.end()
           t.end()
         })

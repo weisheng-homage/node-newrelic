@@ -11,13 +11,13 @@ runTests.runMultiple = runMultiple
 function runTests(t, agent, Promise, library) {
   /* eslint-disable no-shadow, brace-style */
   if (library) {
-    performTests('Fullfillment Factories',
+    performTests('Library Fullfillment Factories',
       function(Promise, val) { return library.resolve(val) },
       function(Promise, err) { return library.reject(err) }
     )
   }
 
-  performTests('Fullfillment Factories',
+  performTests('Promise Fullfillment Factories',
     function(Promise, val) { return Promise.resolve(val) },
     function(Promise, err) { return Promise.reject(err) }
   )
@@ -152,16 +152,13 @@ function runTests(t, agent, Promise, library) {
     helper.runInTransaction(agent, function transactionWrapper(transaction) {
       Promise.resolve(0).then(function step1() {
         return 1
-      })
-      .then(function step2() {
+      }).then(function step2() {
         return 2
-      })
-      .then(function finalHandler(res) {
+      }).then(function finalHandler(res) {
         t.equal(res, 2, 'should be the correct result')
         checkTransaction(t, agent, transaction)
         transaction.end()
-      })
-      .then(function() {
+      }).then(function() {
         t.pass('should resolve cleanly')
         t.end()
       }, function(err) {
@@ -178,14 +175,11 @@ function runTests(t, agent, Promise, library) {
       var err = new Error('some error')
       Promise.resolve(0).then(function step1() {
         return 1
-      })
-      .then(function rejector() {
+      }).then(function rejector() {
         throw err
-      })
-      .then(function unusedStep() {
+      }).then(function unusedStep() {
         t.fail('should not change execution profile')
-      })
-      .catch(function catchHandler(reason) {
+      }).catch(function catchHandler(reason) {
         t.equal(reason, err, 'should be the same error')
         checkTransaction(t, agent, transaction)
         transaction.end()
@@ -229,9 +223,8 @@ function checkTransaction(t, agent, transaction) {
 function end(tx, cb) {
   return function() {
     if (tx) {
-      tx.end(cb)
-    } else {
-      cb()
+      tx.end()
     }
+    cb()
   }
 }

@@ -5,11 +5,12 @@
   "tests": [
     {
       "engines": {
-        "node": ">=0.10.0"
+        "node": ">=8"
       },
       "dependencies": {
         "express": ">=4.6.0",
-        "express-enrouten": "1.1"
+        "express-enrouten": "1.1",
+        "ejs": "2.5"
       },
       "files": [
         "app-use.tap.js",

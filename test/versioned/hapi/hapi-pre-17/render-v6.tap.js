@@ -1,12 +1,13 @@
 'use strict'
 
-var path = require('path')
-var test = require('tap').test
-var request = require('request')
-var helper = require('../../../lib/agent_helper')
-var API = require('../../../../api')
-var utils = require('./hapi-utils')
-var fixtures = require('../fixtures')
+const path = require('path')
+const tap = require('tap')
+const test = tap.test
+const request = require('request')
+const helper = require('../../../lib/agent_helper')
+const API = require('../../../../api')
+const utils = require('./hapi-utils')
+const fixtures = require('../fixtures')
 
 test('agent instrumentation of Hapi', function(t) {
   t.plan(4)
@@ -17,6 +18,7 @@ test('agent instrumentation of Hapi', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
+
     done()
   })
 
@@ -68,7 +70,7 @@ test('agent instrumentation of Hapi', function(t) {
         t.ok(stats, 'found HTTP dispatcher statistics')
         t.equal(stats.callCount, 1, 'only one HTTP-dispatched request was made')
 
-        var serialized = JSON.stringify(agent.metrics)
+        var serialized = JSON.stringify(agent.metrics._toPayloadSync())
         t.ok(
           serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
           'serialized metrics as expected'
@@ -168,6 +170,9 @@ test('agent instrumentation of Hapi', function(t) {
   })
 
   t.test('should trap errors correctly', function(t) {
+    // Prevent tap from noticing the ohno failure.
+    helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
     server = utils.getServer({ options: {debug: false} })
 
     server.route({
@@ -187,7 +192,7 @@ test('agent instrumentation of Hapi', function(t) {
         t.ok(response, 'got a response from Express')
         t.ok(body, 'got back a body')
 
-        var errors = agent.errors.errors
+        var errors = agent.errors.traceAggregator.errors
         t.ok(errors, 'errors were found')
         t.equal(errors.length, 1, 'should be 1 error')
 

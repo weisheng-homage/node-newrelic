@@ -7,7 +7,8 @@ var helper = require('../../lib/agent_helper')
 test("Express router introspection", function(t) {
   t.plan(11)
 
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
+
   var express = require('express')
   var app = express()
   var server  = require('http').createServer(app)
@@ -22,8 +23,12 @@ test("Express router introspection", function(t) {
   agent.config.attributes.enabled = true
 
   agent.on('transactionFinished', function(transaction) {
-    t.equal(transaction.name, 'WebTransaction/Expressjs/GET//test',
-            "transaction has expected name")
+    t.equal(
+      transaction.name,
+      'WebTransaction/Expressjs/GET//test',
+      "transaction has expected name"
+    )
+
     t.equal(transaction.url, '/test', "URL is left alone")
     t.equal(transaction.statusCode, 200, "status code is OK")
     t.equal(transaction.verb, 'GET', "HTTP method is GET")
@@ -32,8 +37,12 @@ test("Express router introspection", function(t) {
     var web = transaction.trace.root.children[0]
     t.ok(web, "trace has web segment")
     t.equal(web.name, transaction.name, "segment name and transaction name match")
-    t.equal(web.partialName, 'Expressjs/GET//test',
-            "should have partial name for apdex")
+
+    t.equal(
+      web.partialName,
+      'Expressjs/GET//test',
+      "should have partial name for apdex"
+    )
   })
 
   app.get('/test', function(req, res) {

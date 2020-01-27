@@ -224,7 +224,7 @@ describe('recording slow queries', function() {
     var agent
 
     before(function() {
-      agent = helper.loadMockedAgent(null, {
+      agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
           record_sql: 'obfuscated'
@@ -281,7 +281,7 @@ describe('recording slow queries', function() {
       expect(sample.callCount).equal(2)
       expect(trace.obfuscated).equal('select * from foo where a=?')
       expect(trace.normalized).equal('select*fromfoowherea=?')
-      expect(trace.id).equal(35940)
+      expect(trace.id).equal(2680623426242782700)
       expect(trace.query).equal('select * from foo where a=1')
       expect(trace.metric).equal('Datastore/statement/MySql/foo/select')
       expect(typeof trace.trace).equal('string')
@@ -294,7 +294,7 @@ describe('recording slow queries', function() {
     var agent
 
     before(function() {
-      agent = helper.loadMockedAgent(null, {
+      agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
           record_sql: 'obfuscated'
@@ -350,7 +350,7 @@ describe('recording slow queries', function() {
       expect(sample.callCount).equal(2)
       expect(trace.obfuscated).equal('select * from foo where a=?')
       expect(trace.normalized).equal('select*fromfoowherea=?')
-      expect(trace.id).equal(35940)
+      expect(trace.id).equal(2680623426242782700)
       expect(trace.query).equal('select * from foo where a=1')
       expect(trace.metric).equal('Datastore/operation/MySql/select')
       expect(typeof trace.trace).equal('string')
@@ -363,7 +363,7 @@ describe('recording slow queries', function() {
     var agent
 
     before(function() {
-      agent = helper.loadMockedAgent(null, {
+      agent = helper.loadMockedAgent({
         slow_sql: {enabled: true},
         transaction_tracer: {
           record_sql: 'obfuscated'

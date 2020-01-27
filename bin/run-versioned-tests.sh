@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -x
+
 VERSIONED_MODE="${VERSIONED_MODE:---major}"
 if [[ $TRAVIS_BRANCH == `git describe --tags --always HEAD` ]]; then
   VERSIONED_MODE=--minor
@@ -18,4 +20,6 @@ if [[ "$1" != '' ]]; then
 fi
 
 export AGENT_PATH=`pwd`
-time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 ${directories[@]}
+
+# This is meant to be temporary. Remove once new major version with fixes rolled into agent.
+time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 -s koa ${directories[@]}

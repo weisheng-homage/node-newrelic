@@ -30,7 +30,7 @@ describe('MessageShim', function() {
   })
 
   beforeEach(function() {
-    agent = helper.instrumentMockedAgent(null, {attributes: { enabled: true }})
+    agent = helper.instrumentMockedAgent({attributes: { enabled: true }})
     shim = new MessageShim(agent, 'test-module')
     shim.setLibrary(shim.RABBITMQ)
     wrappable = {
@@ -40,6 +40,12 @@ describe('MessageShim', function() {
       anony: function() {},
       getActiveSegment: function() {
         return agent.tracer.getSegment()
+      },
+      withNested: function() {
+        const segment = agent.tracer.getSegment()
+        segment.add('ChildSegment')
+
+        return segment
       }
     }
 
@@ -160,6 +166,7 @@ describe('MessageShim', function() {
           expect(segment.transaction).to.equal(tx)
           expect(segment.name)
             .to.equal('MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+
           expect(agent.tracer.getSegment()).to.equal(startingSegment)
         })
       })
@@ -174,9 +181,10 @@ describe('MessageShim', function() {
 
         helper.runInTransaction(agent, function() {
           var segment = wrappable.getActiveSegment()
-          expect(segment.parameters).to.have.property('routing_key', 'foo.bar')
-          expect(segment.parameters).to.have.property('a', 'a')
-          expect(segment.parameters).to.have.property('b', 'b')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.have.property('routing_key', 'foo.bar')
+          expect(attributes).to.have.property('a', 'a')
+          expect(attributes).to.have.property('b', 'b')
         })
       })
 
@@ -191,8 +199,9 @@ describe('MessageShim', function() {
 
         helper.runInTransaction(agent, function() {
           var segment = wrappable.getActiveSegment()
-          expect(segment.parameters).to.not.have.property('a')
-          expect(segment.parameters).to.not.have.property('b')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.not.have.property('a')
+          expect(attributes).to.not.have.property('b')
         })
       })
 
@@ -271,6 +280,42 @@ describe('MessageShim', function() {
         })
       })
 
+      describe('when opaque false', () => {
+        it('should create a child segment', function() {
+          shim.recordProduce(wrappable, 'withNested', function() {
+            return {destinationName: 'foobar'}
+          })
+
+          helper.runInTransaction(agent, (tx) => {
+            const segment = wrappable.withNested()
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name)
+              .to.equal('MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+
+            expect(segment.children).to.have.lengthOf(1)
+            const childSegment = segment.children[0]
+            expect(childSegment.name).to.equal('ChildSegment')
+          })
+        })
+      })
+
+      describe('when opaque true', () => {
+        it('should not create a child segment', function() {
+          shim.recordProduce(wrappable, 'withNested', function() {
+            return {destinationName: 'foobar', opaque: true}
+          })
+
+          helper.runInTransaction(agent, (tx) => {
+            const segment = wrappable.withNested()
+            expect(segment.transaction).to.equal(tx)
+            expect(segment.name)
+              .to.equal('MessageBroker/RabbitMQ/Exchange/Produce/Named/foobar')
+
+            expect(segment.children).to.have.lengthOf(0)
+          })
+        })
+      })
+
       describe('when headers are provided', function() {
         it('should insert CAT request headers', function() {
           var headers = {}
@@ -298,12 +343,13 @@ describe('MessageShim', function() {
         helper.runInTransaction(agent, function(tx) {
           transaction = tx
           wrappable.getActiveSegment()
-          tx.end(function() { done() })
+          tx.end()
+          done()
         })
       })
 
       it('should create message broker metrics', function() {
-        var unscoped = agent.metrics.unscoped
+        var unscoped = getMetrics(agent).unscoped
         var scoped = transaction.metrics.unscoped
         expect(unscoped).to.have.property(
           'MessageBroker/RabbitMQ/Exchange/Produce/Named/my-queue'
@@ -380,6 +426,27 @@ describe('MessageShim', function() {
         })
       })
 
+      it('should bind the callback if there is one', function() {
+        const cb = function() {}
+        const toWrap = function(wrappedCB) {
+          expect(wrappedCB).to.not.equal(cb)
+          expect(shim.isWrapped(wrappedCB)).to.be.true
+          expect(shim.unwrap(wrappedCB)).to.equal(cb)
+
+          expect(function() {
+            wrappedCB()
+          }).to.not.throw()
+        }
+
+        const wrapped = shim.recordConsume(toWrap, function() {
+          return {callback: shim.LAST}
+        })
+
+        helper.runInTransaction(agent, function() {
+          wrapped(cb)
+        })
+      })
+
       it('should add parameters to segment', function() {
         function wrapMe(q, cb) {
           cb()
@@ -396,8 +463,9 @@ describe('MessageShim', function() {
 
         helper.runInTransaction(agent, function() {
           var segment = wrapped('foo', function() {})
-          expect(segment.parameters).to.have.property('a', 'a')
-          expect(segment.parameters).to.have.property('b', 'b')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.have.property('a', 'a')
+          expect(attributes).to.have.property('b', 'b')
         })
       })
 
@@ -418,8 +486,9 @@ describe('MessageShim', function() {
 
         helper.runInTransaction(agent, function() {
           var segment = wrapped('foo', function() {})
-          expect(segment.parameters).to.not.have.property('a')
-          expect(segment.parameters).to.not.have.property('b')
+          const attributes = segment.getAttributes()
+          expect(attributes).to.not.have.property('a')
+          expect(attributes).to.not.have.property('b')
         })
       })
 
@@ -461,8 +530,9 @@ describe('MessageShim', function() {
         return helper.runInTransaction(agent, function() {
           return wrapped('foo', function() {}).then(function(message) {
             expect(message).to.equal(msg)
-            expect(segment.parameters).to.have.property('a', 'a')
-            expect(segment.parameters).to.have.property('b', 'b')
+            const attributes = segment.getAttributes()
+            expect(attributes).to.have.property('a', 'a')
+            expect(attributes).to.have.property('b', 'b')
           })
         })
       })
@@ -501,6 +571,42 @@ describe('MessageShim', function() {
       })
     })
 
+    describe('when opaque false', () => {
+      it('should create a child segment', function() {
+        shim.recordConsume(wrappable, 'withNested', function() {
+          return {destinationName: 'foobar'}
+        })
+
+        helper.runInTransaction(agent, function(tx) {
+          const segment = wrappable.withNested()
+          expect(segment.transaction).to.equal(tx)
+          expect(segment.name)
+            .to.equal('MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
+
+          expect(segment.children).to.have.lengthOf(1)
+          const childSegment = segment.children[0]
+          expect(childSegment.name).to.equal('ChildSegment')
+        })
+      })
+    })
+
+    describe('when opaque true', () => {
+      it('should not create a child segment', function() {
+        shim.recordConsume(wrappable, 'withNested', function() {
+          return {destinationName: 'foobar', opaque: true}
+        })
+
+        helper.runInTransaction(agent, function(tx) {
+          const segment = wrappable.withNested()
+          expect(segment.transaction).to.equal(tx)
+          expect(segment.name)
+            .to.equal('MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar')
+
+          expect(segment.children).to.have.lengthOf(0)
+        })
+      })
+    })
+
     describe('recorder', function() {
       it('should create message broker metrics', function(done) {
         shim.recordConsume(wrappable, 'getActiveSegment', function() {
@@ -514,7 +620,7 @@ describe('MessageShim', function() {
         })
 
         agent.on('transactionFinished', function() {
-          var metrics = agent.metrics
+          var metrics = getMetrics(agent)
           expect(metrics.unscoped).to.have.property(
             'MessageBroker/RabbitMQ/Exchange/Consume/Named/foobar'
           )
@@ -656,12 +762,13 @@ describe('MessageShim', function() {
         helper.runInTransaction(agent, function(tx) {
           transaction = tx
           wrappable.getActiveSegment('my-queue')
-          tx.end(function() { done() })
+          tx.end()
+          done()
         })
       })
 
       it('should create message broker metrics', function() {
-        var unscoped = agent.metrics.unscoped
+        var unscoped = getMetrics(agent).unscoped
         var scoped = transaction.metrics.unscoped
         expect(unscoped).to.have.property(
           'MessageBroker/RabbitMQ/Queue/Purge/Named/my-queue'
@@ -786,9 +893,7 @@ describe('MessageShim', function() {
         var parent = wrapped('my.queue', function consumer() {
           var segment = shim.getSegment()
           expect(segment)
-            .to.exist
-            .and.have.property('name')
-              .not.equal('Callback: consumer')
+            .to.exist.and.have.property('name').not.equal('Callback: consumer')
 
           expect(segment).to.have.nested.property('transaction.type', 'message')
           done()
@@ -877,7 +982,7 @@ describe('MessageShim', function() {
 
         wrapped('my.queue', function consumer() {
           setTimeout(function() {
-            var metrics = agent.metrics
+            var metrics = getMetrics(agent)
             metricNames.forEach(function(name) {
               expect(metrics.unscoped).property(name).to.have.property('callCount', 1)
             })
@@ -903,7 +1008,7 @@ describe('MessageShim', function() {
 
         func('my.exchange', function consumer() {
           setTimeout(function() {
-            var metrics = agent.metrics
+            var metrics = getMetrics(agent)
             metricNames.forEach(function(name) {
               expect(metrics.unscoped).property(name).to.have.property('callCount', 1)
             })
@@ -927,7 +1032,7 @@ describe('MessageShim', function() {
 
         wrapped('my.queue', function consumer() {
           setTimeout(function() {
-            var metrics = agent.metrics
+            var metrics = getMetrics(agent)
             metricNames.forEach(function(name) {
               expect(metrics.unscoped).property(name).to.have.property('callCount', 1)
             })
@@ -1037,4 +1142,8 @@ function testNonWritable(obj, key, value) {
     expect(obj).to.have.property(key)
       .that.is.not.equal('testNonWritable test value')
   }
+}
+
+function getMetrics(agent) {
+  return agent.metrics._metrics
 }

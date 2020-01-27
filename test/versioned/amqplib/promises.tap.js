@@ -39,7 +39,7 @@ tap.test('amqplib promise instrumentation', function(t) {
       }
     })
 
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true
       }
@@ -103,7 +103,7 @@ tap.test('amqplib promise instrumentation', function(t) {
     })
 
     helper.runInTransaction(agent, function transactionInScope(tx) {
-      channel.sendToQueue('testQueue', new Buffer('hello'), {
+      channel.sendToQueue('testQueue', Buffer.from('hello'), {
         replyTo: 'my.reply.queue',
         correlationId: 'correlation-id'
       })
@@ -128,7 +128,7 @@ tap.test('amqplib promise instrumentation', function(t) {
         return channel.bindQueue(queueName, amqpUtils.FANOUT_EXCHANGE)
       }).then(function() {
         amqpUtils.verifyTransaction(t, tx, 'bindQueue')
-        channel.publish(amqpUtils.FANOUT_EXCHANGE, '', new Buffer('hello'))
+        channel.publish(amqpUtils.FANOUT_EXCHANGE, '', Buffer.from('hello'))
         tx.end()
       }).catch(function(err) {
         t.fail(err)
@@ -153,7 +153,7 @@ tap.test('amqplib promise instrumentation', function(t) {
         return channel.bindQueue(queueName, amqpUtils.DIRECT_EXCHANGE, 'key1')
       }).then(function() {
         amqpUtils.verifyTransaction(t, tx, 'bindQueue')
-        channel.publish(amqpUtils.DIRECT_EXCHANGE, 'key1', new Buffer('hello'))
+        channel.publish(amqpUtils.DIRECT_EXCHANGE, 'key1', Buffer.from('hello'))
         tx.end()
       }).catch(function(err) {
         t.fail(err)
@@ -205,7 +205,7 @@ tap.test('amqplib promise instrumentation', function(t) {
         channel.publish(
           exchange,
           'consume-tx-key',
-          new Buffer('hello')
+          Buffer.from('hello')
         )
         return channel.get(queue).then(function(msg) {
           t.ok(msg, 'should receive a message')
@@ -216,10 +216,9 @@ tap.test('amqplib promise instrumentation', function(t) {
           amqpUtils.verifyTransaction(t, tx, 'get')
           channel.ack(msg)
         }).then(function() {
-          return tx.end(function() {
-            amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
-            t.end()
-          })
+          tx.end()
+          amqpUtils.verifyGet(t, tx, exchange, 'consume-tx-key', queue)
+          t.end()
         })
       })
     }).catch(function(err) {
@@ -250,19 +249,18 @@ tap.test('amqplib promise instrumentation', function(t) {
           t.equal(body, 'hello', 'should receive expected body')
 
           channel.ack(msg)
-          tx.end(function() {
-            amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-            consumeTxnHandle.end(function() {
-              amqpUtils.verifyConsumeTransaction(
-                t,
-                consumeTxn,
-                exchange,
-                queue,
-                'consume-tx-key'
-              )
-              amqpUtils.verifyCAT(t, tx, consumeTxn)
-              t.end()
-            })
+          tx.end()
+          amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+          consumeTxnHandle.end(function() {
+            amqpUtils.verifyConsumeTransaction(
+              t,
+              consumeTxn,
+              exchange,
+              queue,
+              'consume-tx-key'
+            )
+            amqpUtils.verifyCAT(t, tx, consumeTxn)
+            t.end()
           })
         }).then(function() {
           amqpUtils.verifyTransaction(t, tx, 'consume')
@@ -271,7 +269,7 @@ tap.test('amqplib promise instrumentation', function(t) {
         channel.publish(
           exchange,
           'consume-tx-key',
-          new Buffer('hello')
+          Buffer.from('hello')
         )
       })
     }).catch(function(err) {
@@ -283,7 +281,7 @@ tap.test('amqplib promise instrumentation', function(t) {
   t.test('consume in a transaction with distributed tracing', function(t) {
     agent.config.distributed_tracing.enabled = true
     agent.config.account_id = 1234
-    agent.config.application_id = 4321
+    agent.config.primary_application_id = 4321
 
     var queue = null
     var consumeTxn = null
@@ -308,19 +306,18 @@ tap.test('amqplib promise instrumentation', function(t) {
           t.equal(body, 'hello', 'should receive expected body')
 
           channel.ack(msg)
-          tx.end(function() {
-            amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
-            consumeTxnHandle.end(function() {
-              amqpUtils.verifyConsumeTransaction(
-                t,
-                consumeTxn,
-                exchange,
-                queue,
-                'consume-tx-key'
-              )
-              amqpUtils.verifyDistributedTrace(t, tx, consumeTxn)
-              t.end()
-            })
+          tx.end()
+          amqpUtils.verifySubscribe(t, tx, exchange, 'consume-tx-key')
+          consumeTxnHandle.end(function() {
+            amqpUtils.verifyConsumeTransaction(
+              t,
+              consumeTxn,
+              exchange,
+              queue,
+              'consume-tx-key'
+            )
+            amqpUtils.verifyDistributedTrace(t, tx, consumeTxn)
+            t.end()
           })
         }).then(function() {
           amqpUtils.verifyTransaction(t, tx, 'consume')
@@ -329,7 +326,7 @@ tap.test('amqplib promise instrumentation', function(t) {
         channel.publish(
           exchange,
           'consume-tx-key',
-          new Buffer('hello')
+          Buffer.from('hello')
         )
       })
     }).catch(function(err) {
@@ -372,7 +369,7 @@ tap.test('amqplib promise instrumentation', function(t) {
         channel.publish(
           amqpUtils.DIRECT_EXCHANGE,
           'consume-tx-key',
-          new Buffer('hello')
+          Buffer.from('hello')
         )
       })
     }).catch(function(err) {
@@ -410,7 +407,7 @@ tap.test('amqplib promise instrumentation', function(t) {
         channel.publish(
           amqpUtils.DIRECT_EXCHANGE,
           'consume-tx-key',
-          new Buffer('hello')
+          Buffer.from('hello')
         )
       })
     }).catch(function(err) {

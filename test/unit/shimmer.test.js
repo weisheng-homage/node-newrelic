@@ -14,8 +14,7 @@ function wrappedInst() {
 var chai = require('chai')
 var expect = chai.expect
 var helper = require('../lib/agent_helper')
-var logger = require('../../lib/logger')
-                     .child({component: 'TEST'})
+var logger = require('../../lib/logger').child({component: 'TEST'})
 var shimmer = require('../../lib/shimmer')
 var shims = require('../../lib/shim')
 var EventEmitter = require('events').EventEmitter
@@ -83,6 +82,15 @@ describe('shimmer', function() {
         require(moduleName)
         require(moduleName)
         expect(counter).to.equal(1)
+      })
+
+
+      it('should clean up NR added properties', () => {
+        const nrKeys =
+          Object.keys(instrumentedModule).filter((key) => key.startsWith('__NR_'))
+
+        const message = `Expected keys to be equal but found: ${nrKeys.join(', ')}`
+        expect(nrKeys.length, message).to.equal(0)
       })
     }
   }
@@ -213,8 +221,12 @@ describe('shimmer', function() {
 
       it("shouldn't throw if property to be replaced is omitted", function() {
         expect(function() {
-          shimmer.wrapDeprecated(simple, 'nodule', null,
-                                 {get: function() {}, set: function() {}})
+          shimmer.wrapDeprecated(
+            simple,
+            'nodule',
+            null,
+            {get: function() {}, set: function() {}}
+          )
         }).not.throws()
       })
 
@@ -472,9 +484,14 @@ describe('shimmer', function() {
 
         var verify = function(i, phase, passed) {
           var lookup = agent.getTransaction()
-          logger.trace("%d %s %d %d", i, phase,
-                       (lookup ? lookup.id : 'missing'),
-                       (passed ? passed.id : 'missing'))
+          logger.trace(
+            "%d %s %d %d",
+            i,
+            phase,
+            (lookup ? lookup.id : 'missing'),
+            (passed ? passed.id : 'missing')
+          )
+
           expect(lookup).equal(passed)
           expect(lookup).equal(transactions[i])
           expect(lookup.id).equal(ids[i])

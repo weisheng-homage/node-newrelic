@@ -5,23 +5,33 @@
   "tests": [
     {
       "engines": {
-        "node": ">=0.10.0"
+        "node": ">=8"
       },
       "dependencies": {
         "bluebird": ">=2"
       },
       "files": [
         "regressions.tap.js",
-        "segments.tap.js",
         "transaction-state.tap.js"
       ]
     },
     {
       "engines": {
-        "node": ">=0.10.0"
+        "node": ">=8 <10 || >10"
       },
       "dependencies": {
         "bluebird": ">=3"
+      },
+      "files": [
+        "methods.tap.js"
+      ]
+    },
+    {
+      "engines": {
+        "node": ">=10 <11"
+      },
+      "dependencies": {
+        "bluebird": ">=3 <3.6 || >3.7"
       },
       "files": [
         "methods.tap.js"

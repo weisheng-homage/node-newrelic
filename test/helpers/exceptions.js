@@ -1,8 +1,8 @@
 'use strict'
 
-var newrelic = require('../../index')
+const newrelic = require('../../index')
 
-var commands = {
+const commands = {
   uncaughtException: function() {
     throw new Error('nothing can keep me down')
   },
@@ -29,6 +29,28 @@ var commands = {
         throw new Error(message)
       }, 10)
     })
+  },
+
+  runServerlessTransaction: function(err) {
+    const stubEvent = {}
+    const stubContext = {
+      done: () => {},
+      succeed: () => {},
+      fail: () => {},
+      functionName: 'testFunction',
+      functionVersion: 'TestVersion',
+      invokedFunctionArn: 'arn:test:function',
+      memoryLimitInMB: '128',
+      awsRequestId: 'testid'
+    }
+    const stubCallback = () => {}
+    process.once('uncaughtException', function() {
+      setTimeout(sendErrors, 15)
+    })
+    const handler = newrelic.setLambdaHandler(function handler() {
+      throw new Error(err)
+    })
+    handler(stubEvent, stubContext, stubCallback)
   },
 
   checkAgent: function(err) {
@@ -63,10 +85,12 @@ var commands = {
 }
 
 function sendErrors() {
-  process.send({
-    count: newrelic.agent.errors.errorCount,
-    messages: newrelic.agent.errors.errors.map(function(e) { return e[2] })
-  })
+  const errData = {
+    count: newrelic.agent.errors.traceAggregator.errors.length,
+    messages: newrelic.agent.errors.traceAggregator.errors.map((e) => { return e[2] })
+  }
+
+  process.send(errData)
 }
 
 process.on('message', function(msg) {

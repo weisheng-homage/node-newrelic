@@ -11,23 +11,20 @@ chai.should()
 var used = [
   'await_support',
   'cat',
-  'custom_events',
   'custom_instrumentation',
   'custom_metrics',
-  'express4',
   'express5',
   'express_segments',
-  'insights',
-  'mysql_pool',
   'native_metrics',
-  'postgres',
   'promise_segments',
-  'proxy',
+  'protocol_17',
+  'serverless_mode',
   'released',
   'reverse_naming_rules',
   'send_request_uri_attribute',
   'synthetics',
-  'unreleased',
+  'dt_format_w3c',
+  'unreleased'
 ]
 
 describe('feature flags', function() {
@@ -75,7 +72,8 @@ describe('feature flags', function() {
   })
   it('should warn if released flags are still in config', function() {
     Config.prototype.setLogger({
-      warn: function() { called = true }
+      warn: function() { called = true },
+      warnOnce: () => {}
     })
     var called = false
     var config = new Config()
@@ -85,7 +83,8 @@ describe('feature flags', function() {
   })
   it('should warn if unreleased flags are still in config', function() {
     Config.prototype.setLogger({
-      warn: function() { called = true }
+      warn: function() { called = true },
+      warnOnce: () => {}
     })
     var called = false
     var config = new Config()

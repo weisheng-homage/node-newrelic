@@ -1,9 +1,9 @@
 'use strict'
 
-var chai   = require('chai')
-var should = chai.should()
-var expect = chai.expect
-var API    = require('../../../stub_api.js')
+const chai = require('chai')
+const should = chai.should()
+const expect = chai.expect
+const API = require('../../../stub_api')
 
 
 describe("the stubbed New Relic agent API", function() {
@@ -13,7 +13,7 @@ describe("the stubbed New Relic agent API", function() {
     api = new API()
   })
 
-  it("should export 28 API calls", function() {
+  it('should export 28 API calls', () => {
     expect(Object.keys(api.constructor.prototype).length).to.equal(28)
   })
 
@@ -72,6 +72,17 @@ describe("the stubbed New Relic agent API", function() {
     expect(function() { api.addIgnoringRule(/^foo/, "/foo/*") }).not.throws()
   })
 
+  it("exports a function for getting trace metadata", function() {
+    should.exist(api.getTraceMetadata)
+    expect(api.getTraceMetadata).a('function')
+    const metadata = api.getTraceMetadata()
+    expect(metadata).to.be.an('object')
+    expect(metadata.traceId).to.be.a('string')
+    expect(metadata.traceId).to.equal('')
+    expect(metadata.spanId).to.be.a('string')
+    expect(metadata.spanId).to.equal('')
+  })
+
   it("exports a function for capturing errors", function() {
     should.exist(api.noticeError)
     expect(api.noticeError).a('function')
@@ -85,37 +96,27 @@ describe("the stubbed New Relic agent API", function() {
     api.getBrowserTimingHeader().should.equal('')
   })
 
-  it("exports a function for adding custom parameters", function() {
-    should.exist(api.addCustomParameter)
-    expect(api.addCustomParameter).a('function')
-  })
-
   it("shouldn't throw when a custom parameter is added", function() {
-    expect(function() { api.addCustomParameter('test', 'value') }).not.throws()
+    expect(function() { api.addCustomAttribute('test', 'value') }).not.throws()
   })
 
   it("exports a function for adding multiple custom parameters at once", function() {
-    should.exist(api.addCustomParameters)
-    expect(api.addCustomParameters).a('function')
+    should.exist(api.addCustomAttributes)
+    expect(api.addCustomAttributes).a('function')
   })
 
   it("shouldn't throw when multiple custom parameters are added", function() {
     expect(function() {
-      api.addCustomParameters({test: 'value', test2: 'value2'})
+      api.addCustomAttributes({test: 'value', test2: 'value2'})
     }).to.not.throw()
   })
 
-  it("shouldn't throw when a custom segment is added", function() {
-    expect(function() {
-      api.createTracer('name', function nop() {})
-    }).not.throws()
-  })
-
-  it("should return a function when calling createTracer", function() {
+  it("should return a function when calling setLambdaHandler", function() {
     function myNop() {}
-    var retVal = api.createTracer('name', myNop)
+    var retVal = api.setLambdaHandler(myNop)
     expect(retVal).to.equal(myNop)
   })
+
 
   it('should call the function passed into `startSegment`', function(done) {
     api.startSegment('foo', false, done)
@@ -151,11 +152,14 @@ describe("the stubbed New Relic agent API", function() {
     }).not.throws()
   })
 
-  it("shouldn't throw when a non-function callback is passed into startWebTransaction", function() {
-    expect(function() {
-      api.startWebTransaction('test', 'asdf')
-    }).not.throws()
-  })
+  it(
+    "shouldn't throw when a non-function callback is passed into startWebTransaction",
+    function() {
+      expect(function() {
+        api.startWebTransaction('test', 'asdf')
+      }).not.throws()
+    }
+  )
 
   it("shouldn't throw when a custom background transaction is started", function() {
     expect(function() {
@@ -169,71 +173,49 @@ describe("the stubbed New Relic agent API", function() {
     })
   })
 
-  it("shouldn't throw when a callback isn't passed into startBackgroundTransaction", function() {
-    expect(function() {
-      api.startBackgroundTransaction('test', 'group')
-    }).not.throws()
-  })
+  it(
+    "shouldn't throw when a callback isn't passed into startBackgroundTransaction",
+    function() {
+      expect(function() {
+        api.startBackgroundTransaction('test', 'group')
+      }).not.throws()
+    }
+  )
 
-  it("shouldn't throw when a non-function callback is passed into startBackgroundTransaction", function() {
-    expect(function() {
-      api.startBackgroundTransaction('test', 'group', 'asdf')
-    }).not.throws()
-  })
+  it(
+    "shouldn't throw when non-function callback is passed to startBackgroundTransaction",
+    function() {
+      expect(function() {
+        api.startBackgroundTransaction('test', 'group', 'asdf')
+      }).not.throws()
+    }
+  )
 
-  it("shouldn't throw when a custom background transaction is started with no group", function() {
-    expect(function() {
-      api.startBackgroundTransaction('test', function nop() {})
-    }).not.throws()
-  })
+  it("shouldn't throw when a custom background transaction is started with no group",
+    function() {
+      expect(function() {
+        api.startBackgroundTransaction('test', function nop() {})
+      }).not.throws()
+    }
+  )
 
-  it("should call the function passed into startBackgroundTransaction with no group", function(done) {
-    api.startBackgroundTransaction('test', function nop() {
-      done()
-    })
-  })
+  it("should call the function passed into startBackgroundTransaction with no group",
+    function(done) {
+      api.startBackgroundTransaction('test', function nop() {
+        done()
+      })
+    }
+  )
 
-  it("shouldn't throw when a callback isn't passed into startBackgroundTransaction with no group", function() {
-    expect(function() {
-      api.startBackgroundTransaction('test')
-    }).not.throws()
-  })
-
-  it("shouldn't throw when a custom web transaction is added", function() {
-    expect(function() {
-      api.createWebTransaction('name', function nop() {})
-    }).not.throws()
-  })
-
-  it("should return a function when calling createWebTransaction", function() {
-    function myNop() {}
-    var retVal = api.createWebTransaction('name', myNop)
-    expect(retVal).to.be.equal(myNop)
-  })
-
-  it("shouldn't throw when a custom background transaction is added", function() {
-    expect(function() {
-      api.createBackgroundTransaction('name', function nop() {})
-    }).not.throws()
-  })
-
-  it("should return a function when calling createBackgroundTransaction", function() {
-    function myNop() {}
-    var retVal = api.createBackgroundTransaction('name', myNop)
-    expect(retVal).to.be.equal(myNop)
-  })
-
-  it("shouldn't throw when a custom background transaction with a group is added", function() {
-    expect(function() {
-      api.createBackgroundTransaction('name', 'group', function nop() {})
-    }).not.throws()
-  })
-
-  it("should return a function when calling createBackgroundTransaction", function() {
-    function myNop() {}
-    var retVal = api.createBackgroundTransaction('name', 'group', myNop)
-    expect(retVal).to.be.equal(myNop)
-  })
+  it(
+    "shouldn't throw when a callback isn't passed into startBackgroundTransaction " +
+    "with no group",
+    function() {
+      expect(function() {
+        api.startBackgroundTransaction('test')
+      }).not.throws()
+    }
+  )
 
   it("shouldn't throw when a transaction is ended", function() {
     expect(function() {

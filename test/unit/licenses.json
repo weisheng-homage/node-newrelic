@@ -1,10 +1,14 @@
 {
-  "@newrelic/koa": "LicenseRef-LICENSE",
-  "@newrelic/native-metrics": "LicenseRef-LICENSE",
+  "@newrelic/aws-sdk": "SEE LICENSE IN LICENSE",
+  "@newrelic/koa": "SEE LICENSE IN LICENSE",
+  "@newrelic/superagent": "SEE LICENSE IN LICENSE",
+  "@newrelic/native-metrics": "SEE LICENSE IN LICENSE",
   "@tyriar/fibonacci-heap": "MIT",
   "async": "MIT",
   "concat-stream": "MIT",
   "https-proxy-agent": "MIT",
+  "esprima": "BSD-2-Clause",
+  "escodegen": "BSD-2-Clause",
   "json-stringify-safe": "ISC",
   "readable-stream": "MIT",
   "semver": "ISC"

@@ -17,11 +17,12 @@ test('background transactions should not blow up with CAT', function(t) {
     cross_process_id: CROSS_PROCESS_ID,
     encoding_key: 'some key',
   }
-  config.obfuscatedId = hashes.obfuscateNameUsingKey(config.cross_process_id,
-                                                     config.encoding_key)
-  var agent = helper.instrumentMockedAgent(null, config)
-  var http = require('http')
-  var api = new API(agent)
+  config.obfuscatedId =
+    hashes.obfuscateNameUsingKey(config.cross_process_id, config.encoding_key)
+
+  const agent = helper.instrumentMockedAgent(config)
+  const http = require('http')
+  const api = new API(agent)
 
   var server = http.createServer(function(req, res) {
     t.ok(req.headers['x-newrelic-id'], 'got incoming x-newrelic-id')
@@ -57,8 +58,8 @@ test('background transactions should not blow up with CAT', function(t) {
         intrinsic['nr.referringPathHash'],
         'web should have an nr.referringPathHash on event'
       )
-      t.ok(intrinsic[
-        'nr.referringTransactionGuid'],
+      t.ok(
+        intrinsic['nr.referringTransactionGuid'],
         'web should have an nr.referringTransactionGuid on event'
       )
       t.ok(intrinsic['nr.apdexPerfZone'], 'web should have an nr.apdexPerfZone on event')
@@ -94,7 +95,7 @@ test('background transactions should not blow up with CAT', function(t) {
   ]
   var count = 0
   agent.on('transactionFinished', function(trans) {
-    var event = agent.events.toArray().filter(function(evt) {
+    var event = agent.transactionEventAggregator.getEvents().filter(function(evt) {
       return evt[0]['nr.guid'] === trans.id
     })[0]
     finishedHandlers[count](trans, event)

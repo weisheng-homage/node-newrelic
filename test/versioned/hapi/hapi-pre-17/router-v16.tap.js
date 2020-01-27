@@ -13,12 +13,13 @@ tap.test('Hapi router introspection', function(t) {
   var port = null
 
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true,
         include: ['request.parameters.*']
       }
     })
+
     server = utils.getServer()
 
     done()
@@ -263,11 +264,10 @@ tap.test('Hapi router introspection', function(t) {
         json: true
       }
       request.post(params, function(error, res, body) {
-          t.equal(res.statusCode, 200, 'nothing exploded')
-          t.deepEqual(body, {status: 'ok'}, 'got expected response')
-          t.end()
-        }
-      )
+        t.equal(res.statusCode, 200, 'nothing exploded')
+        t.deepEqual(body, {status: 'ok'}, 'got expected response')
+        t.end()
+      })
     })
   })
 

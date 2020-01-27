@@ -1,6 +1,7 @@
 'use strict'
 
 var common = require('./common')
+const collectionCommon = require('./collection-common')
 var helper = require('../../lib/agent_helper')
 var mongoPackage = require('mongodb/package.json')
 var params = require('../../lib/params')
@@ -144,13 +145,13 @@ dbTest('collections', [], function collectionTest(t, db, verify) {
 
 dbTest('command', [], function commandTest(t, db, verify) {
   db.command({ping: 1}, function onCommand(err, result) {
-   t.error(err, 'should not have error')
-   t.deepEqual(result, {ok: 1}, 'got correct result')
-   verify([
-     'Datastore/operation/MongoDB/command',
-     'Callback: onCommand',
-   ])
- })
+    t.error(err, 'should not have error')
+    t.deepEqual(result, {ok: 1}, 'got correct result')
+    verify([
+      'Datastore/operation/MongoDB/command',
+      'Callback: onCommand',
+    ])
+  })
 })
 
 dbTest('createCollection', ['testCollection'], function createTest(t, db, verify) {
@@ -313,9 +314,8 @@ function dbTest(name, collections, run) {
         helper.runInTransaction(agent, function(transaction) {
           run(t, db, function(names) {
             verifyMongoSegments(t, agent, transaction, names)
-            transaction.end(function() {
-              t.end()
-            })
+            transaction.end()
+            t.end()
           })
         })
       })
@@ -348,9 +348,8 @@ function dbTest(name, collections, run) {
         helper.runInTransaction(agent, function(transaction) {
           run(t, db, function(names) {
             verifyMongoSegments(t, agent, transaction, names)
-            transaction.end(function() {
-              t.end()
-            })
+            transaction.end()
+            t.end()
           })
         })
       })
@@ -360,7 +359,8 @@ function dbTest(name, collections, run) {
 
 function mongoTest(name, collections, run) {
   tap.test(name, function testWrap(t) {
-    helper.bootstrapMongoDB(collections, function bootstrapped(err) {
+    const mongodb = require('mongodb')
+    collectionCommon.dropTestCollections(mongodb, collections, (err) => {
       if (!t.error(err)) {
         return t.end()
       }
@@ -399,10 +399,11 @@ function verifyMongoSegments(t, agent, transaction, names) {
         dbName = 'admin'
       }
 
-      var parms = current.parameters
-      t.equal(parms.database_name, dbName, 'should have correct db name')
-      t.equal(parms.host, MONGO_HOST, 'should have correct host name')
-      t.equal(parms.port_path_or_id, MONGO_PORT, 'should have correct port')
+      var attributes = current.getAttributes()
+      t.equal(attributes.database_name, dbName, 'should have correct db name')
+      t.equal(attributes.host, MONGO_HOST, 'should have correct host name')
+      t.equal(attributes.port_path_or_id, MONGO_PORT, 'should have correct port')
+      t.equal(attributes.product, 'MongoDB', 'should have correct product attribute')
     }
   }
 
@@ -414,12 +415,12 @@ function verifyMongoSegments(t, agent, transaction, names) {
 function isBadSegment(segment) {
   var nameParts = segment.name.split('/')
   var command = nameParts[nameParts.length - 1]
-  var parms = segment.parameters
+  var attributes = segment.getAttributes()
 
   return (
     BAD_MONGO_COMMANDS.indexOf(command) !== -1 && // Is in the list of bad commands
-    !parms.hasOwnProperty('database_name') &&     // and does not have any of the
-    !parms.hasOwnProperty('host') &&              // instance attributes.
-    !parms.hasOwnProperty('port_path_or_id')
+    !attributes.database_name &&                  // and does not have any of the
+    !attributes.host &&                           // instance attributes.
+    !attributes.port_path_or_id
   )
 }

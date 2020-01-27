@@ -82,15 +82,20 @@ function getPort() {
 }
 
 function checkMetrics(t, agent, host, port, metrics) {
-  var unscopedMetrics = agent.metrics.unscoped
-  var unscopedNames = Object.keys(unscopedMetrics)
-  var scoped = agent.metrics.scoped[TRANSACTION_NAME]
+  const agentMetrics = getMetrics(agent)
+
+  var unscopedMetrics = agentMetrics.unscoped
+  var unscopedDatastoreNames = Object.keys(unscopedMetrics).filter((input) => {
+    return input.includes('Datastore')
+  })
+
+  var scoped = agentMetrics.scoped[TRANSACTION_NAME]
   var total = 0
 
   if (!t.ok(scoped, 'should have scoped metrics')) {
     return
   }
-  t.equal(Object.keys(agent.metrics.scoped).length, 1, 'should have one metric scope')
+  t.equal(Object.keys(agentMetrics.scoped).length, 1, 'should have one metric scope')
   for (var i = 0; i < metrics.length; ++i) {
     var count = null
     var name = null
@@ -124,7 +129,7 @@ function checkMetrics(t, agent, host, port, metrics) {
 
   var expectedUnscopedCount = 5 + (2 * metrics.length)
   t.equal(
-    unscopedNames.length, expectedUnscopedCount,
+    unscopedDatastoreNames.length, expectedUnscopedCount,
     'should have ' + expectedUnscopedCount + ' unscoped metrics'
   )
   var expectedUnscopedMetrics = [
@@ -150,4 +155,8 @@ function getDomainSocketPath() {
     }
   }
   return null
+}
+
+function getMetrics(agent) {
+  return agent.metrics._metrics
 }

@@ -108,12 +108,19 @@ test('bind + throw', function testThrows(t) {
 })
 
 test('bind + capture error', function testThrows(t) {
+  // Once on node 10+ only, may be able to replace with below.
+  // t.expectUncaughtException(fn, [expectedError], message, extra)
+  // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+  helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
   var agent = helper.loadTestAgent(t)
   var tracer = agent.tracer
   var error = new Error('oh no!!')
   var name = 'some custom transaction name'
   t.plan(8)
 
+  // These don't really do anything with newest tap but leaving
+  // for now in cases changes in future.
   helper.temporarilyRemoveListeners(t, process, 'uncaughtException')
   helper.temporarilyRemoveListeners(t, t.domain, 'error')
 
@@ -129,7 +136,7 @@ test('bind + capture error', function testThrows(t) {
     var other = tracer.createSegment('other')
     transaction.name = name
     process.once('uncaughtException', function onUncaughtException(err) {
-      var logged = agent.errors.errors[0]
+      var logged = agent.errors.traceAggregator.errors[0]
       t.notOk(tracer.getSegment(), 'should not leak transaction into handler')
 
       t.equal(err, error, 'should have expected error')
@@ -237,11 +244,10 @@ test('getTransaction', function testGetTransaction(t) {
   helper.runInTransaction(agent, function inTrans(transaction) {
     t.equal(tracer.getTransaction(), transaction)
     t.equal(tracer.segment.transaction, transaction)
-    transaction.end(function ended() {
-      t.notOk(tracer.getTransaction())
-      t.equal(tracer.segment.transaction, transaction)
-      t.end()
-    })
+    transaction.end()
+    t.notOk(tracer.getTransaction())
+    t.equal(tracer.segment.transaction, transaction)
+    t.end()
   })
 })
 
@@ -307,9 +313,8 @@ test('createSegment + recorder', function testCreateSegment(t) {
     var segment = tracer.createSegment('inside transaction', recorder)
     t.equal(segment.name, 'inside transaction')
 
-    transaction.end(function onEnd() {
-      t.end()
-    })
+    transaction.end()
+    t.end()
 
     function recorder(seg) {
       t.equal(seg, segment)
@@ -363,9 +368,8 @@ test('addSegment + recorder', function addSegmentTest(t) {
     t.equal(segment.timer.hrDuration, null)
     t.equal(root.children[0], segment)
 
-    transaction.end(function onEnd() {
-      t.end()
-    })
+    transaction.end()
+    t.end()
   })
 
   function check(seg) {
@@ -394,11 +398,10 @@ test('addSegment + full', function addSegmentTest(t) {
     t.ok(segment.timer.hrDuration)
     t.equal(root.children[0], segment)
 
-    transaction.end(function onEnd() {
-      // because having plan + end after async causes issues
-      t.ok(true)
-      t.end()
-    })
+    transaction.end()
+    // because having plan + end after async causes issues
+    t.ok(true)
+    t.end()
   })
 
   function check(segment) {
@@ -410,7 +413,8 @@ test('addSegment + full', function addSegmentTest(t) {
 })
 
 test('transactionProxy', function testTransactionProxy(t) {
-  var agent = helper.loadTestAgent(t)
+  const agent = helper.loadTestAgent(t)
+
   var tracer = agent.tracer
   t.plan(10)
 
@@ -440,7 +444,8 @@ test('transactionProxy', function testTransactionProxy(t) {
 })
 
 test('transactionNestProxy', function testTransactionNestProxy(t) {
-  var agent = helper.loadTestAgent(t)
+  const agent = helper.loadTestAgent(t)
+
   var tracer = agent.tracer
   t.plan(20)
 
@@ -714,9 +719,9 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
 
   t.equal(wrapped.apply(outer, [null].concat(args)), returnVal)
 
-  function callback(parent, args) {
+  function callback(parent, callbackArgs) {
     var segment = tracer.getSegment()
-    t.deepEqual(args, [1, 2, 3])
+    t.deepEqual(callbackArgs, [1, 2, 3])
     t.equal(this, inner)
 
     if (parent) {
@@ -730,8 +735,8 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
 
   function takesCallback(name) {
     var segment = tracer.getSegment()
-    var args = [].slice.call(arguments, 1, -1)
-    var callback = arguments[arguments.length - 1]
+    var cbArgs = [].slice.call(arguments, 1, -1)
+    var cb = arguments[arguments.length - 1]
 
     if (name) {
       t.equal(segment.name, name)
@@ -747,7 +752,7 @@ test('wrapFunctionLast', function testwrapFunctionLast(t) {
         t.equal(segment.children.length, 0)
       }
 
-      t.equal(callback.call(inner, segment, args), innerReturn)
+      t.equal(cb.call(inner, segment, cbArgs), innerReturn)
 
       if (segment) {
         t.equal(segment.children.length, 1)
@@ -805,7 +810,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
     return innerReturn
   }
 
-  function takesCallback(callback, name) {
+  function takesCallback(cb, name) {
     var segment = tracer.getSegment()
     var args = [].slice.call(arguments, 2)
 
@@ -823,7 +828,7 @@ test('wrapFunctionFirst', function testwrapFunctionFirst(t) {
         t.equal(segment.children.length, 0)
       }
 
-      t.equal(callback.call(inner, segment, args), innerReturn)
+      t.equal(cb.call(inner, segment, args), innerReturn)
 
       if (segment) {
         t.equal(segment.children.length, 1)

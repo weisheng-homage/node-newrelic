@@ -6,7 +6,6 @@ var DESTINATIONS = require('../../../lib/config/attribute-filter').DESTINATIONS
 var should = chai.should()
 var expect = chai.expect
 var helper = require('../../lib/agent_helper')
-var semver = require('semver')
 var sinon = require('sinon')
 var shimmer = require('../../../lib/shimmer')
 
@@ -92,11 +91,6 @@ describe('the New Relic agent API', function() {
     expect(api.addIgnoringRule).to.be.a('function')
   })
 
-  it("exports a function for adding custom parameters", function() {
-    should.exist(api.addCustomParameter)
-    expect(api.addCustomParameter).to.be.a('function')
-  })
-
   it("exports a function for adding custom instrumentation", function() {
     should.exist(api.instrument)
     expect(api.instrument).to.be.a('function')
@@ -107,15 +101,61 @@ describe('the New Relic agent API', function() {
     expect(api.getTransaction).to.be.a('function')
   })
 
+  it("exports a trace metadata function", function(done) {
+    helper.runInTransaction(agent, function(txn) {
+      agent.config.distributed_tracing.enabled = true
+      expect(api.getTraceMetadata).to.be.a('function')
+      const metadata = api.getTraceMetadata()
+      expect(metadata).to.be.an('object')
+      expect(metadata.traceId).to.be.a('string')
+      expect(metadata.traceId).to.equal(txn.id)
+      expect(metadata.spanId).to.be.a('string')
+      expect(metadata.spanId).to.equal(txn.agent.tracer.getSegment().id)
+      done()
+    })
+  })
+
+  it("should return empty object with DT disabled",
+    function(done) {
+      helper.runInTransaction(agent, function() {
+        expect(api.getTraceMetadata).to.be.a('function')
+        const metadata = api.getTraceMetadata()
+        expect(metadata).to.be.an('object')
+
+        expect(metadata).to.deep.equal({})
+        done()
+      })
+    }
+  )
+  it("should not include spanId property with span events disabled",
+    function(done) {
+      helper.runInTransaction(agent, function(txn) {
+        agent.config.distributed_tracing.enabled = true
+        agent.config.span_events.enabled = false
+        expect(api.getTraceMetadata).to.be.a('function')
+
+        const metadata = api.getTraceMetadata()
+        expect(metadata).to.be.an('object')
+        expect(metadata.traceId).to.be.a('string')
+        expect(metadata.traceId).to.equal(txn.id)
+
+        expect(metadata).to.not.have.property('spanId')
+        done()
+      })
+    }
+  )
+
+
   describe("when getting a transaction handle", function() {
     it("shoud return a stub when running outside of a transaction", function() {
-      var handle = api.getTransaction()
+      let handle = api.getTransaction()
       expect(handle.end).to.be.a('function')
       expect(handle.ignore).to.be.a('function')
       expect(handle.createDistributedTracePayload).to.be.a('function')
       expect(handle.acceptDistributedTracePayload).to.be.a('function')
+      expect(handle.isSampled).to.be.a('function')
 
-      var payload = handle.createDistributedTracePayload()
+      let payload = handle.createDistributedTracePayload()
       expect(payload.httpSafe).to.be.a('function')
       expect(payload.text).to.be.a('function')
     })
@@ -143,7 +183,7 @@ describe('the New Relic agent API', function() {
     })
 
     it("should have a method to create a distributed trace payload", function(done) {
-      helper.runInTransaction(agent, function(txn) {
+      helper.runInTransaction(agent, function() {
         var handle = api.getTransaction()
         expect(handle.createDistributedTracePayload).to.be.a('function')
         agent.config.cross_process_id = '1234#5678'
@@ -155,7 +195,7 @@ describe('the New Relic agent API', function() {
     })
 
     it("should have a method for accepting a distributed trace payload", function(done) {
-      helper.runInTransaction(agent, function(txn) {
+      helper.runInTransaction(agent, function() {
         var handle = api.getTransaction()
         expect(handle.acceptDistributedTracePayload).to.be.a('function')
         done()
@@ -191,6 +231,16 @@ describe('the New Relic agent API', function() {
         handle.end()
       })
     })
+
+    it("should have a method for reporting whether the transaction is sampled",
+      function() {
+        helper.runInTransaction(agent, function() {
+          let handle = api.getTransaction()
+          expect(handle.isSampled).to.be.a('function')
+          expect(handle.isSampled()).to.be.true
+        })
+      }
+    )
   })
 
 
@@ -321,11 +371,10 @@ describe('the New Relic agent API', function() {
           var segment = api.shim.getSegment()
           expect(segment).to.exist.and.have.property('name', 'foobar')
         })
-        tx.end(function() {
-          expect(tx.metrics.scoped).to.not.have.property(tx.name)
-          expect(tx.metrics.unscoped).to.not.have.property('Custom/foobar')
-          done()
-        })
+        tx.end()
+        expect(tx.metrics.scoped).to.not.have.property(tx.name)
+        expect(tx.metrics.unscoped).to.not.have.property('Custom/foobar')
+        done()
       })
     })
 
@@ -336,12 +385,10 @@ describe('the New Relic agent API', function() {
           var segment = api.shim.getSegment()
           expect(segment).to.exist.and.have.property('name', 'foobar')
         })
-        tx.end(function() {
-          expect(tx.metrics.scoped).property(tx.name)
-            .to.have.property('Custom/foobar')
-          expect(tx.metrics.unscoped).to.have.property('Custom/foobar')
-          done()
-        })
+        tx.end()
+        expect(tx.metrics.scoped).property(tx.name).to.have.property('Custom/foobar')
+        expect(tx.metrics.unscoped).to.have.property('Custom/foobar')
+        done()
       })
     })
 
@@ -390,6 +437,14 @@ describe('the New Relic agent API', function() {
       transaction = null
     })
 
+    it('should not throw when transaction cannot be created', () => {
+      agent.setState('stopped')
+      api.startWebTransaction('test', () => {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction).to.not.exist
+      })
+    })
+
     it('should add nested transaction as segment to parent transaction', function() {
       api.startWebTransaction('test', function() {
         nested()
@@ -415,7 +470,7 @@ describe('the New Relic agent API', function() {
       expect(transaction.isActive()).to.be.false
     })
 
-    it("should end the transaction after a promise returned by the transaction function resolves", function() {
+    it('should end the txn after a promise returned by the txn function resolves', () => {
       api.startWebTransaction('test', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('web')
@@ -428,7 +483,7 @@ describe('the New Relic agent API', function() {
       expect(transaction.isActive()).to.be.false
     })
 
-    it("should not end the transaction if the transaction is being handled externally", function() {
+    it('should not end the txn if the txn is being handled externally', () => {
       api.startWebTransaction('test', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('web')
@@ -453,7 +508,7 @@ describe('the New Relic agent API', function() {
     })
   })
 
-  describe("when starting a background transaction using startBackgroundTransaction", function() {
+  describe('when starting a background txn using startBackgroundTransaction', () => {
     var thenCalled = false
     var FakePromise = {
       then: function(f) {
@@ -467,6 +522,14 @@ describe('the New Relic agent API', function() {
     beforeEach(function() {
       thenCalled = false
       transaction = null
+    })
+
+    it('should not throw when transaction cannot be created', () => {
+      agent.setState('stopped')
+      api.startBackgroundTransaction('test', () => {
+        transaction = agent.tracer.getTransaction()
+        expect(transaction).to.not.exist
+      })
     })
 
     it('should add nested transaction as segment to parent transaction', function() {
@@ -512,9 +575,10 @@ describe('the New Relic agent API', function() {
     })
 
 
-    it("should start a background transaction with the given name as the name and group", function() {
+    it('should start a background txn with the given name as the name and group', () => {
       api.startBackgroundTransaction('test', 'group', function() {
         transaction = agent.tracer.getTransaction()
+        expect(transaction).to.exist
         expect(transaction.type).to.equal('bg')
         expect(transaction.getFullName()).to.equal('OtherTransaction/group/test')
         expect(transaction.isActive()).to.be.true
@@ -522,7 +586,7 @@ describe('the New Relic agent API', function() {
       expect(transaction.isActive()).to.be.false
     })
 
-    it("should end the transaction after a promise returned by the transaction function resolves", function() {
+    it('should end the txn after a promise returned by the txn function resolves', () => {
       api.startBackgroundTransaction('test', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
@@ -535,7 +599,7 @@ describe('the New Relic agent API', function() {
       expect(transaction.isActive()).to.be.false
     })
 
-    it("should not end the transaction if the transaction is being handled externally", function() {
+    it('should not end the txn if the txn is being handled externally', () => {
       api.startBackgroundTransaction('test', function() {
         transaction = agent.tracer.getTransaction()
         expect(transaction.type).to.equal('bg')
@@ -877,15 +941,33 @@ describe('the New Relic agent API', function() {
       var mine
       beforeEach(function() {
         agent.urlNormalizer.load([
-          {each_segment : true, eval_order : 0, terminate_chain : false,
-           match_expression : '^(test_match_nothing)$',
-           replace_all : false, ignore : false, replacement : '\\1'},
-          {each_segment : true, eval_order : 1, terminate_chain : false,
-           match_expression : '^[0-9][0-9a-f_,.-]*$',
-           replace_all : false, ignore : false, replacement : '*'},
-          {each_segment : false, eval_order : 2, terminate_chain : false,
-           match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-           replace_all : false, ignore : false, replacement : '\\1/.*\\2'}
+          {
+            each_segment: true,
+            eval_order: 0,
+            terminate_chain: false,
+            match_expression: '^(test_match_nothing)$',
+            replace_all: false,
+            ignore: false,
+            replacement: '\\1'
+          },
+          {
+            each_segment: true,
+            eval_order: 1,
+            terminate_chain: false,
+            match_expression: '^[0-9][0-9a-f_,.-]*$',
+            replace_all: false,
+            ignore: false,
+            replacement: '*'
+          },
+          {
+            each_segment: false,
+            eval_order: 2,
+            terminate_chain: false,
+            match_expression: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+            replace_all: false,
+            ignore: false,
+            replacement: '\\1/.*\\2'
+          }
         ])
 
         api.addNamingRule('^/test/.*', 'Test')
@@ -898,11 +980,7 @@ describe('the New Relic agent API', function() {
       })
 
       it("should leave the passed-in pattern alone", function() {
-        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-          expect(mine.pattern.source).equal('^\\/test\\/.*')
-        } else {
-          expect(mine.pattern.source).equal('^/test/.*')
-        }
+        expect(mine.pattern.source).equal('^\\/test\\/.*')
       })
 
       it("should have the correct replacement", function() {
@@ -974,15 +1052,33 @@ describe('the New Relic agent API', function() {
       var mine
       beforeEach(function() {
         agent.urlNormalizer.load([
-          {each_segment : true, eval_order : 0, terminate_chain : false,
-           match_expression : '^(test_match_nothing)$',
-           replace_all : false, ignore : false, replacement : '\\1'},
-          {each_segment : true, eval_order : 1, terminate_chain : false,
-           match_expression : '^[0-9][0-9a-f_,.-]*$',
-           replace_all : false, ignore : false, replacement : '*'},
-          {each_segment : false, eval_order : 2, terminate_chain : false,
-           match_expression : '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
-           replace_all : false, ignore : false, replacement : '\\1/.*\\2'}
+          {
+            each_segment: true,
+            eval_order: 0,
+            terminate_chain: false,
+            match_expression: '^(test_match_nothing)$',
+            replace_all: false,
+            ignore: false,
+            replacement: '\\1'
+          },
+          {
+            each_segment: true,
+            eval_order: 1,
+            terminate_chain: false,
+            match_expression: '^[0-9][0-9a-f_,.-]*$',
+            replace_all: false,
+            ignore: false,
+            replacement: '*'
+          },
+          {
+            each_segment: false,
+            eval_order: 2,
+            terminate_chain: false,
+            match_expression: '^(.*)/[0-9][0-9a-f_,-]*\\.([0-9a-z][0-9a-z]*)$',
+            replace_all: false,
+            ignore: false,
+            replacement: '\\1/.*\\2'
+          }
         ])
 
         api.addIgnoringRule('^/test/.*')
@@ -995,11 +1091,7 @@ describe('the New Relic agent API', function() {
       })
 
       it("should leave the passed-in pattern alone", function() {
-        if (semver.satisfies(process.versions.node, '>=1.0.0')) {
-          expect(mine.pattern.source).equal('^\\/test\\/.*')
-        } else {
-          expect(mine.pattern.source).equal('^/test/.*')
-        }
+        expect(mine.pattern.source).equal('^\\/test\\/.*')
       })
 
       it("should have the correct replacement", function() {
@@ -1050,57 +1142,105 @@ describe('the New Relic agent API', function() {
     })
 
     it("should add the error even without a transaction", function() {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'))
-      expect(agent.errors.errors.length).equal(1)
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
     })
 
-    it("should not add errors in high security mode", function() {
+    it("should still add errors in high security mode", function() {
       agent.config.high_security = true
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'))
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
+      agent.config.high_security = false
+    })
+
+    it('should not track custom attributes if custom_attributes_enabled is false', () => {
+      agent.config.api.custom_attributes_enabled = false
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
+      api.noticeError(new TypeError('this test is bogus, man'), {crucial: 'attribute'})
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
+      const attributes = agent.errors.traceAggregator.errors[0][4]
+      expect(attributes.userAttributes).to.deep.equal({})
+      agent.config.api.custom_attributes_enabled = true
+    })
+
+    it('should not track custom attributes in high security mode', () => {
+      agent.config.high_security = true
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
+      api.noticeError(new TypeError('this test is bogus, man'), {crucial: 'attribute'})
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
+      const attributes = agent.errors.traceAggregator.errors[0][4]
+      expect(attributes.userAttributes).to.deep.equal({})
       agent.config.high_security = false
     })
 
     it("should not add errors when noticeErrors is disabled", function() {
       agent.config.api.notice_error_enabled = false
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'))
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       agent.config.api.notice_error_enabled = true
     })
 
     it("should track custom parameters on error without a transaction", function() {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(new TypeError('this test is bogus, man'), {present : 'yep'})
-      expect(agent.errors.errors.length).equal(1)
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
 
-      var params = agent.errors.errors[0][4]
+      var params = agent.errors.traceAggregator.errors[0][4]
       expect(params.userAttributes.present).equal('yep')
+    })
+
+    it("should omit improper types of attributes", function() {
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
+      api.noticeError(
+        new TypeError('this test is bogus, man'),
+        {
+          string : 'yep',
+          object: {},
+          function: function() {},
+          number: 1234,
+          symbol: Symbol('test'),
+          undef: undefined,
+          array: [],
+          boolean: true
+        }
+      )
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
+
+      var params = agent.errors.traceAggregator.errors[0][4]
+      expect(params.userAttributes.string).equal('yep')
+      expect(params.userAttributes.number).equal(1234)
+      expect(params.userAttributes.boolean).equal(true)
+      expect(params.userAttributes).to.not.have.property('object')
+      expect(params.userAttributes).to.not.have.property('array')
+      expect(params.userAttributes).to.not.have.property('function')
+      expect(params.userAttributes).to.not.have.property('undef')
+      expect(params.userAttributes).to.not.have.property('symbol')
     })
 
     it('should respect attribute filter rules', function() {
       agent.config.attributes.exclude.push('unwanted')
       agent.config.emit('attributes.exclude')
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       api.noticeError(
         new TypeError('this test is bogus, man'),
         {present: 'yep', unwanted: 'nope'}
       )
-      expect(agent.errors.errors.length).equal(1)
+      expect(agent.errors.traceAggregator.errors.length).equal(1)
 
-      var params = agent.errors.errors[0][4]
+      var params = agent.errors.traceAggregator.errors[0][4]
       expect(params.userAttributes.present).equal('yep')
       expect(params.userAttributes.unwanted).to.be.undefined
     })
 
     it("should add the error associated to a transaction", function(done) {
-      expect(agent.errors.errors.length).to.equal(0)
+      expect(agent.errors.traceAggregator.errors.length).to.equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).to.equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).to.equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[1], 'transaction name').to.equal('Unknown')
         expect(caught[2], 'message').to.equal('test error')
         expect(caught[3], 'type').to.equal('TypeError')
@@ -1117,14 +1257,14 @@ describe('the New Relic agent API', function() {
     })
 
     it('should notice custom attributes associated with an error', function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
       var orig = agent.config.attributes.exclude
       agent.config.attributes.exclude = ['ignored']
       agent.config.emit('attributes.exclude')
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('test error')
         expect(caught[3]).equal('TypeError')
@@ -1144,11 +1284,11 @@ describe('the New Relic agent API', function() {
     })
 
     it("should add an error-alike with a message but no stack", function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('not an Error')
         expect(caught[3]).equal('Object')
@@ -1165,11 +1305,11 @@ describe('the New Relic agent API', function() {
     })
 
     it("should add an error-alike with a stack but no message", function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('')
         expect(caught[3]).equal('Error')
@@ -1186,10 +1326,10 @@ describe('the New Relic agent API', function() {
     })
 
     it("shouldn't throw on (or capture) a useless error object", function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(0)
+        expect(agent.errors.traceAggregator.errors.length).equal(0)
         expect(transaction.ignore).equal(false)
 
         done()
@@ -1202,11 +1342,11 @@ describe('the New Relic agent API', function() {
     })
 
     it("should add a string error associated to a transaction", function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[1]).equal('Unknown')
         expect(caught[2]).equal('busted, bro')
         expect(caught[3]).equal('Error')
@@ -1223,11 +1363,11 @@ describe('the New Relic agent API', function() {
     })
 
     it("should allow custom parameters to be added to string errors", function(done) {
-      expect(agent.errors.errors.length).equal(0)
+      expect(agent.errors.traceAggregator.errors.length).equal(0)
 
       agent.on('transactionFinished', function(transaction) {
-        expect(agent.errors.errors.length).equal(1)
-        var caught = agent.errors.errors[0]
+        expect(agent.errors.traceAggregator.errors.length).equal(1)
+        var caught = agent.errors.traceAggregator.errors[0]
         expect(caught[2]).equal('busted, bro')
         expect(caught[4].userAttributes.a).equal(1)
         expect(caught[4].userAttributes.steak).equal('sauce')
@@ -1245,13 +1385,21 @@ describe('the New Relic agent API', function() {
   })
 
   describe('when recording custom metrics', function() {
-    it('it should aggregate metric values', function() {
-      agent.config.feature_flag.custom_metrics = true
-      api.recordMetric('/Custom/metric/thing', 3)
-      api.recordMetric('/Custom/metric/thing', 4)
-      api.recordMetric('/Custom/metric/thing', 5)
+    it('should prepend "Custom" in front of name', () => {
+      api.recordMetric('metric/thing', 3)
+      api.recordMetric('metric/thing', 4)
+      api.recordMetric('metric/thing', 5)
 
-      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
+      expect(metric).to.exist
+    })
+
+    it('it should aggregate metric values', function() {
+      api.recordMetric('metric/thing', 3)
+      api.recordMetric('metric/thing', 4)
+      api.recordMetric('metric/thing', 5)
+
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(12)
       expect(metric.totalExclusive).equal(12)
@@ -1259,13 +1407,11 @@ describe('the New Relic agent API', function() {
       expect(metric.max).equal(5)
       expect(metric.sumOfSquares).equal(50)
       expect(metric.callCount).equal(3)
-      agent.config.feature_flag.custom_metrics = false
     })
 
     it('it should merge metrics', function() {
-      agent.config.feature_flag.custom_metrics = true
-      api.recordMetric('/Custom/metric/thing', 3)
-      api.recordMetric('/Custom/metric/thing', {
+      api.recordMetric('metric/thing', 3)
+      api.recordMetric('metric/thing', {
         total: 9,
         min: 4,
         max: 5,
@@ -1273,7 +1419,7 @@ describe('the New Relic agent API', function() {
         count: 2
       })
 
-      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(12)
       expect(metric.totalExclusive).equal(12)
@@ -1281,16 +1427,14 @@ describe('the New Relic agent API', function() {
       expect(metric.max).equal(5)
       expect(metric.sumOfSquares).equal(50)
       expect(metric.callCount).equal(3)
-      agent.config.feature_flag.custom_metrics = false
     })
 
     it('it should increment properly', function() {
-      agent.config.feature_flag.custom_metrics = true
-      api.incrementMetric('/Custom/metric/thing')
-      api.incrementMetric('/Custom/metric/thing')
-      api.incrementMetric('/Custom/metric/thing')
+      api.incrementMetric('metric/thing')
+      api.incrementMetric('metric/thing')
+      api.incrementMetric('metric/thing')
 
-      var metric = api.agent.metrics.getMetric('/Custom/metric/thing')
+      const metric = api.agent.metrics.getMetric('Custom/metric/thing')
 
       expect(metric.total).equal(0)
       expect(metric.totalExclusive).equal(0)
@@ -1299,8 +1443,8 @@ describe('the New Relic agent API', function() {
       expect(metric.sumOfSquares).equal(0)
       expect(metric.callCount).equal(3)
 
-      api.incrementMetric('/Custom/metric/thing', 4)
-      api.incrementMetric('/Custom/metric/thing', 5)
+      api.incrementMetric('metric/thing', 4)
+      api.incrementMetric('metric/thing', 5)
 
 
       expect(metric.total).equal(0)
@@ -1309,13 +1453,6 @@ describe('the New Relic agent API', function() {
       expect(metric.max).equal(0)
       expect(metric.sumOfSquares).equal(0)
       expect(metric.callCount).equal(12)
-      agent.config.feature_flag.custom_metrics = false
-    })
-
-    it('should not blow up when disabled', function() {
-      agent.config.feature_flag.custom_metrics = false
-      api.incrementMetric('/Custom/metric/thing')
-      api.recordMetric('/Custom/metric/thing', 3)
     })
   })
 
@@ -1332,76 +1469,103 @@ describe('the New Relic agent API', function() {
       mock.verify()
     })
 
-    it('calls harvest when options.collectPendingData is true and state is "started"', function() {
-      var mock = sinon.mock(agent)
-      agent.setState('started')
-      mock.expects('harvest').once()
-      api.shutdown({collectPendingData: true})
-      mock.verify()
+    describe('when `options.collectPendingData` is `true`', () => {
+      it('calls forceHarvestAll when state is `started`', () => {
+        var mock = sinon.mock(agent)
+        agent.setState('started')
+        mock.expects('forceHarvestAll').once()
+        api.shutdown({collectPendingData: true})
+        mock.verify()
+      })
+
+      it('calls forceHarvestAll when state changes to "started"', () => {
+        var mock = sinon.mock(agent)
+        agent.setState('starting')
+        mock.expects('forceHarvestAll').once()
+        api.shutdown({collectPendingData: true})
+        agent.setState('started')
+        mock.verify()
+      })
+
+      it('does not call forceHarvestAll when state is not "started"', () => {
+        var mock = sinon.mock(agent)
+        agent.setState('starting')
+        mock.expects('forceHarvestAll').never()
+        api.shutdown({collectPendingData: true})
+        mock.verify()
+      })
+
+      it('calls stop when timeout is not given and state changes to "errored"', () => {
+        var mock = sinon.mock(agent)
+        agent.setState('starting')
+        mock.expects('stop').once()
+        api.shutdown({collectPendingData: true})
+        agent.setState('errored')
+        mock.verify()
+      })
+
+      it('calls stop when timeout is given and state changes to "errored"', () => {
+        var mock = sinon.mock(agent)
+        agent.setState('starting')
+        mock.expects('stop').once()
+        api.shutdown({collectPendingData: true, timeout: 1000})
+        agent.setState('errored')
+        mock.verify()
+      })
     })
 
-    it('calls harvest when options.collectPendingData is true ' +
-       'and state is not "started" and changes to "started"', function() {
-      var mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('harvest').once()
-      api.shutdown({collectPendingData: true})
-      agent.setState('started')
-      mock.verify()
+    describe('when `options.waitForIdle` is `true`', () => {
+      it('calls stop when there are no active transactions', () => {
+        const mock = sinon.mock(agent)
+        agent.setState('started')
+        mock.expects('stop').once()
+        api.shutdown({waitForIdle: true})
+        mock.verify()
+      })
+
+      it('calls stop after transactions complete when there are some', (done) => {
+        let mock = sinon.mock(agent)
+        agent.setState('started')
+        mock.expects('stop').never()
+        helper.runInTransaction(agent, (tx) => {
+          api.shutdown({waitForIdle: true})
+          mock.verify()
+          mock.restore()
+
+          mock = sinon.mock(agent)
+          mock.expects('stop').once()
+          tx.end()
+          setImmediate(() => {
+            mock.verify()
+            done()
+          })
+        })
+      })
     })
 
-    it('does not call harvest when options.collectPendingData is true ' +
-       'and state is not "started" and not changed', function() {
+    it('calls forceHarvestAll when a timeout is given and not reached', function() {
       var mock = sinon.mock(agent)
       agent.setState('starting')
-      mock.expects('harvest').never()
-      api.shutdown({collectPendingData: true})
-      mock.verify()
-    })
-
-    it('calls stop when options.collectPendingData is true, timeout is not given ' +
-       'and state is not "started" and changes to "errored"', function() {
-      var mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('stop').once()
-      api.shutdown({collectPendingData: true})
-      agent.setState('errored')
-      mock.verify()
-    })
-
-    it('calls stop when options.collectPendingData is true, timeout is given ' +
-       'and state is not "started" and changes to "errored"', function() {
-      var mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('stop').once()
+      mock.expects('forceHarvestAll').once()
       api.shutdown({collectPendingData: true, timeout: 1000})
-      agent.setState('errored')
-      mock.verify()
-    })
-
-    it('calls harvest when a timeout is given and not reached', function() {
-      var mock = sinon.mock(agent)
-      agent.setState('starting')
-      mock.expects('harvest').once()
-      api.shutdown({collectPendingData: true, timeout: 1000})
       agent.setState('started')
       mock.verify()
     })
 
-    it('calls stop when timeout is reached and does not harvest', function() {
+    it('calls stop when timeout is reached and does not forceHarvestAll', function() {
       var mock = sinon.mock(agent)
       agent.setState('starting')
-      mock.expects('harvest').never()
+      mock.expects('forceHarvestAll').never()
       mock.expects('stop').once()
       api.shutdown({collectPendingData: true, timeout: 1000}, function() {
         mock.verify()
       })
     })
 
-    it('calls harvest when timeout is not a number', function() {
+    it('calls forceHarvestAll when timeout is not a number', function() {
       var mock = sinon.mock(agent)
       agent.setState('starting')
-      mock.expects('harvest').once()
+      mock.expects('forceHarvestAll').once()
       api.shutdown({collectPendingData: true, timeout: "xyz"}, function() {
         mock.verify()
       })
@@ -1422,8 +1586,8 @@ describe('the New Relic agent API', function() {
     it('calls stop after harvest', function() {
       var mock = sinon.mock(agent)
 
-      agent.harvest = function(cb) {
-        process.nextTick(cb)
+      agent.forceHarvestAll = function(cb) {
+        setImmediate(cb)
       }
 
       mock.expects('stop').once()
@@ -1435,8 +1599,8 @@ describe('the New Relic agent API', function() {
     it('calls stop when harvest errors', function() {
       var mock = sinon.mock(agent)
 
-      agent.harvest = function(cb) {
-        process.nextTick(function() {
+      agent.forceHarvestAll = function(cb) {
+        setImmediate(function() {
           cb(new Error('some error'))
         })
       }
@@ -1497,6 +1661,40 @@ describe('the New Relic agent API', function() {
       api.instrument('foobar', onRequire, onError)
 
       var opts = shimmer.registerInstrumentation.getCall(0).args[0]
+      expect(opts).to.have.property('moduleName', 'foobar')
+      expect(opts).to.have.property('onRequire', onRequire)
+      expect(opts).to.have.property('onError', onError)
+    })
+  })
+
+  describe('instrumentConglomerate', () => {
+    beforeEach(() => {
+      sinon.spy(shimmer, 'registerInstrumentation')
+    })
+
+    afterEach(() => {
+      shimmer.registerInstrumentation.restore()
+    })
+
+    it('should register the instrumentation with shimmer', () => {
+      const opts = {
+        moduleName: 'foobar',
+        onRequire: () => {}
+      }
+      api.instrumentConglomerate(opts)
+
+      expect(shimmer.registerInstrumentation.calledOnce).to.be.true
+      const args = shimmer.registerInstrumentation.getCall(0).args
+      expect(args[0]).to.equal(opts)
+        .and.have.property('type', 'conglomerate')
+    })
+
+    it('should convert separate args into an options object', () => {
+      function onRequire() {}
+      function onError() {}
+      api.instrumentConglomerate('foobar', onRequire, onError)
+
+      const opts = shimmer.registerInstrumentation.getCall(0).args[0]
       expect(opts).to.have.property('moduleName', 'foobar')
       expect(opts).to.have.property('onRequire', onRequire)
       expect(opts).to.have.property('onError', onError)
@@ -1568,6 +1766,80 @@ describe('the New Relic agent API', function() {
       expect(opts).to.have.property('moduleName', 'foobar')
       expect(opts).to.have.property('onRequire', onRequire)
       expect(opts).to.have.property('onError', onError)
+    })
+  })
+
+  describe('setLambdaHandler', () => {
+    it('should report API supportability metric', () => {
+      api.setLambdaHandler(() => {})
+
+      const metric =
+        agent.metrics.getMetric('Supportability/API/setLambdaHandler')
+      expect(metric.callCount).to.equal(1)
+    })
+  })
+
+  describe('getLinkingMetadata', () => {
+    it('should return metadata necessary for linking data to a trace', () => {
+      let metadata = api.getLinkingMetadata()
+
+      expect(metadata['trace.id']).to.be.undefined
+      expect(metadata['span.id']).to.be.undefined
+      expect(metadata['entity.name']).to.equal('New Relic for Node.js tests')
+      expect(metadata['entity.type']).to.equal('SERVICE')
+      expect(metadata['entity.guid']).to.be.undefined
+      expect(metadata.hostname).to.equal(agent.config.getHostnameSafe())
+
+      // Test in a transaction
+      helper.runInTransaction(agent, function() {
+        metadata = api.getLinkingMetadata()
+        // trace and span id are omitted when dt is disabled
+        expect(metadata['trace.id']).to.be.undefined
+        expect(metadata['span.id']).to.be.undefined
+        expect(metadata['entity.name']).to.equal('New Relic for Node.js tests')
+        expect(metadata['entity.type']).to.equal('SERVICE')
+        expect(metadata['entity.guid']).to.be.undefined
+        expect(metadata.hostname).to.equal(agent.config.getHostnameSafe())
+      })
+
+      // With DT enabled
+      agent.config.distributed_tracing.enabled = true
+
+      // Trace and span id are omitted when there is no active transaction
+      expect(metadata['trace.id']).to.be.undefined
+      expect(metadata['span.id']).to.be.undefined
+      expect(metadata['entity.name']).to.equal('New Relic for Node.js tests')
+      expect(metadata['entity.type']).to.equal('SERVICE')
+      expect(metadata['entity.guid']).to.be.undefined
+      expect(metadata.hostname).to.equal(agent.config.getHostnameSafe())
+
+      // Test in a transaction
+      helper.runInTransaction(agent, function() {
+        metadata = api.getLinkingMetadata()
+        expect(metadata['trace.id']).to.be.a('string')
+        expect(metadata['span.id']).to.be.a('string')
+        expect(metadata['entity.name']).to.equal('New Relic for Node.js tests')
+        expect(metadata['entity.type']).to.equal('SERVICE')
+        expect(metadata['entity.guid']).to.be.undefined
+        expect(metadata.hostname).to.equal(agent.config.getHostnameSafe())
+      })
+
+      // Test with an entity_guid set and in a transaction
+      helper.unloadAgent(agent)
+      agent = helper.loadMockedAgent({
+        entity_guid: 'test',
+        distributed_tracing: { enabled: true }
+      })
+      api = new API(agent)
+      helper.runInTransaction(agent, function() {
+        metadata = api.getLinkingMetadata()
+        expect(metadata['trace.id']).to.be.a('string')
+        expect(metadata['span.id']).to.be.a('string')
+        expect(metadata['entity.name']).to.equal('New Relic for Node.js tests')
+        expect(metadata['entity.type']).to.equal('SERVICE')
+        expect(metadata['entity.guid']).to.equal('test')
+        expect(metadata.hostname).to.equal(agent.config.getHostnameSafe())
+      })
     })
   })
 })

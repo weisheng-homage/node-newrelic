@@ -19,7 +19,7 @@ tap.test('test attributes.enabled for express', function(t) {
 
   var agent = null
   t.beforeEach(function(done) {
-    agent = helper.instrumentMockedAgent(null, {
+    agent = helper.instrumentMockedAgent({
       apdex_t: 1,
       allow_all_headers: false,
       attributes: {
@@ -27,6 +27,8 @@ tap.test('test attributes.enabled for express', function(t) {
         include: ['request.parameters.*']
       }
     })
+
+
     done()
   })
 
@@ -73,8 +75,11 @@ tap.test('test attributes.enabled for express', function(t) {
         helper.makeGetRequest(url, function(error, response, body) {
           if (error) t.fail(error)
 
-          t.ok(/application\/json/.test(response.headers['content-type']),
-               'got correct content type')
+          t.ok(
+            /application\/json/.test(response.headers['content-type']),
+            'got correct content type'
+          )
+
           t.deepEqual(JSON.parse(body), {'yep':true}, 'Express correctly serves.')
           t.end()
         })
@@ -114,8 +119,11 @@ tap.test('test attributes.enabled for express', function(t) {
         helper.makeGetRequest(url, function(error, response, body) {
           if (error) t.fail(error)
 
-          t.ok(/application\/json/.test(response.headers['content-type']),
-               'got correct content type')
+          t.ok(
+            /application\/json/.test(response.headers['content-type']),
+            'got correct content type'
+          )
+
           t.deepEqual(JSON.parse(body), {'yep':true}, 'Express correctly serves.')
           t.end()
         })
@@ -155,8 +163,11 @@ tap.test('test attributes.enabled for express', function(t) {
         helper.makeGetRequest(url, function(error, response, body) {
           if (error) t.fail(error)
 
-          t.ok(/application\/json/.test(response.headers['content-type']),
-               'got correct content type')
+          t.ok(
+            /application\/json/.test(response.headers['content-type']),
+            'got correct content type'
+          )
+
           t.deepEqual(JSON.parse(body), {'yep':true}, 'Express correctly serves.')
           t.end()
         })
@@ -200,8 +211,11 @@ tap.test('test attributes.enabled for express', function(t) {
         helper.makeGetRequest(url, function(error, response, body) {
           if (error) t.fail(error)
 
-          t.ok(/application\/json/.test(response.headers['content-type']),
-               'got correct content type')
+          t.ok(
+            /application\/json/.test(response.headers['content-type']),
+            'got correct content type'
+          )
+
           t.deepEqual(JSON.parse(body), {'yep':true}, 'Express correctly serves.')
           t.end()
         })

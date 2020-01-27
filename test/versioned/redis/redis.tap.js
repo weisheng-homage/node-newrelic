@@ -32,7 +32,7 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           : params.redis_host
         HOST_ID = METRIC_HOST_NAME + '/' + params.redis_port
 
-        // need to capture parameters
+        // need to capture attributes
         agent.config.attributes.enabled = true
 
         // Start testing!
@@ -69,18 +69,21 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           var trace = transaction.trace
           t.ok(trace, "trace should exist")
           t.ok(trace.root, "root element should exist")
-          t.equals(trace.root.children.length, 1,
-                   "there should be only one child of the root")
+          t.equals(
+            trace.root.children.length, 1,
+            "there should be only one child of the root"
+          )
 
           var setSegment = trace.root.children[0]
+          const setAttributes = setSegment.getAttributes()
           t.ok(setSegment, "trace segment for set should exist")
           t.equals(
             setSegment.name, 'Datastore/operation/Redis/set',
             'should register the set'
           )
           t.equals(
-            setSegment.parameters.key, '"testkey"',
-            'should have the set key as a parameter'
+            setAttributes.key, '"testkey"',
+            'should have the set key as a attribute'
           )
           t.equals(
             setSegment.children.length, 1,
@@ -88,13 +91,26 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           )
 
           var getSegment = setSegment.children[0].children[0]
+          const getAttributes = getSegment.getAttributes()
           t.ok(getSegment, "trace segment for get should exist")
-          t.equals(getSegment.name, "Datastore/operation/Redis/get",
-                   "should register the get")
-          t.equals(getSegment.parameters.key, "\"testkey\"",
-                   "should have the get key as a parameter")
-          t.ok(getSegment.children.length >= 1,
-                   "get should have a callback segment")
+
+          t.equals(
+            getSegment.name,
+            "Datastore/operation/Redis/get",
+            "should register the get"
+          )
+
+          t.equals(
+            getAttributes.key,
+            "\"testkey\"",
+            "should have the get key as a attribute"
+          )
+
+          t.ok(
+            getSegment.children.length >= 1,
+            "get should have a callback segment"
+          )
+
           t.ok(getSegment.timer.hrDuration, "trace segment should have ended")
         })
       })
@@ -143,25 +159,24 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         client.get('testkey', function(error) {
           if (error) return t.fail(error)
 
-          transaction.end(function() {
-            var unscoped = transaction.metrics.unscoped
-            var expected = {
-              'Datastore/all': 2,
-              'Datastore/allWeb': 2,
-              'Datastore/Redis/all': 2,
-              'Datastore/Redis/allWeb': 2,
-              'Datastore/operation/Redis/set': 1,
-              'Datastore/operation/Redis/get': 1,
-            }
-            expected['Datastore/instance/Redis/' + HOST_ID] = 2
-            checkMetrics(t, unscoped, expected)
-          })
+          transaction.end()
+          var unscoped = transaction.metrics.unscoped
+          var expected = {
+            'Datastore/all': 2,
+            'Datastore/allWeb': 2,
+            'Datastore/Redis/all': 2,
+            'Datastore/Redis/allWeb': 2,
+            'Datastore/operation/Redis/set': 1,
+            'Datastore/operation/Redis/get': 1,
+          }
+          expected['Datastore/instance/Redis/' + HOST_ID] = 2
+          checkMetrics(t, unscoped, expected)
         })
       })
     })
   })
 
-  t.test('should add `key` parameter to trace segment', function(t) {
+  t.test('should add `key` attribute to trace segment', function(t) {
     agent.config.attributes.enabled = true
 
     helper.runInTransaction(agent, function() {
@@ -170,13 +185,13 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         t.error(error)
 
         var segment = agent.tracer.getSegment().parent
-        t.equals(segment.parameters.key, '"saveme"', 'should have key as parameter')
+        t.equals(segment.getAttributes().key, '"saveme"', 'should have `key` attribute')
         t.end()
       })
     })
   })
 
-  t.test('should still add `key` parameter to trace segment', function(t) {
+  t.test('should not add `key` attribute to trace segment', function(t) {
     agent.config.attributes.enabled = false
 
     helper.runInTransaction(agent, function() {
@@ -185,14 +200,14 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         t.error(error)
 
         var segment = agent.tracer.getSegment().parent
-        t.equals(segment.parameters.key, '"saveme"', 'should still have key as parameter')
+        t.notOk(segment.getAttributes().key, 'should not have `key` attribute')
         t.end()
       })
     })
   })
 
-  t.test('should add datastore instance parameters to trace segments', function(t) {
-    t.plan(3)
+  t.test('should add datastore instance attributes to trace segments', function(t) {
+    t.plan(4)
 
     // Enable.
     agent.config.datastore_tracer.instance_reporting.enabled = true
@@ -205,23 +220,28 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
 
         var trace = transaction.trace
         var setSegment = trace.root.children[0]
+        const attributes = setSegment.getAttributes()
         t.equals(
-          setSegment.parameters.host, METRIC_HOST_NAME,
-          'should have host as parameter'
+          attributes.host, METRIC_HOST_NAME,
+          'should have host as attribute'
         )
         t.equals(
-          setSegment.parameters.port_path_or_id, String(params.redis_port),
-          'should have port as parameter'
+          attributes.port_path_or_id, String(params.redis_port),
+          'should have port as attribute'
         )
         t.equals(
-          setSegment.parameters.database_name, String(DB_INDEX),
-          'should have database id as parameter'
+          attributes.database_name, String(DB_INDEX),
+          'should have database id as attribute'
+        )
+        t.equals(
+          attributes.product, 'Redis',
+          'should have product attribute'
         )
       })
     })
   })
 
-  t.test('should not add instance parameters/metrics when disabled', function(t) {
+  t.test('should not add instance attributes/metrics when disabled', function(t) {
     t.plan(5)
 
     // disable
@@ -236,25 +256,25 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
         }
 
         var setSegment = transaction.trace.root.children[0]
+        const attributes = setSegment.getAttributes()
         t.equals(
-          setSegment.parameters.host, undefined,
-          'should not have host parameter'
+          attributes.host, undefined,
+          'should not have host attribute'
         )
         t.equals(
-          setSegment.parameters.port_path_or_id, undefined,
-          'should not have port parameter'
+          attributes.port_path_or_id, undefined,
+          'should not have port attribute'
         )
         t.equals(
-          setSegment.parameters.database_name, undefined,
-          'should not have db name parameter'
+          attributes.database_name, undefined,
+          'should not have db name attribute'
         )
 
-        transaction.end(function() {
-          var unscoped = transaction.metrics.unscoped
-          t.equals(
-            unscoped['Datastore/instance/Redis/' + HOST_ID], undefined,
-            'should not have instance metric')
-        })
+        transaction.end()
+        var unscoped = transaction.metrics.unscoped
+        t.equals(
+          unscoped['Datastore/instance/Redis/' + HOST_ID], undefined,
+          'should not have instance metric')
       })
     })
   })
@@ -276,7 +296,8 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
           client.set('select:test:key:2', 'bar', function(err) {
             t.notOk(err, 'should not fail to set in db 2')
             t.ok(agent.getTransaction(), 'should not lose transaction state')
-            transaction.end(verify)
+            transaction.end()
+            verify(transaction)
           })
         })
       })
@@ -288,28 +309,33 @@ test('Redis instrumentation', {timeout : 5000}, function(t) {
       var setSegment2 = selectSegment.children[0].children[0]
 
       t.equals(
-        setSegment1.name, 'Datastore/operation/Redis/set',
+        setSegment1.name,
+        'Datastore/operation/Redis/set',
         'should register the first set'
       )
       t.equals(
-        setSegment1.parameters.database_name, String(DB_INDEX),
-        'should have the starting database id as parameter for the first set'
+        setSegment1.getAttributes().database_name,
+        String(DB_INDEX),
+        'should have the starting database id as attribute for the first set'
       )
       t.equals(
-        selectSegment.name, 'Datastore/operation/Redis/select',
+        selectSegment.name,
+        'Datastore/operation/Redis/select',
         'should register the select'
       )
       t.equals(
-        selectSegment.parameters.database_name, String(DB_INDEX),
-        'should have the starting database id as parameter for the select'
+        selectSegment.getAttributes().database_name,
+        String(DB_INDEX),
+        'should have the starting database id as attribute for the select'
       )
       t.equals(
-        setSegment2.name, 'Datastore/operation/Redis/set',
+        setSegment2.name,
+        'Datastore/operation/Redis/set',
         'should register the second set'
       )
       t.equals(
-        setSegment2.parameters.database_name, String(SELECTED_DB),
-        'should have the selected database id as parameter for the second set'
+        setSegment2.getAttributes().database_name, String(SELECTED_DB),
+        'should have the selected database id as attribute for the second set'
       )
     }
   })

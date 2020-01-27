@@ -1,12 +1,11 @@
 'use strict'
 
-var helper = require('../lib/agent_helper')
 var benchmark = require('../lib/benchmark')
 
 var suite = benchmark.createBenchmark({
   name: 'async hooks',
   async: true,
-  fn: test
+  fn: runBenchmark
 })
 
 var asyncHooks = require('async_hooks')
@@ -30,12 +29,16 @@ var tests = [
   },
   {
     name: 'instrumentation',
-    agent: {feature_flag: {await_support: false}},
+    agent: {
+      config: {feature_flag: {await_support: false}}
+    },
     runInTransaction: true
   },
   {
     name: 'agent async hooks',
-    agent: {feature_flag: {await_support: true}},
+    agent: {
+      config: {feature_flag: {await_support: true}}
+    },
     runInTransaction: true
   }
 ]
@@ -44,7 +47,7 @@ tests.forEach((test) => suite.add(test))
 
 suite.run()
 
-function test(agent, cb) {
+function runBenchmark(agent, cb) {
   var p = Promise.resolve()
   for (var i = 0; i < 300; ++i) {
     p = p.then(function noop() {})

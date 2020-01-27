@@ -28,8 +28,13 @@ tap.test('LASP-enabled agent', function(t) {
         level: 'trace'
       }
     })
+
     agent = new Agent(config)
     api = new API(agent)
+
+    // Agent cannot create transactions from initial 'stopped' state
+    agent.setState('started')
+
     done()
   })
 
@@ -51,21 +56,17 @@ tap.test('LASP-enabled agent', function(t) {
     })
     proxy()
 
-    transaction.end(function() {
-      t.ok(agent.traces.trace, 'should have a trace before connect')
+    transaction.end()
+    t.ok(agent.traces.trace, 'should have a trace before connect')
 
-      agent.start(function(error) {
-        t.error(error, 'connected without error')
-        t.notOk(agent.traces.trace, 'should no longer have a trace')
-        agent.harvest(function(error) {
-          t.error(error, 'trace sent correctly')
+    agent.start(function(error) {
+      t.error(error, 'connected without error')
+      t.notOk(agent.traces.trace, 'should no longer have a trace')
 
-          agent.stop(function(error) {
-            t.error(error, 'stopped without error')
+      agent.stop(function(error) {
+        t.error(error, 'stopped without error')
 
-            t.end()
-          })
-        })
+        t.end()
       })
     })
   })
@@ -90,21 +91,17 @@ tap.test('LASP-enabled agent', function(t) {
     })
     proxy()
 
-    transaction.end(function() {
-      t.ok(agent.traces.trace, 'should have a trace before connect')
+    transaction.end()
+    t.ok(agent.traces.trace, 'should have a trace before connect')
 
-      agent.start(function(error) {
-        t.error(error, 'connected without error')
-        t.notOk(agent.traces.trace, 'should no longer have a trace')
-        agent.harvest(function(error) {
-          t.error(error, 'trace sent correctly')
+    agent.start(function(error) {
+      t.error(error, 'connected without error')
+      t.notOk(agent.traces.trace, 'should no longer have a trace')
 
-          agent.stop(function(error) {
-            t.error(error, 'stopped without error')
+      agent.stop(function(error) {
+        t.error(error, 'stopped without error')
 
-            t.end()
-          })
-        })
+        t.end()
       })
     })
   })

@@ -9,7 +9,8 @@ var API = require('../../../api')
 test("ignoring an Express route", function(t) {
   t.plan(7)
 
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
+
   var api = new API(agent)
   var express = require('express')
   var app = express()
@@ -23,18 +24,22 @@ test("ignoring an Express route", function(t) {
   })
 
   agent.on('transactionFinished', function(transaction) {
-    t.equal(transaction.name, 'WebTransaction/Expressjs/GET//polling/:id',
-            "transaction has expected name even on error")
+    t.equal(
+      transaction.name,
+      'WebTransaction/Expressjs/GET//polling/:id',
+      "transaction has expected name even on error"
+    )
+
     t.ok(transaction.ignore, "transaction is ignored")
 
     t.notOk(agent.traces.trace, "should have no transaction trace")
 
-    var metrics = agent.metrics.unscoped
+    var metrics = agent.metrics._metrics.unscoped
     t.equal(Object.keys(metrics).length, 1,
       "only supportability metrics added to agent collection"
     )
 
-    var errors = agent.errors.errors
+    var errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 0, "no errors noticed")
   })
 

@@ -1,3 +1,764 @@
+### 6.3.0 (2020-01-27):
+
+* Bumped `@newrelic/aws-sdk` to `v1.1.1` from `v1.0.0`.
+ https://github.com/newrelic/node-newrelic-aws-sdk/blob/master/CHANGELOG.md
+ Notable improvements include:
+   * Added official support for API promise calls, fixing two critical bugs.
+   * Added check before applying instrumentation to avoid breaking for very old
+  versions.
+
+* Added `bindPromise()` to `Shim` prototype for direct usage by instrumentation.
+ Previously, `_bindPromise()` was a private function in the `Shim` module.
+
+* Fixed spelling in configuration error.
+  Thank you to David Ray (@daaray) for the contribution.
+
+* Fixed long-log truncation issue in Serverless mode.
+
+* Updated language in agent to be in line with New Relic Standards.
+
+### 6.2.0 (2019-11-25):
+
+* Upgraded `tap` to resolve `handlebars` audit warnings.
+
+* Added `getLinkingMetadata()` method to the API.
+
+  This new method can be used to retrieve the identifying information for the
+  agent and current active span and trace. Please consult [the documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/api-guides/nodejs-agent-api#getLinkingMetadata)
+  for more information.
+
+* Added `getTraceMetadata()` to the agent API.
+
+  This new method can be used to retrieve the current active Distributed Tracing
+  span and trace ids. Please consult [the documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/api-guides/nodejs-agent-api#getTraceMetadata)
+  for more information.
+
+* Added an `isSampled()` method to `Transaction` and `TransactionHandle`.
+
+  This new method can be used to retrieve the sampling decision made for a given
+  transaction. Please consult [the documentation](https://docs.newrelic.com/docs/agents/nodejs-agent/api-guides/nodejs-agent-api#transaction-handle-isSampled)
+  for more information.
+
+### 6.1.0 (2019-11-05):
+
+* `@newrelic/native-metrics` module is defaulted to disabled in serverless mode.
+
+  This can reduce lambda cold-start times by up to 170ms. The `native-metrics` module
+  can rarely load in serverless environments due to differences from build environment to
+  deployed environment and offers little value in a serverless environment.
+
+* Added env var `NEW_RELIC_NATIVE_METRICS_ENABLED` to enable/disable the
+  native-metrics module
+
+* Added a test for querying poolCluster.of()
+
+* Removed unused `mysql` bootstrap test code.
+
+* Increased timeout for `index-bad-version` test to reduce flickers on Node 12.
+
+* Changed file modification to leverage `writeFile` for `watchFile` test. This
+  triggers the watcher in a reasonable amount of time much more consistently.
+
+* Added `@newrelic/aws-sdk` module to agent for auto-include on install.
+
+* Added splitting of application name using semicolons in the env var.
+
+* Removed testing of Bluebird 3.7 on Node v10 until they fix [the segfault
+  issue](https://github.com/petkaantonov/bluebird/issues/1618).
+
+* Instrumented `connection.execute` for `mysql2`.
+
+* Added HTTP method to segment attributes for external requests.
+
+* Updated the `bin/ssl.sh` such that it uses verbose output, will exit on first
+  error code, and will refuse to proceed with LibreSSL (which can't generate certs).
+
+* Added a `clear` sub-command to `bin/ssl.sh` that will allow developers to quickly
+  remove generated ssl/cert files and regenerate (useful is switch between platforms
+  via containers/docker and certs needs to be regenerated)
+
+### 6.0.0 (2019-10-29):
+
+* Added official parity support for Node 12.
+  * Exception: Errors resulting in unhandled rejections will no longer be scoped to the
+  transaction that was active when the rejected promise was created.
+
+    As of node 12, the promise responsible for triggering the init async hook will
+  no longer be passed through on the promise wrap instance. This breaks the linkage
+  used to relate a given promise rejection to the transaction it was scheduled in.
+
+* **BREAKING** Removed support for Node 6, 7, and 9.
+
+  The minimum supported version is now Node v8. For further information on our
+  support policy, see:
+  https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+
+  * Bumped version of `@newrelic/superagent` instrumentation to `v2.0.0`.
+  * Bumped version of `@newrelic/native-metrics` to `v5.0.0`.
+
+* **BREAKING** Bumped version of `@newrelic/koa` instrumentation to `v3.0.0`
+  `@newrelic/koa` update includes changes to transaction naming in addition to
+  dropping Node versions 6, 7, and 9. See `@newrelic/koa`release notes for what was
+  included in `v2.0.0` and `v3.0.0` updates. https://github.com/newrelic/node-newrelic-koa/blob/master/NEWS.md.
+
+* **BREAKING** `max_samples_stored` behavior has changed to replace
+  `max_samples_per_minute`. `max_samples_per_minute` is no longer a configuration
+  parameter.
+
+  The new behavior for `max_samples_stored` is as follows: "The agent will collect
+  all events up to this number per minute. If there are more than that, a statistical
+  sampling will be collected." This usage of the configuration is consistent with
+  other agents.
+
+  If your application has previously used `max_samples_per_minute` as an upper bound,
+  you may need to lower the threshold to a valid maximum to avoid data being dropped
+  on the server. No larger than 10k is recommended.
+
+* Updated utilization callback test to point to a host that can't represent a valid
+  provider. Previously, location where CI provider runs tests could cause test to
+  fail.
+
+* Added support for `Promise.allSettled()` method in Bluebird 3.7.
+
+* Bumped `mongodb` dev dependency past security warning.
+
+* Fixed `mongodb` versioned tests so they are self-contained by using version under
+  test for setup/teardown instead of agent dev-dependency version.
+
+* Forced filename resolution if not already cached on module load. This should not
+  occur in normal/non-test scenarios but provides a fall-back to maintain
+  functionality.
+
+* Refactored `restify` versioned tests to be less dependent on the order of asynchronous
+  operations.
+
+* Updated README to reference Pug rather than Jade.
+
+### 5.13.1 (2019-10-10):
+
+* Added back generation of entity stats logging and uninstrumented support metric
+  generation on metric harvests.
+
+* Removed legacy harvest code from main agent.
+
+* Updated `https-proxy-agent` to v3 for security fix.
+
+  Shoutout to @asturur for the contribution.
+
+* Added diagnostic code injector.
+
+  The agent may now be configured to make transaction state checks via code
+  injection. This may be turned on by setting `code_injector.diagnostics.enabled`
+  to `true`. While this option is enabled, code around async boundaries will be added
+  to track transactions, and log a message when they are not properly reinstated.
+
+* Fixed bug where `API.shutdown()` would not properly harvest when configured to.
+
+* `primary_application_id` now defaults to 'Unknown' in serverless mode to allow
+  Distributed Tracing to function correctly when `NEW_RELIC_PRIMARY_APPLICATION_ID`
+  is not defined.
+
+* Upgraded `tap` to latest version
+
+* Upgraded `mocha` to latest version.
+
+* Adds `--exit` flag to mocha test runs to prevent infinite runs on CI.
+
+* Fixed bug where multiple agent restarts would cause the number of 'stopped'
+  listeners to exceed limit.
+
+* Fixed inconsistent async return from collector API.
+
+  This could result in an infinite loop due to attempting to merge before clearing.
+  *This bug should not have impacted normal agent runs but was uncovered for certain
+  test cases.*
+
+* Fixed tests that leave work scheduled on the event loop.
+
+* Fixed issue that could result in vendor utilization detection failure.
+  As a part of this fix, the request that hits the timeout will immediately abort
+  instead of hanging around for the default timeout.
+
+### 5.13.0 (2019-10-01):
+
+* Same as 5.12.0
+
+### 5.12.0 (2019-10-01):
+
+* Now supports Restify 7 and 8.
+
+* Distributed Tracing is now enabled by default in serverless mode.
+
+* Maximum event limits are now enforced by the server. This includes
+  a new maximum of 10000 transaction events per minute.
+
+* Harvesting is now completed by individually scheduled harvesters per data type.
+
+* Bumps tap version to move beyond handlebars audit warning.
+
+* Bumps `restify` dev dependency past audit warning.
+
+* HTTPS connections to New Relic now use a keep alive HTTP-Agent.
+
+* Drops old odd-numbered node versions that are no longer supported by node from
+  travis testing.
+
+* Fixed bug where segment reference on the outbound request was enumerable.
+
+* Fixed bug where incorrect config information was sent to New Relic.
+
+* Updated Mocha and Docker links in CONTRIBUTING.md.
+
+* The agent will now end/serialize transactions in the event of an uncaught
+  exception while operating in serverless mode.
+
+### 5.11.0 (2019-07-29):
+
+* Implements Expected and Ignored Errors functionality
+
+* Bumps jsdoc and lodash dev dependency to avoid upstream vulnerability warning.
+
+* Added support for scoped package name introduced in hapi v18 (@hapi/hapi).
+
+  This will provide functionality at parity with instrumentation for hapi v17. Any
+  new features may not yet be supported.
+
+ Huge shoutout to Aori Nevo (@aorinevo) for this contribution.
+
+* Fixed bug where agent would count errors towards error metrics even if they were
+  dropped due to the error collector being disabled.
+
+* The agent will now properly track cached paths to files in loaded modules on Node
+  versions >10.
+
+  As of Node v11, the path to a file in a module being loaded will only be resolved
+  on the first load; subsequent resolution of that file will use a cached value.
+  The agent records this resolved path and uses it for relative file look ups in
+  order to deep link into modules using `Shim#require`. Since the agent couldn't
+  reliably get at the path on the subsequent calls to require, it now replicates
+  the caching logic and hold onto the resolved path for a given file.
+
+* Adds detailed logging through harvest/collector code to increase supportability.
+
+### 5.10.0 (2019-06-11):
+
+* The agent now allows installation on node v11 and v12.
+
+  This change relaxes the engines restriction to include Node v11 and v12. This does
+  not constitute official support for those versions, and users on those versions
+  may run into subtle incompatibilities. For those users who are interested in
+  experimenting with the agent on v11 and v12, we are tracking relevant issues
+  here: https://github.com/newrelic/node-newrelic/issues/279.
+
+* Lambda invocations ended with promises will now be recorded properly.
+
+  Previously, the lambda instrumentation was not intercepting the promise
+  resolution/rejection returned from a lambda handler. The instrumentation now
+  properly observes the promise, and ends the transaction when the promise has
+  finished.
+
+* Lambda invocations will only attempt to end the related transaction a single time.
+
+  In the event of two lambda response events (e.g. callback called, and a promise
+  returned), the agent would attempt to end the transaction twice, producing an
+  extraneous empty payload. The agent now limits itself to a single end call for
+  a given transaction.
+
+* The agent will now properly end transactions in the face of uncaught exceptions
+  while in serverless mode.
+
+* Enables ability to migrate to Configurable Security Policies (CSP) on a per agent
+  basis for accounts already using High Security Mode (HSM).
+
+  When both HSM and CSP are enabled for an account, an agent (this version or later)
+  can successfully connect with either `high_security: true` or the appropriate
+  `security_policies_token` configured. `high_security` has been added as part of
+  the preconnect payload.
+
+### 5.9.1 (2019-05-28):
+
+* moved third party notices to `THIRD_PARTY_NOTICES.md`
+
+* Shim#require will now operate as expected.
+
+  Previously, the module interception code made the faulty assumption that a module's
+  filepath would be resolved before the module load call was invoked. This caused
+  the wrap filepath to be attributed to the modules being instrumented. This meant
+  that attempted relative require calls using Shim#require would resolved from the
+  incorrect path. The logic has been changed to keep a stack of the resolved
+  filepaths, resolving the issue.
+
+* Updates error message for license check to indicate all places that need to be
+  updated.
+
+* Shim#wrapReturn now uses ES6 proxies to wrap its methods.
+
+  This will accurately propagate look up and assignment onto the underlying wrapped
+  function, while maintaining all previous functionality.
+
+* Updated versioned test configurations to reflect current engine support.
+
+### 5.9.0 (2019-05-20):
+
+* Removed older versions of Cassandra from versioned tests
+
+* For debug/test runs, shimmer will now cleanup the __NR_shim property on
+  instrumented methods. This leftover property did not result in any negative
+  behaviors but cleaning up for thoroughness and to prevent potential confusion.
+
+* `serverless_mode` feature flag is now enabled by default.
+
+* Fixes `recordMiddleware` promise parenting for certain cases where child segments
+  are created within resolving middleware `next()` promises.
+
+* Added `instrumentLoadedModule` function to the API, allowing end-users to manually
+  apply an instrumentation to a loaded module. Useful for cases where some module
+  needs to be loaded before newrelic
+
+### 5.8.0 (2019-05-06):
+
+* Modifies `MiddlewareSpec` route property to allow functions. Defers route
+  processing and segment naming until just before needed (each middleware
+  invocation).
+
+* Fixed outdated `license` ref in `package.json`.
+
+* Middleware instrumentation now honors `spec.appendPath` for more cases and will
+  not pop paths when it has not appended a path.
+
+### 5.7.0 (2019-04-24):
+
+* Added `getStatusName` to `NameState`.
+
+  Now web transactions will be named after known status code messages (404, 405,
+  and 501).
+
+* Broke apart `integration` script test globs.
+
+* Added `appendPath` option to MiddlewareSpec.
+
+### 5.6.4 (2019-04-16):
+
+* Refactored config to log warning and disable distributed tracing if enabled in
+  serverless mode, but missing required config setting.
+
+* Serverless mode no longer sets different data collection limits.
+
+* The agent will no longer crash the process in the event of unexpected calls to
+  the harvest callback.
+
+* Updated required config values when using distributed tracing in `serverless_mode`
+  to only include `account_id`.
+
+### 5.6.3 (2019-04-01):
+
+* The agent will now accurately filter out request parameters while operating under
+  CSP or HSM.
+
+  You can find more information about this change here:
+  https://docs.newrelic.com/docs/using-new-relic/new-relic-security/security-bulletins/security-bulletin-nr19-02
+
+### 5.6.2 (2019-03-25):
+
+* Agent now respects attribute type restrictions on trace/segment attributes, as
+  well as error event/trace attributes.
+
+* Fixes potential for `RangeError: Maximum call stack size exceeded` error on
+  Transaction/Trace end.
+
+* Custom events no longer accept attributes with invalid types.
+
+  The only attribute types accepted by the backend are `boolean`, `string`, and
+  `number`; any attribute assigned to a custom event outside these types would be
+  dropped on ingest. The agent now filters these attributes out, and logs out a
+  helpful message detailing the issue.
+
+### 5.6.1 (2019-03-11):
+
+* Updated log message for not adding attributes and change the log level to debug.
+
+* Fixed an issue where exclusive time would be improperly calculated in some cases.
+
+### 5.6.0 (2019-03-04):
+
+* Added `product` attribute to existing datastore instrumentations.
+
+* Added `db.collection` to datastore span event attributes.
+
+* `trusted_account_key`, `account_id`, and `primary_application_id` may now be
+  configured via a configuration file while in serverless mode.
+
+* Fixed a bug where data belonging to distributed traces starting in the Node.js
+  agent would be prioritized over data produced from traces starting in other
+  language agents.
+
+  Previously, the agent would use the same random number for both the transaction
+  priority (used for data sampling) and the Distributed Tracing trace sampling
+  decision (whether to create DT data for a given transaction). This random number
+  reuse resulted in a bias that caused data from distributed traces started in the
+  Node.js agent to be prioritized above data that belongs to distributed traces
+  started in other language agents. The agent now makes individual rolls for each
+  of these quantities (i.e. the transaction priority and trace sampling decision),
+  eliminating the bias.
+
+* Optimized exclusive time duration calculator.
+
+  Previously, the agent would spend a lot of time sorting redundant arrays while
+  calculating the exclusive time for the segments of a trace. This has been
+  refactored into a single postorder traversal over the tree which will calculate
+  the exclusive time for all segments in the subtree rooted at a given segment.
+
+* Prevent a split on undefined location under certain conditions in Memcached.
+
+ Special thanks to Ben Wolfe (@bwolfe) for this fix!
+
+### 5.4.0 (2019-02-19):
+
+* Fixed issue where `shim.createSegment()` could result in modifying the parent
+  when opaque.
+
+* Fixed issue where `http-outbound` would modify parent segments when parent is
+  opaque.
+
+* Moved processing of exclusive time attribute out of `toJSON` and into `finalize`
+  to only be calculated once.
+
+  Previously, serializing a segment would result in calculating and caching exclusive
+  time which could result in issues if serialized prior to ending.
+
+* Added `SNS` to message shim library names.
+
+* Added check for `collect_span_events` in config sent from the server on connect.
+
+  Collection of span events can be disabled from the server configuration, but not
+  enabled.
+
+* Refactored `Segment#toJSON` to be more readable.
+
+* Added a `try/catch` to config initialization to safely handle invalid setting
+  combinations.
+
+  When an error is caught the agent is marked as disabled, which ultimately returns
+  a stub API and keeps the process running.
+
+* String truncation is now done using a binary search over the byte length of the
+  string.
+
+  Previously this truncation was done using a linear search for the proper byte
+  length.
+
+* Optimized segment and span attribute filtering.
+
+### 5.3.0 (2019-02-12):
+
+* Added `span_events` and `transaction_segments` attribute destinations.
+
+  Span event and segment attributes can now be filtered using the same
+  include/exclude config rules as other types. See [agent attribute
+  configuration](https://docs.newrelic.com/docs/agents/nodejs-agent/installation-configuration/nodejs-agent-configuration#node-js-attributes)
+  for more details.
+
+* Added `metadata` field to connect payload, for collecting
+  `NEW_RELIC_METADATA_`-prefixed environment variables.
+
+* Added DynamoDB to datastores.
+
+* Added `opaque` option to datastore operation spec.
+
+* Added Kubernetes utilization detection.
+
+* Upgraded `concat-stream` and `readable-stream` to next major version.
+
+  These modules had previously been held back due to support for Node <6. Since
+  v5.0.0 we dropped that support thus enabling these updates.
+
+* Added SQS as a supported messaging library name.
+
+* Fixed opaque segment functionality for `message-shim.recordProduce`.
+
+* Fixed opaque segment functionality for `message-shim.recordConsume`.
+
+* Enabled tracking of callback via `message-shim.recordConsume` when no
+  messageHandler provided.
+
+* Replaced `make` rules with npm scripts.
+
+* The agent will now consistently harvest in all response cases when in serverless
+  mode.
+
+  Previously, the agent's harvest was in a race with process suspension in the event
+  of an uncaught exception, or responding without calling a callback. A synchronous
+  harvesting process is now used to circumvent this racing issue.
+
+* Fixed issue with socket connection errors causing the agent to stop attempting
+  to connect at startup.
+
+### 5.2.1 (2019-01-28):
+
+* Fixed bug where agent would stop sending data to New Relic servers when a
+  connectivity issue was encountered.
+
+* Removed installation of Oracle container test scripts.
+
+* Replaced explicit `config.high_security === true` checks with general truthiness
+  checks.
+
+  The agent will now treat any truthy value in the `high_security` config setting
+  as if it is enabled.
+
+* Fixed unit test with incorrect usage of cross application tracing.
+
+### 5.2.0 (2019-01-23):
+
+* Upgraded to `@newrelic/native-metrics` v4.
+
+* Removed outdated config files.
+
+* Removed old, outdated examples.
+
+* Fixed an issue where old CAT headers would be injected while distributed tracing
+  was enabled.
+
+  This would happen if both `cross_application_tracing.enabled` and
+  `distributed_tracing.enabled` were set to `true` and an instrumentation disabled
+  tracing for an outbound request.
+
+* Fixed access to `ConglomerateShim` in `shimmer`.
+
+* Added Neptune to the known database names.
+
+* Updated log messages for missing configuration files to point at the base
+  configuration.
+
+  Previously the log messages pointed at an internal file defining default values
+  for every configuration.
+
+### 5.1.0 (2019-01-16):
+
+* Added new shim type: `ConglomerateShim`
+
+  This shim class is useful for instrumenting modules which implement several service
+  interfaces of different types.
+
+* Disabled logging by default when serverless_mode is enabled. Please note
+  serverless/lambda monitoring is not yet officially released.
+
+* `null` trace attribute values are no longer sent to New Relic.
+
+  This change brings the Node agent in alignment with the behavior of other language
+  agents.
+
+### 5.0.0 (2019-01-08):
+
+* Dropped support for Node versions less than 6.
+
+* Agent no longer creates transactions when in a `stopped`, `stopping` or `errored`
+  state.
+
+* Removed public API methods that have been deprecated since Agent v2:
+  `createTracer`, `createWebTransaction`, `createBackgroundTransaction`, and
+  `addCustomParameter`/`(s)`. See the [Migration
+  Guide](https://github.com/newrelic/node-newrelic/blob/master/Migration%20Guide.md)
+  for more information.
+
+* Flagged `API#setIgnoreTransaction` as deprecated; `TransactionHandle#ignore`
+  should be used instead.
+
+* Released several feature flags. These flags are no longer used:
+
+ - `feature_flag.custom_instrumentation`
+ - `feature_flag.custom_metrics`
+ - `feature_flag.synthetics`
+ - `feature_flag.native_metrics`
+
+* Added `plugins.native_metrics.enabled` configuration value.
+
+  This configuration value controls the use of the `@newrelic/native-metrics` module.
+  When set to `false` the agent will not attempt to load that module.
+
+* Custom metrics recorded via `recordMetric` and `incrementMetric` API calls now
+  automatically have the name prepended with `'Custom/'`. Usages of these APIs that
+  manually prepend with `'Custom/'` will need to remove the manually specified one
+  or will end up with metrics prepended with `'Custom/Custom/'`.
+
+* Dropped support for `node-cassandra-cql`.
+
+* Removed from `ignore_server_configuration` config setting.
+
+* Removed deprecated configuration settings `capture_params` and `ignored_params`.
+
+* The agent will no longer cause a stack overflow when logging at trace level to
+  stdout.
+
+  Previously, the agent would inadvertently trigger a trace level log from its trace
+  level log (through wrapping a nextTick call), causing a stack overflow. The agent
+  now detects this case and aborts the nested call.
+
+### 4.13.0 (2018-12-20):
+
+* Fixed clearing of active harvest via `_stopHarvester()`.
+
+* Fixed handling of harvest endpoints when not all fail.
+
+* Added agent state "connecting" to indicate when handshake with New Relic servers
+  is starting. This can be triggered on startup and restarts.
+
+* Added `--no-package-lock` to `unit` and `integration` rules.
+
+* Released `protocol_17` feature flag.
+
+* The agent now reacts to failed New Relic requests based on response code, as
+  opposed to parsing an exception message in the response body.
+
+* Replaced `nsp` with `npm audit` in security checks.
+
+* Collector now specify `application/json` content-type when data is compressed
+  instead of `octet-stream`.
+
+* Bumped ecmaVersion in test .eslintrc to 8
+
+### 4.12.0 (2018-12-03):
+
+* Converted error handling in `CollectorAPI` and `RemoteMethod` to callbacks.
+
+  Previously many of the errors were thrown. For consistency with async errors,
+  these are now handed to the callback instead of thrown. The old behavior could
+  result in a crash under a few circumstances, such as when the agent exceeded a
+  configured maximum payload size. These errors came from `RemoteMethod._safeRequest`.
+  Since these errors are handed to the callback instead of thrown, this bug is no
+  longer a potential.
+
+* Added IP address collection and forwarding of metadata headers for upcoming
+  protocol 17.
+
+  These features are currently behind the `protocol_17` feature flag until all
+  parts of protocol 17 are implemented.
+
+* Refactored harvest interactions in preparation for protocol 17 status codes.
+
+### 4.11.0 (2018-11-15):
+
+* Changed totalTime attribute to be in decimal seconds instead of milliseconds for
+  transaction events.
+
+* Agent no longer produces spans on ignored transactions.
+
+  Previously, the agent would produce distributed tracing span events regardless
+  of the ignored status of the transaction the events originated from.
+
+* Extended Restify instrumentation to mark possible transaction names in order to
+  account for async response methods.
+
+* Added `protocol_17` feature flag.
+
+  Flag will be removed and protocol will be hard-coded to `17` once functionality
+  is released on New Relic backend.
+
+* Added switch statement indenting standard to eslintrc
+
+* This release also includes changes to the agent to enable monitoring of Lambda
+  functions. If you are interested in learning more or previewing New Relic Lambda
+  monitoring please email lambda_preview@newrelic.com.
+
+* Introduced "warn" level 2 space rule to eslintrc
+
+* Updated `hapi@16` versioned tests to only run on Node 6 and above.
+
+* Upgraded `@newrelic/test-utilities` to v2.
+
+* Pinned mysql2 to `<1.6.2` in versioned tests.
+
+* Added `waitForIdle` option to `API#shutdown`.
+
+  This new option will make the agent wait for all active transactions to finish
+  before actually shutting down. This does not pre-empt creation of new transactions,
+  so care must be taken to ensure the active transaction pool drains or the agent
+  will never shut down.
+
+### 4.10.0 (2018-11-01):
+
+* Added `DatastoreShim#getDatabaseNameFromUseQuery`
+
+  This new method can be used to extract the database name from `USE` SQL queries.
+
+* Added link to CONTRIBUTING.md file in README.md
+
+  Thanks to Yuri Tkachenko (@tamtamchik) for the contribution.
+
+* Added VS Code settings to git ignore.
+
+* Fixed bug preventing Distributed Tracing (DT) from fully functioning when Cross
+  Application Tracing (CAT) was disabled.
+
+* The agent will no longer break express routers in the case of using regex paths
+  in a list.
+
+  Previously, the agent would overwrite the regex with the source of the regex. The
+  agent now makes a copy of the route array and mutates that instead.
+
+* Attributes will now be properly propagated to PageView events.
+
+  The agent may now be configured to pass attributes along to the browser agent.
+  The attributes that match the include/exclude rules in the
+  `browser_monitor.attributes` section will now be placed on PageView events.
+
+* Renames better-cat integration test organization to be distributed-tracing and
+  updated some test verbiage to use DT or distributed tracing instead of CAT or
+  cross application tracing.
+
+### 4.9.0 (2018-10-01):
+
+* Updated DT payload creation to use `primary_application_id` from connect response.
+
+* Added protection against functions with modified prototypes in `shim.applySegment`.
+
+* Replaced SQL ID hash generation algorithm with SHA1 instead of MD5 to allow usage
+  in FIPS compliant environments.
+
+* Leveraged 16 hex digits for creation of SQL ID.
+
+* Fixed `codec.decode()` callback bug that would re-call a callback with an error
+  thrown within the callback.
+
+* Added `superagent` as built-in instrumentation.
+
+  This instrumentation just maintains transaction state when using the `superagent`
+  module to make HTTP requests with either callbacks or promises.
+
+* Updated `noticeError` API method to be partially functional in High Security Mode.
+
+  In HSM, any custom attributes will be ignored, but the error will still be tracked.
+  This brings the Node agent in line with the behavior of other language agents.
+
+* Upgraded ejs module to get rid of Github security warnings. The ejs module was
+  only used for tests and not in main agent code.
+
+* Fixed bug requiring Cross Application Tracing (CAT) to be enabled for Distributed
+  Tracing (DT) `createDistributedTracePayload` and `acceptDistributedTracePayload`
+  APIs to function. DT configuration will no longer consider CAT configuration.
+
+* Changes DT payload configuration log messages to debug level as it is not uncommon
+  for calls to occur before server configuration has been retrieved.
+
+* Converted `net` instrumentation to use shim api.
+
+* Converted child_process instrumentation to newer shim style.
+
+* Converted Timers instrumentation to newer shim style.
+
+* Fixed bug in wrap() that would fail to wrap callbacks if the callback index was 0.
+
+* Added `PromiseShim` class for instrumenting promise libraries.
+
+* Support for setting `transaction_tracer.transaction_threshold` to 0 has been added.
+
+* The agent now respects `NEW_RELIC_TRACER_THRESHOLD`.
+
+  Previously, this environment variable was stored as a string. The environment
+  variable is now stored as a float.
+
+* Converted zlib instrumentation to use shim API.
+
 ### 4.8.1 (2018-08-27):
 
 * Converted File System instrumentation to use newer shim style.

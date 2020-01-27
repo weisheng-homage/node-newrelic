@@ -14,6 +14,7 @@ tap.test('Hapi v16 error handling', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
+
     server = utils.getServer()
     done()
   })
@@ -57,6 +58,9 @@ tap.test('Hapi v16 error handling', function(t) {
   })
 
   t.test('reports error when thrown from a route', function(t) {
+    // Prevent tap from noticing the ohno failure.
+    helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
     server.route({
       method: 'GET',
       path: '/test',
@@ -74,6 +78,9 @@ tap.test('Hapi v16 error handling', function(t) {
   })
 
   t.test('reports error when thrown from a middleware', function(t) {
+    // Prevent tap from noticing the ohno failure.
+    helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
+
     server.ext('onRequest', function() {
       throw new Error('some error')
     })
@@ -189,7 +196,7 @@ function runTest(t, callback) {
   var errors
 
   agent.on('transactionFinished', function() {
-    errors = agent.errors.errors
+    errors = agent.errors.traceAggregator.errors
     if (statusCode) {
       callback(errors, statusCode)
     }
@@ -208,6 +215,6 @@ function runTest(t, callback) {
   })
 }
 
-function makeRequest(server, path, callback) {
+function makeRequest(serv, path, callback) {
   http.request({port: port, path: path}, callback).end()
 }

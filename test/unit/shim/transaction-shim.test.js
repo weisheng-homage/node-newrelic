@@ -69,6 +69,8 @@ describe('TransactionShim', function() {
   })
 
   describe('#bindCreateTransaction', function() {
+    const notRunningStates = ['stopped', 'stopping', 'errored']
+
     it('should not wrap non-functions', function() {
       shim.bindCreateTransaction(wrappable, 'name', {type: shim.WEB})
       expect(shim.isWrapped(wrappable.name)).to.be.false
@@ -153,6 +155,24 @@ describe('TransactionShim', function() {
           expect(bgCalled).to.be.true
           expect(webTx).to.equal(bgTx)
         })
+
+        notRunningStates.forEach((agentState) => {
+          it(`should not create transaction when agent state is ${agentState}`, () => {
+            agent.setState(agentState)
+
+            let callbackCalled = false
+            let transaction = null
+            const wrapped = shim.bindCreateTransaction(() => {
+              callbackCalled = true
+              transaction = shim.tracer.getTransaction()
+            }, {type: shim.BG})
+
+            wrapped()
+
+            expect(callbackCalled).to.be.true
+            expect(transaction).to.be.null
+          })
+        })
       })
 
       describe('when `spec.nest` is `true`', function() {
@@ -209,6 +229,24 @@ describe('TransactionShim', function() {
               expect(tx1).to.not.equal(tx2, 'tx ' + i + ' should not equal tx ' + j)
             }
           }
+        })
+
+        notRunningStates.forEach((agentState) => {
+          it(`should not create transaction when agent state is ${agentState}`, () => {
+            agent.setState(agentState)
+
+            let callbackCalled = false
+            let transaction = null
+            const wrapped = shim.bindCreateTransaction(() => {
+              callbackCalled = true
+              transaction = shim.tracer.getTransaction()
+            }, {type: shim.BG, nest: true})
+
+            wrapped()
+
+            expect(callbackCalled).to.be.true
+            expect(transaction).to.be.null
+          })
         })
       })
     })
@@ -287,7 +325,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
 
         shim.handleCATHeaders(headers, segment)
 
@@ -295,7 +333,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
       })
     })
 
@@ -309,7 +347,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
 
         shim.handleCATHeaders(headers, segment)
 
@@ -317,7 +355,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
       })
     })
 
@@ -329,7 +367,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
 
         expect(function() {
           shim.handleCATHeaders(null, segment)
@@ -339,7 +377,7 @@ describe('TransactionShim', function() {
         expect(tx.referringTransactionGuid).to.not.exist
         expect(segment.catId).to.not.exist
         expect(segment.catTransaction).to.not.exist
-        expect(segment.parameters.transaction_guid).to.not.exist
+        expect(segment.getAttributes().transaction_guid).to.not.exist
       })
     })
 
@@ -408,6 +446,21 @@ describe('TransactionShim', function() {
           expect(tx.referringPathHash).to.equal('path hash')
         })
       })
+
+      it('Should propagate w3c tracecontext header when present', function() {
+        agent.config.distributed_tracing.enabled = true
+        agent.config.feature_flag.dt_format_w3c = true
+        const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-00'
+        const tracestate = 'test=test'
+
+        helper.runInTransaction(agent, function(tx) {
+          const headers = { traceparent, tracestate }
+          const segment = shim.getSegment()
+          shim.handleCATHeaders(headers, segment)
+          expect(tx.traceContext.traceparent).to.equal(traceparent)
+          expect(tx.traceContext.tracestate.endsWith(tracestate)).to.be.true
+        })
+      })
     })
 
     describe('when app data is provided', function() {
@@ -420,7 +473,7 @@ describe('TransactionShim', function() {
 
           expect(segment.catId).to.not.exist
           expect(segment.catTransaction).to.not.exist
-          expect(segment.parameters.transaction_guid).to.not.exist
+          expect(segment.getAttributes().transaction_guid).to.not.exist
 
           helper.runInTransaction(agent, shim.BG, function(tx2) {
             expect(tx2).to.not.equal(tx)
@@ -429,7 +482,7 @@ describe('TransactionShim', function() {
 
           expect(segment.catId).to.equal('6789#app')
           expect(segment.catTransaction).to.equal('app data transaction name')
-          expect(segment.parameters.transaction_guid).to.equal('app trans id')
+          expect(segment.getAttributes().transaction_guid).to.equal('app trans id')
         })
       })
 
@@ -442,13 +495,13 @@ describe('TransactionShim', function() {
 
           expect(segment.catId).to.not.exist
           expect(segment.catTransaction).to.not.exist
-          expect(segment.parameters.transaction_guid).to.not.exist
+          expect(segment.getAttributes().transaction_guid).to.not.exist
 
           shim.handleCATHeaders(headers)
 
           expect(segment.catId).to.equal('6789#app')
           expect(segment.catTransaction).to.equal('app data transaction name')
-          expect(segment.parameters.transaction_guid).to.equal('app trans id')
+          expect(segment.getAttributes().transaction_guid).to.equal('app trans id')
         })
       })
 
@@ -461,7 +514,7 @@ describe('TransactionShim', function() {
 
           expect(segment.catId).to.not.exist
           expect(segment.catTransaction).to.not.exist
-          expect(segment.parameters.transaction_guid).to.not.exist
+          expect(segment.getAttributes().transaction_guid).to.not.exist
 
           helper.runInTransaction(agent, shim.BG, function(tx2) {
             expect(tx2).to.not.equal(tx)
@@ -470,7 +523,7 @@ describe('TransactionShim', function() {
 
           expect(segment.catId).to.equal('6789#app')
           expect(segment.catTransaction).to.equal('app data transaction name')
-          expect(segment.parameters.transaction_guid).to.equal('app trans id')
+          expect(segment.getAttributes().transaction_guid).to.equal('app trans id')
         })
       })
 
@@ -485,13 +538,13 @@ describe('TransactionShim', function() {
 
             expect(segment.catId).to.not.exist
             expect(segment.catTransaction).to.not.exist
-            expect(segment.parameters.transaction_guid).to.not.exist
+            expect(segment.getAttributes().transaction_guid).to.not.exist
 
             shim.handleCATHeaders(headers)
 
             expect(segment.catId).to.not.exist
             expect(segment.catTransaction).to.not.exist
-            expect(segment.parameters.transaction_guid).to.not.exist
+            expect(segment.getAttributes().transaction_guid).to.not.exist
           })
         })
       })

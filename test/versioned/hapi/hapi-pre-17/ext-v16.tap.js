@@ -27,6 +27,7 @@ tap.test('Hapi.ext', function(t) {
 
   t.beforeEach(function(done) {
     agent = helper.instrumentMockedAgent()
+
     server = utils.getServer()
     done()
   })
@@ -94,7 +95,7 @@ tap.test('Hapi.ext', function(t) {
       method: 'GET',
       path: '/test',
       handler: function myHandler(req, reply) {
-      t.ok(agent.getTransaction(), 'transaction is available')
+        t.ok(agent.getTransaction(), 'transaction is available')
         reply()
       }
     })

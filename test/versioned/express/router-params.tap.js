@@ -7,7 +7,7 @@ var helper = require('../../lib/agent_helper')
 test("Express router introspection", function(t) {
   t.plan(14)
 
-  var agent = helper.instrumentMockedAgent(null, {
+  const agent = helper.instrumentMockedAgent({
     attributes: {
       enabled: true,
       include: ['request.parameters.*']
@@ -34,8 +34,12 @@ test("Express router introspection", function(t) {
   })
 
   agent.on('transactionFinished', function(transaction) {
-    t.equal(transaction.name, 'WebTransaction/Expressjs/GET//a/:param1/b/:param2',
-            "transaction has expected name")
+    t.equal(
+      transaction.name,
+      'WebTransaction/Expressjs/GET//a/:param1/b/:param2',
+      "transaction has expected name"
+    )
+
     t.equal(transaction.url, '/a/foo/b/bar', "URL is left alone")
     t.equal(transaction.statusCode, 200, "status code is OK")
     t.equal(transaction.verb, 'GET', "HTTP method is GET")
@@ -48,8 +52,9 @@ test("Express router introspection", function(t) {
       web.partialName, 'Expressjs/GET//a/:param1/b/:param2',
       'should have partial name for apdex'
     )
-    t.equal(web.parameters['request.parameters.param1'], 'foo', 'should have param1')
-    t.equal(web.parameters['request.parameters.param2'], 'bar', 'should have param2')
+    const attributes = web.getAttributes()
+    t.equal(attributes['request.parameters.param1'], 'foo', 'should have param1')
+    t.equal(attributes['request.parameters.param2'], 'bar', 'should have param2')
   })
 
   server.listen(0, function() {

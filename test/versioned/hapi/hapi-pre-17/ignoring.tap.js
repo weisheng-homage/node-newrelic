@@ -9,7 +9,8 @@ var utils = require('./hapi-utils')
 tap.test('ignoring a Hapi route', function(t) {
   t.plan(7)
 
-  var agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
+
   var api = new API(agent)
   var server = utils.getServer()
   var port = null
@@ -21,25 +22,29 @@ tap.test('ignoring a Hapi route', function(t) {
   })
 
   agent.on('transactionFinished', function(tx) {
-    t.equal(tx.name, 'WebTransaction/Hapi/GET//order/{id}',
-            'transaction has expected name even on error')
+    t.equal(
+      tx.name,
+      'WebTransaction/Hapi/GET//order/{id}',
+      'transaction has expected name even on error'
+    )
+
     t.ok(tx.ignore, 'transaction is ignored')
 
     t.notOk(agent.traces.trace, 'should have no transaction trace')
 
-    var metrics = agent.metrics.unscoped
+    var metrics = agent.metrics._metrics.unscoped
     t.equal(Object.keys(metrics).length, 1,
       'only supportability metrics added to agent collection'
     )
 
-    var errors = agent.errors.errors
+    var errors = agent.errors.traceAggregator.errors
     t.equal(errors.length, 0, 'no errors noticed')
   })
 
   server.route({
     method: 'GET',
     path: '/order/{id}',
-    handler: function(request, reply) {
+    handler: function(req, reply) {
       api.setIgnoreTransaction(true)
       reply({status: 'cartcartcart'}).code(400)
     }

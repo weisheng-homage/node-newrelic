@@ -59,7 +59,7 @@ module.exports = function runTests(name, clientFactory) {
         runTest()
       })
     })
-   }
+  }
 
   function verify(t, segment, selectTable) {
     verifyMetrics(t, segment, selectTable)
@@ -97,12 +97,12 @@ module.exports = function runTests(name, clientFactory) {
     var expectedNames = Object.keys(expected)
     var unscopedNames = Object.keys(unscoped)
 
-    expectedNames.forEach(function(name) {
-      t.ok(unscoped[name], 'should have unscoped metric ' + name)
-      if (unscoped[name]) {
+    expectedNames.forEach(function(expectedName) {
+      t.ok(unscoped[expectedName], 'should have unscoped metric ' + expectedName)
+      if (unscoped[expectedName]) {
         t.equals(
-          unscoped[name].callCount, expected[name],
-          'metric ' + name + ' should have correct callCount'
+          unscoped[expectedName].callCount, expected[expectedName],
+          'metric ' + expectedName + ' should have correct callCount'
         )
       }
     })
@@ -136,8 +136,11 @@ module.exports = function runTests(name, clientFactory) {
 
     if (!getSegment) return
 
-    t.equals(getSegment.name, 'Datastore/statement/Postgres/' + selectTable + '/select',
-             'should register the query call')
+    t.equals(
+      getSegment.name,
+      'Datastore/statement/Postgres/' + selectTable + '/select',
+      'should register the query call'
+    )
 
     t.ok(getSegment.timer.hrDuration, 'trace segment should have ended')
   }
@@ -151,16 +154,28 @@ module.exports = function runTests(name, clientFactory) {
       trace.root,
       'Datastore/statement/Postgres/' + TABLE + '/insert'
     )
+    const attributes = setSegment.getAttributes()
 
     var metricHostName = getMetricHostName(agent, params.postgres_host)
-    t.equals(setSegment.parameters.host, metricHostName,
-      'should add the host parameter')
-    t.equals(setSegment.parameters.port_path_or_id, String(params.postgres_port),
-      'should add the port parameter')
     t.equals(
-      setSegment.parameters.database_name,
+      attributes.host,
+      metricHostName,
+      'should add the host parameter'
+    )
+    t.equals(
+      attributes.port_path_or_id,
+      String(params.postgres_port),
+      'should add the port parameter'
+    )
+    t.equals(
+      attributes.database_name,
       params.postgres_db,
       'should add the database name parameter'
+    )
+    t.equals(
+      attributes.product,
+      'Postgres',
+      'should add the product attribute'
     )
   }
 
@@ -202,8 +217,8 @@ module.exports = function runTests(name, clientFactory) {
     t.beforeEach(function(done) {
       // the pg module has `native` lazy getter that is removed after first call,
       // so in order to re-instrument, we need to remove the pg module from the cache
-      var name = require.resolve('pg')
-      delete require.cache[name]
+      var pgName = require.resolve('pg')
+      delete require.cache[pgName]
 
       agent = helper.instrumentMockedAgent()
       pg = clientFactory()
@@ -260,10 +275,9 @@ module.exports = function runTests(name, clientFactory) {
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
               t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-              transaction.end(function() {
-                verify(t, agent.tracer.getSegment())
-                t.end()
-              })
+              transaction.end()
+              verify(t, agent.tracer.getSegment())
+              t.end()
             })
           })
         })
@@ -271,7 +285,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     t.test('client pooling query', function(t) {
-      t.plan(38)
+      t.plan(39)
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
         var transaction = agent.getTransaction()
@@ -302,17 +316,16 @@ module.exports = function runTests(name, clientFactory) {
             t.ok(agent.getTransaction(), 'transaction should still still be visible')
             t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-            transaction.end(function() {
-              pool.end()
-              verify(t, agent.tracer.getSegment())
-            })
+            transaction.end()
+            pool.end()
+            verify(t, agent.tracer.getSegment())
           })
         })
       })
     })
 
     t.test('using Pool constructor', function(t) {
-      t.plan(39)
+      t.plan(40)
 
       t.notOk(agent.getTransaction(), 'no transaction should be in play')
       helper.runInTransaction(agent, function transactionInScope(tx) {
@@ -356,14 +369,13 @@ module.exports = function runTests(name, clientFactory) {
               t.ok(agent.getTransaction(), 'transaction should still still be visible')
               t.equals(value.rows[0][COL], colVal, 'Postgres client should still work')
 
-              transaction.end(function() {
-                if (pool.end instanceof Function) {
-                  pool.end()
-                }
+              transaction.end()
+              if (pool.end instanceof Function) {
+                pool.end()
+              }
 
-                done(true)
-                verify(t, agent.tracer.getSegment())
-              })
+              done(true)
+              verify(t, agent.tracer.getSegment())
             })
           })
         })
@@ -371,8 +383,7 @@ module.exports = function runTests(name, clientFactory) {
     })
 
     // https://github.com/newrelic/node-newrelic/pull/223
-    t.test('query using an config object with `text` getter instead of property',
-        function(t) {
+    t.test('query using an config object with `text` getter instead of property', (t) => {
       t.plan(3)
       var client = new pg.Client(CON_OBJ)
 
@@ -446,10 +457,9 @@ module.exports = function runTests(name, clientFactory) {
               return t.end()
             }
 
-            transaction.end(function() {
-              verifySlowQueries(t, agent)
-              t.end()
-            })
+            transaction.end()
+            verifySlowQueries(t, agent)
+            t.end()
           })
         })
       })
@@ -485,27 +495,26 @@ module.exports = function runTests(name, clientFactory) {
               return t.end()
             }
 
-            transaction.end(function() {
-              const queryParams = agent.queries.samples.values().next().value
+            transaction.end()
+            const queryParams = agent.queries.samples.values().next().value
 
-              t.equal(
-                queryParams.host,
-                undefined,
-                'should not have host parameter'
-              )
+            t.equal(
+              queryParams.host,
+              undefined,
+              'should not have host parameter'
+            )
 
-              t.equal(
-                queryParams.port_path_or_id,
-                undefined,
-                'should not have port parameter'
-              )
+            t.equal(
+              queryParams.port_path_or_id,
+              undefined,
+              'should not have port parameter'
+            )
 
-              t.equal(
-                queryParams.database_name,
-                undefined,
-                'should not have database name parameter'
-              )
-            })
+            t.equal(
+              queryParams.database_name,
+              undefined,
+              'should not have database name parameter'
+            )
           })
         })
       })

@@ -3,6 +3,7 @@
 var common = require('./common')
 var tap = require('tap')
 var helper = require('../../lib/agent_helper')
+const async = require('async')
 
 var METRIC_HOST_NAME = null
 var METRIC_HOST_PORT = null
@@ -16,6 +17,8 @@ exports.connect = common.connect
 exports.close = common.close
 exports.populate = populate
 exports.test = collectionTest
+
+exports.dropTestCollections = dropTestCollections
 
 function collectionTest(name, run) {
   var collections = ['testCollection', 'testCollection2']
@@ -31,12 +34,13 @@ function collectionTest(name, run) {
       t.autoend()
       t.beforeEach(function(done) {
         agent = helper.instrumentMockedAgent()
-        helper.bootstrapMongoDB(collections, function(err) {
+
+        var mongodb = require('mongodb')
+
+        dropTestCollections(mongodb, collections, function(err) {
           if (err) {
             return done(err)
           }
-
-          var mongodb = require('mongodb')
 
           METRIC_HOST_NAME = common.getHostName(agent)
           METRIC_HOST_PORT = common.getPort()
@@ -99,16 +103,15 @@ function collectionTest(name, run) {
             t.equal(current.children.length, 0, 'should have no more children')
             t.ok(current === segment, 'should test to the current segment')
 
-            transaction.end(function onTxEnd() {
-              common.checkMetrics(
-                t,
-                agent,
-                METRIC_HOST_NAME,
-                METRIC_HOST_PORT,
-                metrics || []
-              )
-              t.end()
-            })
+            transaction.end()
+            common.checkMetrics(
+              t,
+              agent,
+              METRIC_HOST_NAME,
+              METRIC_HOST_PORT,
+              metrics || []
+            )
+            t.end()
           })
         })
       })
@@ -125,17 +128,22 @@ function collectionTest(name, run) {
             while (current) {
               if (common.MONGO_SEGMENT_RE.test(current.name)) {
                 t.comment('Checking segment ' + current.name)
+                const attributes = current.getAttributes()
                 t.notOk(
-                  current.parameters.hasOwnProperty('host'),
-                  'should not have host parameter'
+                  attributes.host,
+                  'should not have host attribute'
                 )
                 t.notOk(
-                  current.parameters.hasOwnProperty('port_path_or_id'),
-                  'should not have port parameter'
+                  attributes.port_path_or_id,
+                  'should not have port attribute'
                 )
                 t.ok(
-                  current.parameters.hasOwnProperty('database_name'),
-                  'should have database name parameter'
+                  attributes.database_name,
+                  'should have database name attribute'
+                )
+                t.ok(
+                  attributes.product,
+                  'should have product attribute'
                 )
               }
               current = current.children[0]
@@ -157,17 +165,22 @@ function collectionTest(name, run) {
             while (current) {
               if (common.MONGO_SEGMENT_RE.test(current.name)) {
                 t.comment('Checking segment ' + current.name)
+                const attributes = current.getAttributes()
                 t.ok(
-                  current.parameters.hasOwnProperty('host'),
-                  'should have host parameter'
+                  attributes.host,
+                  'should have host attribute'
                 )
                 t.ok(
-                  current.parameters.hasOwnProperty('port_path_or_id'),
-                  'should have port parameter'
+                  attributes.port_path_or_id,
+                  'should have port attribute'
                 )
                 t.notOk(
-                  current.parameters.hasOwnProperty('database_name'),
-                  'should not have database name parameter'
+                  attributes.database_name,
+                  'should not have database name attribute'
+                )
+                t.ok(
+                  attributes.product,
+                  'should have product attribute'
                 )
               }
               current = current.children[0]
@@ -190,12 +203,13 @@ function collectionTest(name, run) {
         agent = helper.instrumentMockedAgent()
         METRIC_HOST_NAME = agent.config.getHostnameSafe()
         METRIC_HOST_PORT = domainPath
-        helper.bootstrapMongoDB(collections, function(err) {
+
+        var mongodb = require('mongodb')
+
+        dropTestCollections(mongodb, collections, function(err) {
           if (err) {
             return done(err)
           }
-
-          var mongodb = require('mongodb')
 
           common.connect(mongodb, domainPath, function(err, res) {
             if (err) {
@@ -225,21 +239,21 @@ function collectionTest(name, run) {
           transaction.name = common.TRANSACTION_NAME
           run(t, collection, function(err, segments, metrics) {
             t.error(err)
-            transaction.end(function() {
-              var re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
-              var badMetrics = Object.keys(agent.metrics.unscoped).filter(function(m) {
+            transaction.end()
+            var re = new RegExp('^Datastore/instance/MongoDB/' + domainPath)
+            var badMetrics = Object.keys(agent.metrics._metrics.unscoped)
+              .filter(function(m) {
                 return re.test(m)
               })
-              t.notOk(badMetrics.length, 'should not use domain path as host name')
-              common.checkMetrics(
-                t,
-                agent,
-                METRIC_HOST_NAME,
-                METRIC_HOST_PORT,
-                metrics || []
-              )
-              t.end()
-            })
+            t.notOk(badMetrics.length, 'should not use domain path as host name')
+            common.checkMetrics(
+              t,
+              agent,
+              METRIC_HOST_NAME,
+              METRIC_HOST_PORT,
+              metrics || []
+            )
+            t.end()
           })
         })
       })
@@ -247,17 +261,16 @@ function collectionTest(name, run) {
   })
 }
 
-
 function checkSegmentParams(t, segment) {
   var dbName = common.DB_NAME
   if (/\/rename$/.test(segment.name)) {
     dbName = 'admin'
   }
 
-  var parms = segment.parameters
-  t.equal(parms.database_name, dbName, 'should have correct db name')
-  t.equal(parms.host, METRIC_HOST_NAME, 'should have correct host name')
-  t.equal(parms.port_path_or_id, METRIC_HOST_PORT, 'should have correct port')
+  var attributes = segment.getAttributes()
+  t.equal(attributes.database_name, dbName, 'should have correct db name')
+  t.equal(attributes.host, METRIC_HOST_NAME, 'should have correct host name')
+  t.equal(attributes.port_path_or_id, METRIC_HOST_PORT, 'should have correct port')
 }
 
 function populate(db, collection, done) {
@@ -280,6 +293,40 @@ function populate(db, collection, done) {
     collection.deleteMany({}, function(err) {
       if (err) return done(err)
       collection.insert(items, done)
+    })
+  })
+}
+
+/**
+ * Bootstrap a running MongoDB instance by dropping all the collections used
+ * by tests.
+ * @param {*} mongodb MongoDB module to execute commands on.
+ * @param {*} collections Collections to drop for test.
+ * @param {Function} callback The operations to be performed while the server
+ *                     is running.
+ */
+function dropTestCollections(mongodb, collections, callback) {
+  common.connect(mongodb, null, function(err, res) {
+    if (err) {
+      return callback(err)
+    }
+
+    const client = res.client
+    const db = res.db
+
+    async.eachSeries(collections, (collection, cb) => {
+      db.dropCollection(collection, (err) => {
+        // It's ok if the collection didn't exist before
+        if (err && err.errmsg === 'ns not found') {
+          err = null
+        }
+
+        cb(err)
+      })
+    }, (err) => {
+      common.close(client, db, (err2) => {
+        callback(err || err2)
+      })
     })
   })
 }
