@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>RecorderSpec - Documentation</title>
+    <title>TransactionHandle - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">RecorderSpec</h1>
+    <h1 class="page-title">TransactionHandle</h1>
     
 
     
@@ -42,7 +42,7 @@
 <header>
     
         <h2>
-        RecorderSpec
+        TransactionHandle
         </h2>
         
     
@@ -52,335 +52,21 @@
     <div class="container-overview">
     
         
-            <div class="description"><p>The return value from a <a href="global.html#RecorderFunction"><code>RecorderFunction</code></a>, used to set the parameters
-of segment creation and lifetime. Extends the <a href="SegmentSpec.html"><code>SegmentSpec</code></a>.</p></div>
-        
-
-        
-
-
-    <h5 class="subsection-title">Properties:</h5>
+<div class="section-method">
 
     
 
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>stream</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
-|
-
-<span class="param-type"><code>string</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>Indicates if the return value from the wrapped function is a stream. If the
-value is truthy then the recording will extend to the <code>end</code> event of the
-stream. If the value is a string it is assumed to be the name of an event to
-measure. A segment will be created to record emissions of the event.</p></td>
-        </tr>
-
-        
+    <h4 class="name" id="TransactionHandle"><span class="type-signature"></span>new TransactionHandle<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
-        <tr>
-            
-                <td class="name"><code>promise</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
 
 
-            
-            </td>
+<div class="description">
+    <p>A light representation of a transaction instance, returned by calling
+<a href="API.html#getTransaction"><code>API#getTransaction</code></a>.</p>
+</div>
 
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>Indicates if the return value from the wrapped function is a Promise. If the
-value is truthy then the recording will extend to the completion of the
-Promise.</p></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-|
-
-<span class="param-type"><code><a href="global.html#CallbackBindFunction">CallbackBindFunction</a></code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>If this is a number, it identifies which argument is the callback and the
-segment will also be bound to the callback. Otherwise, the passed function
-should perform the segment binding itself.</p></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>rowCallback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>number</code></span>
-|
-
-<span class="param-type"><code><a href="global.html#CallbackBindFunction">CallbackBindFunction</a></code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>Like <code>callback</code>, this identifies a callback function in the arguments. The
-difference is that the default behavior for row callbacks is to only create
-one segment for all calls to the callback. This is mostly useful for
-functions which will be called repeatedly, such as once for each item in a
-result set.</p></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>internal</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last"><p>Marks this as the boundary point into the instrumented library. If <code>true</code>
-and the current segment is <em>also</em> marked as <code>internal</code> by the same shim,
-then we will not record this inner activity.</p>
-<p>This is useful when instrumenting a library which implements high-order
-methods which simply call other public methods and you only want to record
-the method directly called by the user while still instrumenting all
-endpoints.</p></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>after</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>function</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    null
-                
-                </td>
-            
-
-            <td class="description last"><p>A function to call after the synchronous execution of the recorded method.
-If the function synchronously threw an error, that error will be handed to
-this function.</p></td>
-        </tr>
-
-        
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callbackRequired</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><code>bool</code></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>When <code>true</code>, a recorded method must be called with a callback for a segment
-to be created. Does not apply if a custom callback method has been assigned
-via <code>callback</code>.</p></td>
-        </tr>
-
-        
-
-    
-    </tbody>
-</table>
 
 
 
@@ -414,41 +100,42 @@ via <code>callback</code>.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_shim_shim.js.html">lib/shim/shim.js</a>, <a href="lib_shim_shim.js.html#line449">line 449</a>
+        <a href="lib_transaction_handle.js.html">lib/transaction/handle.js</a>, <a href="lib_transaction_handle.js.html#line16">line 16</a>
     </li></ul></dd>
     
 
     
 
     
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="SegmentSpec.html">SegmentSpec</a></li>
-        
-            <li><a href="global.html#RecorderFunction">RecorderFunction</a></li>
-        </ul>
-    </dd>
-    
 
     
 </dl>
 
 
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
     
     </div>
-
-    
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li><a href="SegmentSpec.html">SegmentSpec</a></li>
-    </ul>
-
 
     
 
@@ -462,6 +149,852 @@ via <code>callback</code>.</p></td>
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="acceptDistributedTraceHeaders"><span class="type-signature"></span>acceptDistributedTraceHeaders<span class="signature">(@param, headers)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Parsing incoming headers for use in a distributed trace.
+W3C TraceContext format is preferred over the NewRelic DT format.
+NewRelic DT format will be used if no <code>traceparent</code> header is found.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_transaction_handle.js.html">lib/transaction/handle.js</a>, <a href="lib_transaction_handle.js.html#line57">line 57</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>@param</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>string</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>[transportType='Unknown'] - The transport type that delivered the trace.</p>
+                
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>headers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>object</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>Headers to search for supported formats. Keys must be lowercase.</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="acceptDistributedTracePayload"><span class="type-signature"></span>acceptDistributedTracePayload<span class="signature">(The)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Proxy method for Transaction#acceptDistributedTracePayload</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_transaction_handle.js.html">lib/transaction/handle.js</a>, <a href="lib_transaction_handle.js.html#line91">line 91</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>The</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>String</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                <p>payload to accept as the parent to the current trace</p>
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="createDistributedTracePayload"><span class="type-signature"></span>createDistributedTracePayload<span class="signature">()</span><span class="type-signature"> &rarr; {DistributedTracePayload}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Proxy method for Transaction#createDistrubtedTracePayload.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_transaction_handle.js.html">lib/transaction/handle.js</a>, <a href="lib_transaction_handle.js.html#line80">line 80</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section-returns">
+<h5>Returns:</h5>
+
+        
+
+<dl class="param-type">
+    <dt>
+        Type:
+    </dt>
+    <dd>
+        
+<span class="param-type"><code>DistributedTracePayload</code></span>
+
+
+    </dd>
+</dl>
+
+
+<div class="param-desc">
+    <p>The created payload object.</p>
+</div>
+
+    
+</div>
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="end"><span class="type-signature"></span>end<span class="signature">(callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>End the transaction.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_transaction_handle.js.html">lib/transaction/handle.js</a>, <a href="lib_transaction_handle.js.html#line26">line 26</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>function</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="ignore"><span class="type-signature"></span>ignore<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Mark the transaction to be ignored.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_transaction_handle.js.html">lib/transaction/handle.js</a>, <a href="lib_transaction_handle.js.html#line39">line 39</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="insertDistributedTraceHeaders"><span class="type-signature"></span>insertDistributedTraceHeaders<span class="signature">(headers)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Inserts distributed trace headers into the provided headers map.</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_transaction_handle.js.html">lib/transaction/handle.js</a>, <a href="lib_transaction_handle.js.html#line67">line 67</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>headers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><code>Object</code></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">
+                
+                
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
+            
+<div class="section-method">
+
+    
+
+    <h4 class="name" id="isSampled"><span class="type-signature"></span>isSampled<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Return whether this Transaction is being sampled</p>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_transaction_handle.js.html">lib/transaction/handle.js</a>, <a href="lib_transaction_handle.js.html#line46">line 46</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+        
     
 
     
