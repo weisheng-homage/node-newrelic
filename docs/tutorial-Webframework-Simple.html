@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Intro to Web Framework Instrumentation - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-Context-Preservation.html">Transaction State Preservation</a></li><li class="nav-item"><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li><li class="nav-item"><a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a></li><li class="nav-item"><a href="tutorial-Messaging-Simple.html">Intro to Message Broker Instrumentation</a></li><li class="nav-item"><a href="tutorial-Webframework-Simple.html">Intro to Web Framework Instrumentation</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="API.html">API</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomAttribute">addCustomAttribute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomAttributes">addCustomAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addIgnoringRule">addIgnoringRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addNamingRule">addNamingRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#endTransaction">endTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getBrowserTimingHeader">getBrowserTimingHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getLinkingMetadata">getLinkingMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getTraceMetadata">getTraceMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getTransaction">getTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#incrementMetric">incrementMetric</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrument">instrument</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentConglomerate">instrumentConglomerate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentDatastore">instrumentDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentLoadedModule">instrumentLoadedModule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentMessages">instrumentMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentWebframework">instrumentWebframework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#recordCustomEvent">recordCustomEvent</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#recordMetric">recordMetric</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setControllerName">setControllerName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setDispatcher">setDispatcher</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setTransactionName">setTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#shutdown">shutdown</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#startBackgroundTransaction">startBackgroundTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#startSegment">startSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#startWebTransaction">startWebTransaction</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="DatastoreShim.html">DatastoreShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#bindRowCallbackSegment">bindRowCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#captureInstanceAttributes">captureInstanceAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#parseQuery">parseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordBatchQuery">recordBatchQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordOperation">recordOperation</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordQuery">recordQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setDatastore">setDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setParser">setParser</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="MessageShim.html">MessageShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordConsume">recordConsume</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordProduce">recordProduce</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordPurgeQueue">recordPurgeQueue</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordSubscribedConsume">recordSubscribedConsume</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#setLibrary">setLibrary</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="PromiseShim.html">PromiseShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#isPromiseInstance">isPromiseInstance</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#setClass">setClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapCast">wrapCast</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapCatch">wrapCatch</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapConstructor">wrapConstructor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapExecutorCaller">wrapExecutorCaller</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapPromisify">wrapPromisify</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapThen">wrapThen</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Shim.html">Shim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#argsToArray">argsToArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCallbackSegment">bindCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindPromise">bindPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindSegment">bindSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#createSegment">createSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperties">defineProperties</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperty">defineProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#execute">execute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getActiveSegment">getActiveSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getName">getName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getOriginal">getOriginal</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getSegment">getSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#interceptPromise">interceptPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isArray">isArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isBoolean">isBoolean</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isFunction">isFunction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNull">isNull</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNumber">isNumber</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isObject">isObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isPromise">isPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isString">isString</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isWrapped">isWrapped</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#listenerCount">listenerCount</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#normalizeIndex">normalizeIndex</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#once">once</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#proxy">proxy</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#record">record</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setActiveSegment">setActiveSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setDefaults">setDefaults</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setInternalProperty">setInternalProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#shimRequire">shimRequire</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#storeSegment">storeSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#toArray">toArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrap">unwrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrapOnce">unwrapOnce</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrap">wrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapClass">wrapClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapExport">wrapExport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapReturn">wrapReturn</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionHandle.html">TransactionHandle</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#acceptDistributedTraceHeaders">acceptDistributedTraceHeaders</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#acceptDistributedTracePayload">acceptDistributedTracePayload</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#createDistributedTracePayload">createDistributedTracePayload</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#end">end</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#ignore">ignore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#insertDistributedTraceHeaders">insertDistributedTraceHeaders</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#isSampled">isSampled</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionShim.html">TransactionShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#bindCreateTransaction">bindCreateTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#insertCATReplyHeader">insertCATReplyHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#insertCATRequestHeaders">insertCATRequestHeaders</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#popTransactionName">popTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#pushTransactionName">pushTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#setTransactionName">setTransactionName</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="WebFrameworkShim.html">WebFrameworkShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#captureUrlParams">captureUrlParams</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#errorHandled">errorHandled</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordMiddleware">recordMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordParamware">recordParamware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordRender">recordRender</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#savePossibleTransactionName">savePossibleTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setErrorPredicate">setErrorPredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setFramework">setFramework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setResponsePredicate">setResponsePredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setRouteParser">setRouteParser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setTransactionUri">setTransactionUri</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#wrapMiddlewareMounter">wrapMiddlewareMounter</a></span></li><li class="nav-heading">Interfaces</li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="ClassWrapSpec.html">ClassWrapSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="DatastoreParameters.html">DatastoreParameters</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MessageSpec.html">MessageSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MessageSubscribeSpec.html">MessageSubscribeSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareSpec.html">MiddlewareSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="OperationSpec.html">OperationSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="ParsedQueryData.html">ParsedQueryData</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="QuerySpec.html">QuerySpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RecorderSpec.html">RecorderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RenderSpec.html">RenderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="SegmentSpec.html">SegmentSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="TransactionSpec.html">TransactionSpec</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#getDatabaseNameFromUseQuery">getDatabaseNameFromUseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#setIgnoreTransaction">setIgnoreTransaction</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Intro to Web Framework Instrumentation</h1>
+    
+
+    <section>
+
+<header>
+    
+</header>
+
+<article>
+    <h3>Pre-requisite</h3>
+<p><a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a></p>
+<h3>Introduction</h3>
+<p>This tutorial goes over basic concepts of using the WebFramework instrumentation API.
+In order to demonstrate the topics, we will use a hypothetical web framework that has
+similar concepts to popular web frameworks such as Express or Restify.</p>
+<p>Here is an example of how the web framework would be used in a user's code:</p>
+<pre class="prettyprint source lang-js"><code>var myWebFramework = require('my-web-framework')
+
+// create server
+var server = new myWebFramework.Server()
+
+server.all(function authenticate(req, res, next) {
+  if (authenticate()) {
+    next()
+  } else {
+    res.statusCode = 403
+    res.end()
+  }
+})
+
+server.get('/api/users', function(req, res) {
+  res.write(getUsers())
+  res.end()
+})
+
+server.get('/home', function(req, res) {
+  this.render('home', function(err, renderedView) {
+    res.write(renderedView)
+    res.end()
+  })
+})
+
+server.start(8080)
+</code></pre>
+<p>In this example, the web application server is serving two endpoints. Endpoint
+<code>/api/users</code> returns a list of users as JSON data. The second endpoint <code>/home</code> renders
+and returns an HTML view. It also has an authentication middleware that is executed for
+any type of request.</p>
+<h3>The Instrumentation Function</h3>
+<p>To add instrumentation to a web framework, you supply a single function which is
+responsible for telling New Relic which framework methods should be instrumented
+and what metrics and data to collect. The agent calls this instrumentation
+function automatically when the web framework module is required in the user's
+code. The function must be registered with the agent by calling <a href="API.html#instrumentWebframework"><code>API#instrumentWebframework</code></a>.</p>
+<pre class="prettyprint source lang-js"><code>var newrelic = require('newrelic')
+newrelic.instrumentWebframework('my-web-framework', instrumentMyWebFramework)
+</code></pre>
+<p>The instrumentation function can be included in the application code itself or
+it can live in a separate instrumentation module. In either case, we need to
+register it in our application code in order for the agent to use it.</p>
+<p>The instrumentation function has the following signature:</p>
+<pre class="prettyprint source lang-js"><code>function instrumentMyWebFramework(shim, myModule, moduleName) {
+</code></pre>
+<p>It receives a <a href="WebFrameworkShim.html"><code>WebFrameworkShim</code></a>, the module to instrument and the name of the
+package.</p>
+<p>For more details, see <a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a>.</p>
+<h3>Specifying the Framework</h3>
+<p>The first thing the instrumentation should do is specify the name of the framework it is
+instrumenting. The value is used as a part of metric names and transaction event
+attributes. It is also displayed in the Environment view.</p>
+<pre class="prettyprint source lang-js"><code>  shim.setFramework('MyCustom')
+</code></pre>
+<div style="text-align:center">
+  ![transaction breakdown](./breakdown-table-web-framework.png)
+</div>
+<h3>What to Record</h3>
+<p>Web framework instrumentation will generally be responsible for the following:</p>
+<ul>
+<li>naming the transaction</li>
+<li>recording metrics for middleware functions</li>
+<li>recording metrics for rendering views</li>
+<li>reporting errors that are handled by the web framework</li>
+</ul>
+<h3>Transaction Naming</h3>
+<p>A single transaction represents all activity that is tied to a single HTTP request from
+the time it is received until the app server sends a response back. In order to see
+meaningful metrics for similar transactions (e.g. ones that hit the same URL endpoint),
+the instrumentation needs to determine and assign a name for each transaction.</p>
+<p>The Node agent names transactions using the HTTP verb and the request URI. The
+verb is automatically determined from the HTTP request. However, the URI must
+typically be normalized in order to group related transactions in a meaningful way.
+For more details, see <a href="https://docs.newrelic.com/docs/agents/manage-apm-agents/troubleshooting/metric-grouping-issues">Metric grouping issues</a>.</p>
+<p>The API provides a basic function for setting the URI to use for naming - <a href="WebFrameworkShim.html#setTransactionUri"><code>WebFrameworkShim#setTransactionUri</code></a>.
+This would be sufficient for a very basic use case when the URI can be determined in a
+single point in the instrumentation code.</p>
+<p>However, many common web frameworks route each request through many functions, which may
+contribute to the final name. In order to help with the common use case of nested
+middlewares, the API provides a mechanism for naming transactions based on paths that
+middleware functions are mounted on.</p>
+<h3>Middlewares</h3>
+<p>Many frameworks have a concept of middlewares. Middleware is a function that is executed
+in response to a request for a specific URL endpoint. Middleware can either respond to
+the HTTP request or pass control to another middleware.</p>
+<p>Since there can be many middlewares executed for a single request, it is useful to know
+how much time is spent in each middleware when troubleshooting performance.</p>
+<div style="text-align:center">
+  ![transaction breakdown](./tx-breakdown-web-api.png)
+</div>
+<p>There are two API functions related to middleware - <a href="WebFrameworkShim.html#recordMiddleware"><code>WebFrameworkShim#recordMiddleware</code></a>
+and <a href="WebFrameworkShim.html#wrapMiddlewareMounter"><code>WebFrameworkShim#wrapMiddlewareMounter</code></a>. Based on our web app code, we would
+expect to record a middleware metric for the authentication middleware, and also for the
+endpoint middleware that responds to a specific request. Here is what the instrumenation
+would look like:</p>
+<pre class="prettyprint source lang-js"><code>var Server = myWebFramework.Server
+
+shim.wrapMiddlewareMounter(Server.prototype, ['all', 'get'], {
+  route: shim.FIRST,
+  wrapper: function wrapMiddleware(shim, fn, name, route) {
+    return shim.recordMiddleware(fn, {
+      route: route,
+      type: shim.MIDDLEWARE,
+      req: shim.FIRST,
+      res: shim.SECOND,
+      next: shim.THIRD
+    })
+  }
+})
+
+</code></pre>
+<p>In order to record the correct middleware metrics, middleware functions should
+be wrapped using the <a href="WebFrameworkShim.html#recordMiddleware"><code>WebFrameworkShim#recordMiddleware</code></a> API method.</p>
+<p>Note that middleware functions may not be exposed directly on the framework.  So
+in order to get access to the middleware function so you can call
+<code>recordMiddleware</code>, you may need to wrap the framework method that is used to
+register the middleware.</p>
+<p>A common pattern is a function that takes a path and one or more middleware
+functions. For example, Express has routing methods such as <code>get</code>, <code>post</code>,
+<code>put</code>, and <code>use</code>. The Restify framework has a similar pattern. In our example
+framework, we use the <code>get</code> and <code>all</code> methods the same way.</p>
+<p>Since this is a common pattern, our API provides method <a href="WebFrameworkShim.html#wrapMiddlewareMounter"><code>WebFrameworkShim#wrapMiddlewareMounter</code></a> to make it easier to wrap middlewares in
+this particular case. In cases where the framework has a different mechanism for
+registering middlewares, the instrumentation would need to fallback to basic
+wrapping (<a href="Shim.html#wrap"><code>Shim#wrap</code></a>) in order to get to the place where middleware
+functions can be intercepted. For an example of instrumentation that does not
+use <a href="WebFrameworkShim.html#wrapMiddlewareMounter"><code>WebFrameworkShim#wrapMiddlewareMounter</code></a>, see our built-in Hapi
+instrumentation.</p>
+<p>Going back to our instrumentation example... We will use the <a href="WebFrameworkShim.html#wrapMiddlewareMounter"><code>WebFrameworkShim#wrapMiddlewareMounter</code></a> method to wrap <code>all</code> and <code>get</code>. The
+third argument in that call is the spec where we tell the instrumentation which
+argument is the route path, and what to do with all other arguments that
+represent the middleware functions. The instrumentation will call the <code>wrapper</code>
+function for each middleware function, and here we need to wrap the original
+function and return the wrapped version of it.</p>
+<p>This is where <a href="WebFrameworkShim.html#recordMiddleware"><code>WebFrameworkShim#recordMiddleware</code></a> comes in. It takes the
+original middleware function as the first argument, and a spec describing the
+middleware function signature. The <code>req</code>, <code>res</code>, and <code>next</code> parameters tell the
+instrumentation which arguments are which. The <code>route</code> and <code>type</code> arguments are
+used for correctly naming the middleware metrics.</p>
+<p>The following types are allowed:</p>
+<p>| type | description | generated metric | trace segment |
+| --- | --- | --- |
+| MIDDLEWARE | Represents a generic middleware function. This could be a function that is executed for all types of requests (e.g. authentication), or a responder function associated (mounted) with a specific URL path. | <code>Nodejs/Middleware/&lt;framework&gt;/&lt;function name&gt;/&lt;mounted path&gt;</code> | <code>Middleware: &lt;function name&gt; &lt;mounted path&gt;</code> <br/><br/>Note: If the middleware is nested under a ROUTE middleware, the path is omitted (since it's displayed in the ROUTE segment name). |
+| ERRORWARE | Used for recording middlewares that are used for handling errors. | <code>Nodejs/Middleware/&lt;framework&gt;/&lt;function name&gt;/&lt;mounted path&gt;</code><br/><br/>Note: The mounted path will reflect the path that was current when the error occurred. If the error handler itself is not mounted on a path, its path is appended to the originating path. | <code>Middleware: &lt;function name&gt; &lt;mounted path&gt;</code> |
+| PARAMWARE | This is a special type of middleware used for extracting parameters from URLs. | <code>Nodejs/Middleware/&lt;framework&gt;/&lt;function name&gt;//[param handler :&lt;param name&gt;]</code> | <code>Middleware: &lt;function name&gt; /[param handler :&lt;param name&gt;]</code> |
+| ROUTE | Used for grouping multiple middleware functions under a single route path. | no metric | <code>Route Path: &lt;mounted path&gt;</code> |
+| ROUTER | Used to create a trace segment for a router object that is mounted on a path. | no metric | <code>Router: &lt;mounted path&gt;</code> |
+| APPLICATION | Used for application object that is mounted as a router. This is a concept in Express, and typically will not be used in other framework instrumenations. | no metric | <code>Mounted App: &lt;mounted path&gt;</code> |</p>
+<h3>Views</h3>
+<p>Web frameworks will often provide mechanisms for rendering views from templates.
+Rendering views can be time consuming, and therefore New Relic can collect and
+display a specific metric (<code>View/&lt;view name&gt;/Rendering</code>) related to this. In
+order to capture these metrics, use the <a href="WebFrameworkShim.html#recordRender"><code>WebFrameworkShim#recordRender</code></a>
+API method.</p>
+<p>Let's assume that the Server object in our custom web framework has a <code>render</code>
+function that takes the name of the view and a callback. The callback returns
+the generated content. In order to record this work as the View metric, we will
+do the following in our instrumentation:</p>
+<pre class="prettyprint source lang-js"><code>var Server = myWebFramework.Server
+
+shim.recordRender(Server.prototype, 'render', {
+  view: shim.FIRST,
+  callback: shim.LAST
+})
+</code></pre>
+<div style="text-align:center">
+  ![view segment](./trace-summary-view.png)
+</div>
+<p>Note that in some cases (e.g. in Express) the <code>render</code> function may be directly
+on the <code>req</code> object and may be invoked without accepting a callback. In this
+case calling the <code>render</code> function could be ending the HTTP response itself. In
+such a case, in order to capture correct timing for the render function,
+additional instrumentation would be needed based on how the web framework is
+implemented.</p>
+<h3>Errors</h3>
+<p>Web frameworks will typically capture errors generated from middlewares (either
+uncaught or provided by the user, e.g. by calling <code>next(error)</code> in Express) and
+respond with a HTTP 500 error. If these errors are not handled by the user (e.g.
+using an errorware function), then it is more useful to report the original
+errors instead of a generic HTTP 500). The API provides the <a href="WebFrameworkShim.html#noticeError"><code>WebFrameworkShim#noticeError</code></a> method for reporting errors to New Relic.</p>
+<p>Let's assume that our web framework emits an event everytime an error occurs. We
+can listen on this event, and call <a href="WebFrameworkShim.html#noticeError"><code>WebFrameworkShim#noticeError</code></a>.</p>
+<pre class="prettyprint source lang-js"><code>server.on('error', function(req, error) {
+  shim.noticeError(req, error)
+})
+</code></pre>
+<p>Now let's assume that at a later point, the web framework calls a middleware
+where the user handles the error themselves. In this case, the error should no
+longer be reported. We can use the <a href="WebFrameworkShim.html#errorHandled"><code>WebFrameworkShim#errorHandled</code></a>
+function to remove the error:</p>
+<pre class="prettyprint source lang-js"><code>shim.errorHandled(req, error)
+</code></pre>
+<h3>Questions?</h3>
+<p>We have an extensive <a href="https://support.newrelic.com/">help site</a> as well as
+<a href="https://docs.newrelic.com/">documentation</a>. If you can't find your answers
+there, please drop us a line on the <a href="https://discuss.newrelic.com/">community forum</a>.</p>
+</article>
+
+</section>
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.3</a> on Wed Feb 12 2020 15:24:01 GMT-0800 (Pacific Standard Time) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

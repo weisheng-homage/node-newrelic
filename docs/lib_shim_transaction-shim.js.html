@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>lib/shim/transaction-shim.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-Context-Preservation.html">Transaction State Preservation</a></li><li class="nav-item"><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li><li class="nav-item"><a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a></li><li class="nav-item"><a href="tutorial-Messaging-Simple.html">Intro to Message Broker Instrumentation</a></li><li class="nav-item"><a href="tutorial-Webframework-Simple.html">Intro to Web Framework Instrumentation</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="API.html">API</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomAttribute">addCustomAttribute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomAttributes">addCustomAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addIgnoringRule">addIgnoringRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addNamingRule">addNamingRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#endTransaction">endTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getBrowserTimingHeader">getBrowserTimingHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getLinkingMetadata">getLinkingMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getTraceMetadata">getTraceMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getTransaction">getTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#incrementMetric">incrementMetric</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrument">instrument</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentConglomerate">instrumentConglomerate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentDatastore">instrumentDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentLoadedModule">instrumentLoadedModule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentMessages">instrumentMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentWebframework">instrumentWebframework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#recordCustomEvent">recordCustomEvent</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#recordMetric">recordMetric</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setControllerName">setControllerName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setDispatcher">setDispatcher</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setTransactionName">setTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#shutdown">shutdown</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#startBackgroundTransaction">startBackgroundTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#startSegment">startSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#startWebTransaction">startWebTransaction</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="DatastoreShim.html">DatastoreShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#bindRowCallbackSegment">bindRowCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#captureInstanceAttributes">captureInstanceAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#parseQuery">parseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordBatchQuery">recordBatchQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordOperation">recordOperation</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordQuery">recordQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setDatastore">setDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setParser">setParser</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="MessageShim.html">MessageShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordConsume">recordConsume</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordProduce">recordProduce</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordPurgeQueue">recordPurgeQueue</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordSubscribedConsume">recordSubscribedConsume</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#setLibrary">setLibrary</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="PromiseShim.html">PromiseShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#isPromiseInstance">isPromiseInstance</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#setClass">setClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapCast">wrapCast</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapCatch">wrapCatch</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapConstructor">wrapConstructor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapExecutorCaller">wrapExecutorCaller</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapPromisify">wrapPromisify</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapThen">wrapThen</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Shim.html">Shim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#argsToArray">argsToArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCallbackSegment">bindCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindPromise">bindPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindSegment">bindSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#createSegment">createSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperties">defineProperties</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperty">defineProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#execute">execute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getActiveSegment">getActiveSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getName">getName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getOriginal">getOriginal</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getSegment">getSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#interceptPromise">interceptPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isArray">isArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isBoolean">isBoolean</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isFunction">isFunction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNull">isNull</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNumber">isNumber</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isObject">isObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isPromise">isPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isString">isString</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isWrapped">isWrapped</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#listenerCount">listenerCount</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#normalizeIndex">normalizeIndex</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#once">once</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#proxy">proxy</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#record">record</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setActiveSegment">setActiveSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setDefaults">setDefaults</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setInternalProperty">setInternalProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#shimRequire">shimRequire</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#storeSegment">storeSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#toArray">toArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrap">unwrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrapOnce">unwrapOnce</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrap">wrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapClass">wrapClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapExport">wrapExport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapReturn">wrapReturn</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionHandle.html">TransactionHandle</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#acceptDistributedTraceHeaders">acceptDistributedTraceHeaders</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#acceptDistributedTracePayload">acceptDistributedTracePayload</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#createDistributedTracePayload">createDistributedTracePayload</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#end">end</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#ignore">ignore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#insertDistributedTraceHeaders">insertDistributedTraceHeaders</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#isSampled">isSampled</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionShim.html">TransactionShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#bindCreateTransaction">bindCreateTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#insertCATReplyHeader">insertCATReplyHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#insertCATRequestHeaders">insertCATRequestHeaders</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#popTransactionName">popTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#pushTransactionName">pushTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#setTransactionName">setTransactionName</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="WebFrameworkShim.html">WebFrameworkShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#captureUrlParams">captureUrlParams</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#errorHandled">errorHandled</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordMiddleware">recordMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordParamware">recordParamware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordRender">recordRender</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#savePossibleTransactionName">savePossibleTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setErrorPredicate">setErrorPredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setFramework">setFramework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setResponsePredicate">setResponsePredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setRouteParser">setRouteParser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setTransactionUri">setTransactionUri</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#wrapMiddlewareMounter">wrapMiddlewareMounter</a></span></li><li class="nav-heading">Interfaces</li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="ClassWrapSpec.html">ClassWrapSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="DatastoreParameters.html">DatastoreParameters</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MessageSpec.html">MessageSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MessageSubscribeSpec.html">MessageSubscribeSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareSpec.html">MiddlewareSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="OperationSpec.html">OperationSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="ParsedQueryData.html">ParsedQueryData</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="QuerySpec.html">QuerySpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RecorderSpec.html">RecorderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RenderSpec.html">RenderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="SegmentSpec.html">SegmentSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="TransactionSpec.html">TransactionSpec</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#getDatabaseNameFromUseQuery">getDatabaseNameFromUseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#setIgnoreTransaction">setIgnoreTransaction</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">lib/shim/transaction-shim.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict'
+
+const cat = require('../util/cat')
+const hashes = require('../util/hashes')
+const logger = require('../logger').child({component: 'TransactionShim'})
+const Shim = require('./shim')
+const Transaction = require('../transaction')
+const util = require('util')
+
+const HTTP_CAT_ID_HEADER = 'X-NewRelic-Id'
+const MQ_CAT_ID_HEADER = 'NewRelicID'
+const MATCH_CAT_ID_HEADER = new RegExp(
+  '^(?:' + HTTP_CAT_ID_HEADER + '|' + MQ_CAT_ID_HEADER + ')$',
+  'i'
+)
+const HTTP_CAT_TRANSACTION_HEADER = 'X-NewRelic-Transaction'
+const MQ_CAT_TRANSACTION_HEADER = 'NewRelicTransaction'
+const MATCH_CAT_TRANSACTION_HEADER = new RegExp(
+  '^(?:' + HTTP_CAT_TRANSACTION_HEADER + '|' + MQ_CAT_TRANSACTION_HEADER + ')$',
+  'i'
+)
+const HTTP_CAT_APP_DATA_HEADER = 'X-NewRelic-App-Data'
+const MQ_CAT_APP_DATA_HEADER = 'NewRelicAppData'
+const MATCH_CAT_APP_DATA_HEADER = new RegExp(
+  '^(?:' + HTTP_CAT_APP_DATA_HEADER + '|' + MQ_CAT_APP_DATA_HEADER + ')$',
+  'i'
+)
+
+const TRANSACTION_TYPES_SET = Transaction.TYPES_SET
+
+/**
+ * Constructs a transaction managing shim.
+ *
+ * @constructor
+ * @extends Shim
+ * @classdesc
+ *  A helper class for working with transactions.
+ *
+ * @param {Agent}   agent         - The agent the shim will use.
+ * @param {string}  moduleName    - The name of the module being instrumented.
+ * @param {string}  resolvedName  - The full path to the loaded module.
+ *
+ * @see Shim
+ * @see WebFrameworkShim
+ */
+function TransactionShim(agent, moduleName, resolvedName) {
+  Shim.call(this, agent, moduleName, resolvedName)
+  this._logger = logger.child({module: moduleName})
+}
+module.exports = TransactionShim
+util.inherits(TransactionShim, Shim)
+
+/**
+ * Enumeration of transaction types.
+ *
+ * Each of these values is also exposed directly on the `TransactionShim` class
+ * as static members.
+ *
+ * @readonly
+ * @memberof TransactionShim.prototype
+ * @enum {string}
+ */
+TransactionShim.TRANSACTION_TYPES = Transaction.TYPES
+Object.keys(Transaction.TYPES).forEach(function defineTypeEnum(type) {
+  Shim.defineProperty(TransactionShim, type, Transaction.TYPES[type])
+  Shim.defineProperty(TransactionShim.prototype, type, Transaction.TYPES[type])
+})
+
+
+/**
+ * Enumeration of possible transaction transport types used for distributed tracing.
+ *
+ * This enumeration is also exposed on the `TransactionShim` class.
+ *
+ * @readonly
+ * @memberof TransactionShim.prototype
+ * @enum {string}
+ */
+Shim.defineProperty(
+  TransactionShim,
+  'TRANSPORT_TYPES',
+  Transaction.TRANSPORT_TYPES
+)
+Shim.defineProperty(
+  TransactionShim.prototype,
+  'TRANSPORT_TYPES',
+  Transaction.TRANSPORT_TYPES
+)
+
+TransactionShim.prototype.bindCreateTransaction = bindCreateTransaction
+TransactionShim.prototype.pushTransactionName = pushTransactionName
+TransactionShim.prototype.popTransactionName = popTransactionName
+TransactionShim.prototype.setTransactionName = setTransactionName
+TransactionShim.prototype.handleCATHeaders = handleCATHeaders
+TransactionShim.prototype.insertCATRequestHeaders = insertCATRequestHeaders
+TransactionShim.prototype.insertCATReplyHeader = insertCATReplyHeader
+
+// -------------------------------------------------------------------------- //
+
+/**
+ * @interface TransactionSpec
+ *
+ * @description
+ *  Describes the type of transaction to be created by the function being
+ *  wrapped by {@link Shim#bindCreateTransaction}.
+ *
+ * @property {string} type
+ *  The type of transaction to create. Must be one of the values from
+ *  {@link Shim#TRANSACTION_TYPES}.
+ *
+ * @property {bool} [nest=false]
+ *  Indicates if the transaction being created is allowed to be nested within
+ *  another transaction of the same type. If `false`, the default, the transaction
+ *  will only be created if there is no existing transaction, or the current
+ *  transaction is of a different type. If `true`, the transaction will be
+ *  created regardless of the current transaction's type.
+ *
+ * @see Shim#bindCreateTransaction
+ * @see Shim#TRANSACTION_TYPES
+ */
+
+// -------------------------------------------------------------------------- //
+
+/**
+ * Wraps one or more functions such that new transactions are created when
+ * invoked.
+ *
+ * - `bindCreateTransaction(nodule, property, spec)`
+ * - `bindCreateTransaction(func, spec)`
+ *
+ * @memberof TransactionShim.prototype
+ *
+ * @param {Object|Function} nodule
+ *  The source for the property to wrap, or a single function to wrap.
+ *
+ * @param {string} [property]
+ *  The property to wrap. If omitted, the `nodule` parameter is assumed to be
+ *  the function to wrap.
+ *
+ * @param {TransactionSpec} spec
+ *  The spec for creating the transaction.
+ *
+ * @return {Object|Function} The first parameter to this function, after
+ *  wrapping it or its property.
+ */
+function bindCreateTransaction(nodule, property, spec) {
+  if (this.isObject(property) &amp;&amp; !this.isArray(property)) {
+    // bindCreateTransaction(nodule, spec)
+    spec = property
+    property = null
+  }
+
+  // Refuse to perform the wrapping if `spec.type` is not valid.
+  if (!TRANSACTION_TYPES_SET[spec.type]) {
+    this.logger.error(
+      {stack: (new Error()).stack},
+      'Invalid spec type "%s", must be one of %j.',
+      spec.type, Object.keys(TRANSACTION_TYPES_SET)
+    )
+    return nodule
+  }
+
+  // Perform the actual wrapping.
+  return this.wrap(nodule, property, function makeTransWrapper(shim, fn, name) {
+    if (!shim.isFunction(fn)) {
+      shim.logger.debug('Not wrapping "%s" with transaction, not a function.', name)
+      return fn
+    }
+
+    // Is this transaction supposed to be nested? Pick the right wrapper for the
+    // job.
+    var makeWrapper = spec.nest ? _makeNestedTransWrapper : _makeTransWrapper
+    return makeWrapper(shim, fn, name, spec)
+  })
+}
+
+/**
+ * Pushes a new path segment onto the transaction naming stack.
+ *
+ * - `pushTransactionName(pathSegment)`
+ *
+ * Transactions are named for the middlware that sends the reponse. Some web
+ * frameworks are capable of mounting middlware in complex routing stacks. In
+ * order to maintain the correct name, transactions keep a stack of mount points
+ * for each middlware/router/app/whatever. The instrumentation should push on
+ * the mount path for wrapped things when route resolution enters and pop it
+ * back off when resolution exits the item.
+ *
+ * @memberof TransactionShim.prototype
+ *
+ * @param {string} pathSegment - The path segment to add to the naming stack.
+ */
+function pushTransactionName(pathSegment) {
+  var tx = this.tracer.getTransaction()
+  if (tx &amp;&amp; tx.nameState) {
+    tx.nameState.appendPath(pathSegment)
+  }
+}
+
+/**
+ * Pops one or more elements off the transaction naming stack.
+ *
+ * - `popTransactionName([pathSegment])`
+ *
+ * Ideally it is not necessary to ever provide the `pathSegment` parameter for
+ * this function, but we do not live in an ideal world.
+ *
+ * @memberof TransactionShim.prototype
+ *
+ * @param {string} [pathSegment]
+ *  Optional. Path segment to pop the stack repeatedly until a segment matching
+ *  `pathSegment` is removed.
+ */
+function popTransactionName(pathSegment) {
+  var tx = this.tracer.getTransaction()
+  if (tx &amp;&amp; tx.nameState) {
+    tx.nameState.popPath(pathSegment)
+  }
+}
+
+/**
+ * Sets the name to be used for this transaction.
+ *
+ * - `setTransactionName(name)`
+ *
+ * Either this _or_ the naming stack should be used. Do not use them together.
+ *
+ * @memberof TransactionShim.prototype
+ *
+ * @param {string} name - The name to use for the transaction.
+ */
+function setTransactionName(name) {
+  var tx = this.tracer.getTransaction()
+  if (tx) {
+    tx.setPartialName(name)
+  }
+}
+
+/**
+ * Retrieves whatever CAT headers may be in the given headers.
+ *
+ * - `handleCATHeaders(headers [, segment [, transportType]])`
+ *
+ * @memberof TransactionShim.prototype
+ *
+ * This will check for either header naming style, and both request and reply
+ * CAT headers.
+ *
+ * @param {object} headers
+ *  The request/response headers object to look in.
+ *
+ * @param {TraceSegment} [segment=null]
+ *  The trace segment to associate the header data with. If no segment is
+ *  provided then the currently active segment is used.
+ *
+ * @param {string} [transportType='Unknown']
+ *  The transport type that brought the headers. Usually `HTTP` or `HTTPS`.
+ */
+function handleCATHeaders(headers, segment, transportType) {
+  // Is CAT enabled?
+  if (!this.agent.config.cross_application_tracer.enabled) {
+    this.logger.trace('CAT disabled, not extracting header.')
+    return
+  }
+  if (!this.agent.config.encoding_key) {
+    this.logger.warn('Missing encoding key, not extracting CAT headers!')
+    return
+  } else if (!headers) {
+    this.logger.debug('No headers to search for CAT within')
+    return
+  }
+
+  // Check that we're in an active transaction.
+  segment = segment || this.getSegment()
+  if (!segment || !segment.transaction.isActive()) {
+    this.logger.trace('Not adding CAT reply header, not in an active transaction.')
+    return
+  }
+
+  const transaction = segment.transaction
+
+  if (this.agent.config.distributed_tracing.enabled) {
+    transaction.acceptDistributedTraceHeaders(transportType, headers)
+    return
+  }
+
+  // Hunt down the CAT headers.
+  var catId = null
+  var transactionData = null
+  var appData = null
+  for (var key in headers) { // eslint-disable-line guard-for-in
+    if (MATCH_CAT_ID_HEADER.test(key)) {
+      catId = headers[key]
+    } else if (MATCH_CAT_TRANSACTION_HEADER.test(key)) {
+      transactionData = headers[key]
+    } else if (MATCH_CAT_APP_DATA_HEADER.test(key)) {
+      appData = headers[key]
+    }
+    if (catId &amp;&amp; transactionData &amp;&amp; appData) {
+      break
+    }
+  }
+
+  if (catId &amp;&amp; transactionData) {
+    cat.handleCatHeaders(catId, transactionData, this.agent.config.encoding_key, transaction)
+    if (transaction.incomingCatId) {
+      this.logger.trace(
+        'Got inbound CAT headers in transaction %s from %s',
+        transaction.id,
+        transaction.incomingCatId
+      )
+    }
+  }
+
+  if (appData) {
+    _handleCATReplyHeader(this, segment, appData)
+    // TODO: Handle adding ExternalTransaction metrics for this segment.
+  }
+}
+
+/**
+ * Adds CAT headers for an outbound request.
+ *
+ * - `insertCATRequestHeaders(headers [, useAlternateHeaderNames])`
+ *
+ * @memberof TransactionShim.prototype
+ *
+ * @param {object} headers
+ *  The outbound request headers object to inject our CAT headers into.
+ *
+ * @param {bool} [useAlternateHeaderNames=false]
+ *  Indicates if HTTP-style headers should be used or alternate style. Some
+ *  transport protocols are more strict on the characters allowed in headers
+ *  and this option can be used to toggle use of pure-alpha header names.
+ */
+// TODO: abstract header logic shared with wrapRequest in http instrumentation
+function insertCATRequestHeaders(headers, useAlternateHeaderNames) {
+  const crossAppTracingEnabled = this.agent.config.cross_application_tracer.enabled
+  const distributedTracingEnabled = this.agent.config.distributed_tracing.enabled
+
+  if (!distributedTracingEnabled &amp;&amp; !crossAppTracingEnabled) {
+    this.logger.trace(
+      'Distributed Tracing and CAT are both disabled, not adding headers.'
+    )
+    return
+  }
+
+  if (!headers) {
+    this.logger.debug('Missing headers object, not adding headers!')
+    return
+  }
+
+  const tx = this.tracer.getTransaction()
+  if (!tx || !tx.isActive()) {
+    this.logger.trace('No active transaction found, not adding headers.')
+    return
+  }
+
+  if (distributedTracingEnabled) {
+    // TODO: Should probably honor SHIM_SYMBOLS.DISABLE_DT.
+    // TODO: Official testing and support.
+    tx.insertDistributedTraceHeaders(headers)
+  } else {
+    if (!this.agent.config.encoding_key) {
+      this.logger.warn('Missing encoding key, not adding CAT headers!')
+      return
+    }
+
+    // Determine the names of the headers we'll add.
+    let transHeader = HTTP_CAT_TRANSACTION_HEADER
+    let idHeader = HTTP_CAT_ID_HEADER
+    if (useAlternateHeaderNames) {
+      idHeader = MQ_CAT_ID_HEADER
+      transHeader = MQ_CAT_TRANSACTION_HEADER
+    }
+
+    // Add in the application ID.
+    if (this.agent.config.obfuscatedId) {
+      headers[idHeader] = this.agent.config.obfuscatedId
+    }
+
+    // Generate an application path hash. This is essentially a snapshot of what
+    // the transaction would be named if it ended right now.
+    const pathHash = hashes.calculatePathHash(
+      this.agent.config.applications()[0],
+      tx.getFullName(),
+      tx.referringPathHash
+    )
+
+    tx.pushPathHash(pathHash)
+
+    try {
+      const catData = hashes.obfuscateNameUsingKey(
+        JSON.stringify([tx.id, false, tx.tripId || tx.id, pathHash]),
+        this.agent.config.encoding_key
+      )
+      if (catData) {
+        headers[transHeader] = catData
+        this.logger.trace('Added CAT headers for transaction %s', tx.id)
+      }
+    } catch (e) {
+      this.logger.warn({error: e.stack}, 'Failed to serialize CAT header!')
+    }
+  }
+}
+
+/**
+ * Adds CAT headers for an outbound response.
+ *
+ * - `insertCATReplyHeaders(headers [, useAlternateHeaderNames])`
+ *
+ * @memberof TransactionShim.prototype
+ *
+ * @param {object} headers
+ *  The outbound response headers object to inject our CAT headers into.
+ *
+ * @param {bool} [useAlternateHeaderNames=false]
+ *  Indicates if HTTP-style headers should be used or alternate style. Some
+ *  transport protocols are more strict on the characters allowed in headers
+ *  and this option can be used to toggle use of pure-alpha header names.
+ */
+function insertCATReplyHeader(headers, useAlternateHeaderNames) {
+  // Is CAT enabled?
+  var config = this.agent.config
+  if (!config.cross_application_tracer.enabled) {
+    this.logger.trace('CAT disabled, not adding CAT reply header.')
+    return
+  } else if (config.distributed_tracing.enabled) {
+    this.logger.warn('Distributed tracing is enabled, not adding CAT reply header.')
+    return
+  } else if (!config.encoding_key) {
+    this.logger.warn('Missing encoding key, not adding CAT reply header!')
+    return
+  } else if (!headers) {
+    this.logger.debug('Missing headers object, not adding CAT reply header!')
+    return
+  }
+
+  // Are we in a transaction?
+  var segment = this.getSegment()
+  if (!segment || !segment.transaction.isActive()) {
+    this.logger.trace('Not adding CAT reply header, not in an active transaction.')
+    return
+  }
+  var tx = segment.transaction
+
+  // Hunt down the content length.
+  // NOTE: In AMQP, content-type and content-encoding are guaranteed fields, but
+  // there is no content-length field or header. For that, content length will
+  // always be -1.
+  var contentLength = -1
+  for (var key in headers) {
+    if (key.toLowerCase() === 'content-length') {
+      contentLength = headers[key]
+      break
+    }
+  }
+
+  // Compose the obfuscated app data value.
+  var appData = null
+  var txName = tx.getFullName()
+  try {
+    appData = hashes.obfuscateNameUsingKey(JSON.stringify([
+      config.cross_process_id,
+      txName,
+      tx.queueTime / 1000,
+      tx.catResponseTime / 1000,
+      contentLength,
+      tx.id,
+      false
+    ]), config.encoding_key)
+  } catch (e) {
+    this.logger.warn({error: e.stack}, 'Failed to serialize CAT data for %s', txName)
+  }
+
+  // Add the header.
+  headers[
+    useAlternateHeaderNames ? MQ_CAT_APP_DATA_HEADER : HTTP_CAT_APP_DATA_HEADER
+  ] = appData
+  this.logger.trace('Added outbound response CAT headers for transaction %s', tx.id)
+}
+
+/**
+ * Parses the given CAT response app-data and links the transaction to it.
+ *
+ * - `_handleCATReplyHeader(shim, segment, appData)`
+ *
+ * @private
+ *
+ * @param {TransactionShim} shim
+ *  The shim to use in the process of extracting the app data.
+ *
+ * @param {!TraceSegment} segment
+ *  The segment to attach the CAT data to.
+ *
+ * @param {string} appData
+ *  The application data to parse and use.
+ */
+function _handleCATReplyHeader(shim, segment, appData) {
+  // Attempt to parse the app data header.
+  var config = shim.agent.config
+  try {
+    appData = JSON.parse(
+      hashes.deobfuscateNameUsingKey(appData, config.encoding_key)
+    )
+  } catch (e) {
+    shim.logger.warn('Unparsable CAT application data header: %s', appData)
+    return
+  }
+
+  // Make sure the app data is of the expected format and that we trust the
+  // origin application.
+  if (!appData.length || !shim.isString(appData[0])) {
+    shim.logger.trace('Unknown format for CAT application data header.')
+    return
+  }
+  var accountId = parseInt(appData[0].split('#')[0], 10)
+  var trustedIds = config.trusted_account_ids
+  if (trustedIds &amp;&amp; trustedIds.indexOf(accountId) === -1) {
+    shim.logger.trace('CAT headers from untrusted application %s', accountId)
+    return
+  }
+
+  // It's good! Pull out the data we care about.
+  segment.catId = appData[0]
+  segment.catTransaction = appData[1]
+  if (appData.length >= 6) {
+    segment.addAttribute('transaction_guid', appData[5])
+  }
+  shim.logger.trace(
+    'Got inbound response CAT headers for transaction %s from %s',
+    segment.transaction.id,
+    appData[5]
+  )
+}
+
+/**
+ * Creates a function that binds transactions to the execution of the function.
+ *
+ * The created transaction may be nested within an existing transaction if
+ * `spec.type` is not the same as the current transaction's type.
+ *
+ * @private
+ *
+ * @param {Shim} shim
+ *  The shim used for the binding.
+ *
+ * @param {function} fn
+ *  The function link with the transaction.
+ *
+ * @param {string} name
+ *  The name of the wrapped function.
+ *
+ * @param {TransactionSpec} spec
+ *  The spec for the transaction to create.
+ *
+ * @return {function} A function which wraps `fn` and creates potentially nested
+ *  transactions linked to its execution.
+ */
+function _makeNestedTransWrapper(shim, fn, name, spec) {
+  return function nestedTransactionWrapper() {
+    if (!shim.agent.canCollectData()) {
+      return fn.apply(this, arguments)
+    }
+
+    // Reuse existing transactions only if the type matches.
+    var transaction = shim.tracer.getTransaction()
+    var segment = shim.tracer.segment
+
+    // Only create a new transaction if we either do not have a current
+    // transaction _or_ the current transaction is not of the type we want.
+    if (!transaction || spec.type !== transaction.type) {
+      shim.logger.trace('Creating new nested %s transaction for %s', spec.type, name)
+      transaction = new Transaction(shim.agent)
+      transaction.type = spec.type
+      segment = transaction.trace.root
+    }
+
+    return shim.applySegment(fn, segment, false, this, arguments)
+  }
+}
+
+/**
+ * Creates a function that binds transactions to the execution of the function.
+ *
+ * A transaction will only be created if there is not a currently active one.
+ *
+ * @private
+ *
+ * @param {Shim} shim
+ *  The shim used for the binding.
+ *
+ * @param {function} fn
+ *  The function link with the transaction.
+ *
+ * @param {string} name
+ *  The name of the wrapped function.
+ *
+ * @param {TransactionSpec} spec
+ *  The spec for the transaction to create.
+ *
+ * @return {function} A function which wraps `fn` and potentially creates a new
+ *  transaction linked to the function's execution.
+ */
+function _makeTransWrapper(shim, fn, name, spec) {
+  return function transactionWrapper() {
+    // Don't nest transactions, reuse existing ones!
+    const existingTransaction = shim.tracer.getTransaction()
+    if (!shim.agent.canCollectData() || existingTransaction) {
+      return fn.apply(this, arguments)
+    }
+
+    shim.logger.trace('Creating new %s transaction for %s', spec.type, name)
+    var transaction = new Transaction(shim.agent)
+    transaction.type = spec.type
+    return shim.applySegment(fn, transaction.trace.root, false, this, arguments)
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.3</a> on Wed Feb 12 2020 15:24:00 GMT-0800 (Pacific Standard Time) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

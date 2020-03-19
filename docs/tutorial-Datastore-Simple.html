@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Intro to Datastore Instrumentation - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-Context-Preservation.html">Transaction State Preservation</a></li><li class="nav-item"><a href="tutorial-Datastore-Simple.html">Intro to Datastore Instrumentation</a></li><li class="nav-item"><a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a></li><li class="nav-item"><a href="tutorial-Messaging-Simple.html">Intro to Message Broker Instrumentation</a></li><li class="nav-item"><a href="tutorial-Webframework-Simple.html">Intro to Web Framework Instrumentation</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="API.html">API</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomAttribute">addCustomAttribute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addCustomAttributes">addCustomAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addIgnoringRule">addIgnoringRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#addNamingRule">addNamingRule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#endTransaction">endTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getBrowserTimingHeader">getBrowserTimingHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getLinkingMetadata">getLinkingMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getTraceMetadata">getTraceMetadata</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#getTransaction">getTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#incrementMetric">incrementMetric</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrument">instrument</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentConglomerate">instrumentConglomerate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentDatastore">instrumentDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentLoadedModule">instrumentLoadedModule</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentMessages">instrumentMessages</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#instrumentWebframework">instrumentWebframework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#recordCustomEvent">recordCustomEvent</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#recordMetric">recordMetric</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setControllerName">setControllerName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setDispatcher">setDispatcher</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#setTransactionName">setTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#shutdown">shutdown</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#startBackgroundTransaction">startBackgroundTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#startSegment">startSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="API.html#startWebTransaction">startWebTransaction</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="DatastoreShim.html">DatastoreShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#bindRowCallbackSegment">bindRowCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#captureInstanceAttributes">captureInstanceAttributes</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#parseQuery">parseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordBatchQuery">recordBatchQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordOperation">recordOperation</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#recordQuery">recordQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setDatastore">setDatastore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="DatastoreShim.html#setParser">setParser</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="MessageShim.html">MessageShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordConsume">recordConsume</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordProduce">recordProduce</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordPurgeQueue">recordPurgeQueue</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#recordSubscribedConsume">recordSubscribedConsume</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="MessageShim.html#setLibrary">setLibrary</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="PromiseShim.html">PromiseShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#isPromiseInstance">isPromiseInstance</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#setClass">setClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapCast">wrapCast</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapCatch">wrapCatch</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapConstructor">wrapConstructor</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapExecutorCaller">wrapExecutorCaller</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapPromisify">wrapPromisify</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="PromiseShim.html#wrapThen">wrapThen</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Shim.html">Shim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#argsToArray">argsToArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindCallbackSegment">bindCallbackSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindPromise">bindPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#bindSegment">bindSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#createSegment">createSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperties">defineProperties</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#defineProperty">defineProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#execute">execute</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getActiveSegment">getActiveSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getName">getName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getOriginal">getOriginal</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#getSegment">getSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#interceptPromise">interceptPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isArray">isArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isBoolean">isBoolean</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isFunction">isFunction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNull">isNull</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isNumber">isNumber</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isObject">isObject</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isPromise">isPromise</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isString">isString</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#isWrapped">isWrapped</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#listenerCount">listenerCount</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#normalizeIndex">normalizeIndex</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#once">once</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#proxy">proxy</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#record">record</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setActiveSegment">setActiveSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setDefaults">setDefaults</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#setInternalProperty">setInternalProperty</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#shimRequire">shimRequire</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#storeSegment">storeSegment</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#toArray">toArray</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrap">unwrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#unwrapOnce">unwrapOnce</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrap">wrap</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapClass">wrapClass</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapExport">wrapExport</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Shim.html#wrapReturn">wrapReturn</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionHandle.html">TransactionHandle</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#acceptDistributedTraceHeaders">acceptDistributedTraceHeaders</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#acceptDistributedTracePayload">acceptDistributedTracePayload</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#createDistributedTracePayload">createDistributedTracePayload</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#end">end</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#ignore">ignore</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#insertDistributedTraceHeaders">insertDistributedTraceHeaders</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionHandle.html#isSampled">isSampled</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="TransactionShim.html">TransactionShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#bindCreateTransaction">bindCreateTransaction</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#insertCATReplyHeader">insertCATReplyHeader</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#insertCATRequestHeaders">insertCATRequestHeaders</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#popTransactionName">popTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#pushTransactionName">pushTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="TransactionShim.html#setTransactionName">setTransactionName</a></span></li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="WebFrameworkShim.html">WebFrameworkShim</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#captureUrlParams">captureUrlParams</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#errorHandled">errorHandled</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#noticeError">noticeError</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordMiddleware">recordMiddleware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordParamware">recordParamware</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#recordRender">recordRender</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#savePossibleTransactionName">savePossibleTransactionName</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setErrorPredicate">setErrorPredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setFramework">setFramework</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setResponsePredicate">setResponsePredicate</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setRouteParser">setRouteParser</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#setTransactionUri">setTransactionUri</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="WebFrameworkShim.html#wrapMiddlewareMounter">wrapMiddlewareMounter</a></span></li><li class="nav-heading">Interfaces</li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="ClassWrapSpec.html">ClassWrapSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="DatastoreParameters.html">DatastoreParameters</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MessageSpec.html">MessageSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MessageSubscribeSpec.html">MessageSubscribeSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareMounterSpec.html">MiddlewareMounterSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="MiddlewareSpec.html">MiddlewareSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="OperationSpec.html">OperationSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="ParsedQueryData.html">ParsedQueryData</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="QuerySpec.html">QuerySpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RecorderSpec.html">RecorderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="RenderSpec.html">RenderSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="SegmentSpec.html">SegmentSpec</a></span></li><li class="nav-heading"><span class="nav-item-type type-interface">I</span><span class="nav-item-name"><a href="TransactionSpec.html">TransactionSpec</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#getDatabaseNameFromUseQuery">getDatabaseNameFromUseQuery</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="global.html#setIgnoreTransaction">setIgnoreTransaction</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Intro to Datastore Instrumentation</h1>
+    
+
+    <section>
+
+<header>
+    
+</header>
+
+<article>
+    <h3>Pre-requisite</h3>
+<p><a href="tutorial-Instrumentation-Basics.html">Instrumentation Basics</a></p>
+<h3>Introduction</h3>
+<p>This tutorial goes over a simple datastore instrumentation. This is directly
+pulled from our actual <a href="https://www.npmjs.com/package/cassandra-driver"><code>cassandra-driver</code></a> instrumentation. It is meant to
+be an introduction to instrumentation.</p>
+<p>Here is the full code for this instrumentation, don't worry if it doesn't make
+sense at first glance, we'll break it down line by line below.</p>
+<pre class="prettyprint source lang-js"><code>function instrumentCassandra(shim, cassandra, moduleName) {
+  shim.setDatastore(shim.CASSANDRA)
+
+  var proto = cassandra.Client.prototype
+  shim.recordOperation(proto, ['connect', 'shutdown'], {callback: shim.LAST})
+  shim.recordQuery(proto, '_innerExecute', {query: shim.FIRST, callback: shim.LAST})
+  shim.recordBatchQuery(proto, 'batch', {
+    query: findBatchQueryArg,
+    callback: shim.LAST
+  })
+}
+
+function findBatchQueryArg(shim, batch, fnName, args) {
+  var sql = (args[0] && args[0][0]) || ''
+  return sql.query || sql
+}
+</code></pre>
+<h3>What to Record</h3>
+<p>For a datastore, there are just two types of things to record: operations and
+queries. Not all datastores have both actions, for example with Redis you do not
+write queries, only operations (or commands in their terminology).</p>
+<p><strong>Operation</strong></p>
+<p>Operations are any actions that do not send a query to be executed by the
+datastore server. Examples for classic RDBs include connecting to the database,
+closing the connection, or setting configurations on the server. Often these are
+actions that modify the connection or datastore, but not the data. Operations
+are recoded using the <a href="DatastoreShim.html"><code><code>DatastoreShim</code></code></a> method
+<a href="DatastoreShim.html#recordOperation"><code><code>recordOperation</code></code></a>.</p>
+<p><strong>Queries</strong></p>
+<p>Queries are any action that manipulate or fetch data using a specialized query
+language. For a SQL database, this is any action that sends SQL code to the
+server for execution. These are recorded using the method
+<a href="DatastoreShim.html#recordQuery"><code><code>recordQuery</code></code></a>. In some cases, the datastore
+in use may support sending multiple queries in a single request. These are
+considered &quot;batch queries&quot; and are recorded using
+<a href="DatastoreShim.html#recordBatchQuery"><code><code>recordBatchQuery</code></code></a>.</p>
+<p>Once we're done, we can view the results on the transaction breakdown page. For
+example, this simple Express route handler would generate a graph like the one
+below.</p>
+<pre class="prettyprint source lang-js"><code>server.get('/shim-demo', function(req, res, next) {
+  client.execute('SELECT * FROM test.testFamily WHERE pk_column = 111', function() {
+      res.send('foo')
+  })
+})
+</code></pre>
+<div style="text-align:center">
+  [![transaction breakdown](./tx-breakdown.png)][4]
+</div>
+<hr>
+<h3>The Instrumentation Function</h3>
+<pre class="prettyprint source lang-js"><code>function instrumentCassandra(shim, cassandra, moduleName) {
+  // ...
+}
+</code></pre>
+<p>This is the function that we'll hand to the New Relic agent to perform our
+instrumentation. It receives a <a href="DatastoreShim.html"><code>DatastoreShim</code></a>, the module to instrument
+(<a href="https://www.npmjs.com/package/cassandra-driver"><code>cassandra-driver</code></a> in our case), and the name of the package (e.g.
+<code>&quot;cassandra-driver&quot;</code>). Inside this function we'll perform all of our logic to
+record operations and queries for Cassandra.</p>
+<h3>Specifying the Datastore</h3>
+<pre class="prettyprint source lang-js"><code>  shim.setDatastore(shim.CASSANDRA)
+</code></pre>
+<p>Here we simply tell the shim the name of our datastore. In our case we're using
+one of the <a href="DatastoreShim.html#.DATASTORE_NAMES"><code>predefined datastore names</code></a>,
+but we could have also passed in a string like <code>&quot;Cassandra&quot;</code> instead. This name
+will show up on the <a href="https://docs.newrelic.com/docs/apm/applications-menu/monitoring/databases-slow-queries-page">New Relic APM Databases page</a> like this:</p>
+<div style="text-align:center">
+  [![databases overview](./db-overview.png)][2]
+</div>
+<h3>Recording Operations</h3>
+<pre class="prettyprint source lang-js"><code>  var proto = cassandra.Client.prototype
+  shim.recordOperation(proto, ['connect', 'shutdown'], {callback: shim.LAST})
+</code></pre>
+<p>Now on to the actual instrumentation. In <code>cassandra-driver</code>, all of the
+interaction with the database happens through this <a href="http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html"><code>cassandra.Client</code></a> class,
+so we grab it's prototype to inject our code into.</p>
+<p>After grabbing the prototype, we tell the shim which methods we want to record
+using <a href="DatastoreShim.html#recordOperation"><code><code>shim.recordOperation</code></code></a>. In our
+case, the interesting operations are <code>connect</code> and <code>shutdown</code>. Since these
+methods are nicely named, we can pass them both at once and let the shim use
+them to name our metrics. We can see the results of this on APM in the
+transaction breakdown graph. The green layer labeled <code>Cassandra connect</code> is from
+our recorded operation.</p>
+<div style="text-align:center">
+  [![transaction breakdown](./tx-breakdown.png)][4]
+</div>
+<p>The third parameter is the <a href="OperationSpec.html"><code>&quot;spec&quot; for this operation</code></a>.
+Specs are simply objects that describe the interface for a function. For
+operations, we just want to know when it has ended, which is indicated by the
+callback being called, so we tell the shim which argument is the callback. We
+can provide any numerical index for the callback argument, and the shim provides
+<code>some predefined constants</code>. <code>shim.LAST</code> indicates the
+last argument passed in, we could have also provided <code>-1</code> as the index, but the
+named constants are more readable.</p>
+<p>If we didn't like the names of the methods, we could supply an alternate name to
+<code>shim.recordOperation</code> in the last parameter like this:</p>
+<pre class="prettyprint source lang-js"><code>  shim.recordOperation(proto, 'connect', {name: 'Connect', callback: shim.LAST})
+  shim.recordOperation(proto, 'shutdown', {name: 'Shutdown', callback: shim.LAST})
+</code></pre>
+<p>Note that since we want these operations named differently, if we specify the
+name we must call <code>shim.recordOperation</code> for each operation.</p>
+<p>If the callback argument can't be easily identified by a positive or negative
+offset in the arguments array, then a <a href="global.html#CallbackBindFunction"><code>CallbackBindFunction</code></a> could be
+supplied instead. This function will receive the arguments and the segment, and
+is responsible for connecting the two. Here's how that might look in our case:</p>
+<pre class="prettyprint source lang-js"><code>  shim.recordOperation(proto, ['connect', 'shutdown'], {
+    callback: function operationCallbackBinder(shim, opFunc, opName, segment, args) {
+      var cb = args[args.length - 1]
+      args[args.length - 1] = shim.bindSegment(cb, segment)
+    }
+  })
+</code></pre>
+<p>Note that the <code>args</code> parameter is a proper <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array"><code>Array</code></a>, so you can assign back
+into it and use any other array manipulation that you want.</p>
+<h3>Recording Queries</h3>
+<pre class="prettyprint source lang-js"><code>  shim.recordQuery(proto, '_innerExecute', {query: shim.FIRST, callback: shim.LAST})
+</code></pre>
+<p>The <code>cassandra.Client</code> class has three different methods for performing queries:
+<a href="http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#eachRow"><code>Client#eachRow</code></a>, <a href="http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#execute"><code>Client#execute</code></a>, and <a href="http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#stream"><code>Client#stream</code></a>. We could
+wrap all three of these methods, but with a little reading of the
+<a href="https://github.com/datastax/nodejs-driver/blob/master/lib/client.js#L355"><code>cassandra-driver</code> source</a> we see that they call an internal function that
+we can wrap instead.</p>
+<p>Now that we know where to wrap, we call
+<a href="DatastoreShim.html#recordQuery"><code><code>shim.recordQuery</code></code></a> and provide it the method
+name and our <a href="QuerySpec.html"><code>QuerySpec</code></a>. In addition to the callback, the <code>QuerySpec</code>
+requires we identify query argument. So we tell the shim that our first argument
+is the query and our last is the callback.</p>
+<p>Since Cassandra uses a SQL-like language, we can use the <code>DatastoreShim</code>'s
+default query parser to pull the information it needs out of the query. So this
+is all we need to do to record queries.</p>
+<p>In the transaction breakdown graph above, the recorded query is the purple layer
+labeled <code>Cassandra test.testFamily select</code>. Because our instrumentation provided
+the query to the shim we can see some basic information about it, in this case
+the collection queried (<code>test.testFamily</code>) as well as the query operation
+(<code>select</code>).</p>
+<h3>Recording Batch Queries</h3>
+<pre class="prettyprint source lang-js"><code>  shim.recordBatchQuery(proto, 'batch', {
+    query: findBatchQueryArg,
+    callback: shim.LAST
+  })
+</code></pre>
+<p>Recording batches of queries is just like recording a single one, except we need
+to do a little more work to pull out the query text. In this vein we call
+<a href="DatastoreShim.html#recordBatchQuery"><code><code>shim.recordBatchQuery</code></code></a> just like we did
+for <code>shim.recordQuery</code>. This time we pass in a function for the spec's <code>query</code>
+parameter, <code>findBatchQueryArg</code>, which just looks like this:</p>
+<pre class="prettyprint source lang-js"><code>function findBatchQueryArg(shim, batch, fnName, args) {
+  var sql = (args[0] && args[0][0]) || ''
+  return sql.query || sql
+}
+</code></pre>
+<p>The function is a <a href="global.html#QueryFunction"><code>QueryFunction</code></a> callback, which takes in the current
+shim, the function we're getting the query from, that function's name, and an
+<code>Array</code> of arguments. For <a href="http://docs.datastax.com/en/latest-nodejs-driver-api/Client.html#batch"><code>Client#batch</code></a>, the first argument is either an
+array of strings or an array of objects that contain query strings. We want to
+be very defensive when writing instrumentation, so we will default the query to
+an empty string if no query was extractable.</p>
+<hr>
+<h3>Connecting it to the New Relic Agent</h3>
+<p>Now that we've instrumented the module, we need to tell the New Relic agent to
+use it when the <code>cassandra-driver</code> package is required. This is done using the
+<a href="API.html#instrumentDatastore"><code>API#instrumentDatastore</code></a> method as below.</p>
+<pre class="prettyprint source lang-js"><code>var newrelic = require('newrelic')
+newrelic.instrumentDatastore('cassandra-driver', instrumentCassandra)
+</code></pre>
+<p>This method tells the agent to call our instrumentation function when the module
+is loaded by Node. It is critically important that we register our
+instrumentation <em>before</em> the module is loaded anywhere. Because we are using the
+<code>instrumentDatastore</code> method, the agent will instantiate a <a href="DatastoreShim.html"><code>DatastoreShim</code></a>
+when calling our instrumentation function. If we had used <a href="API.html#instrument"><code>API#instrument</code></a>
+instead, we would get only the base class, <a href="Shim.html"><code>Shim</code></a>.</p>
+<p>The <code>instrumentDatastore</code> call could have also been written using named
+parameters like this:</p>
+<pre class="prettyprint source lang-js"><code>newrelic.instrumentDatastore({
+  moduleName: 'cassandra-driver',
+  onRequire: instrumentCassandra
+})
+</code></pre>
+<p>This call is equivalent to the first one, it just depends on your preferred
+style.</p>
+<h3>Handling Errors</h3>
+<p>While debugging your instrumentation it can be useful to get a handle on any
+errors happening within it. Normally, the agent swallows errors and disables the
+instrumentation. In order to get the error for your debugging purposes you can
+provide a third argument to <code>instrumentDatastore</code> that receives the error.</p>
+<pre class="prettyprint source lang-js"><code>newrelic.instrumentDatastore({
+  moduleName: 'cassandra-driver',
+  onRequire: instrumentCassandra,
+  onError: function myErrorHandler(err) {
+    // Uh oh! Our instrumentation failed, lets see why:
+    console.error(err.message, err.stack)
+
+    // Let's kill the application when debugging so we don't miss it.
+    process.exit(-1)
+  }
+})
+</code></pre>
+<h3>Conclusion</h3>
+<p>We have now instrumented the package and told the New Relic agent to use our
+instrumentation, but how should we get it out there? Our instrumentation can
+be published to NPM if we are confident in its usefulness to others.</p>
+<h3>Questions?</h3>
+<p>We have an extensive <a href="https://support.newrelic.com/">help site</a> as well as
+<a href="https://docs.newrelic.com/">documentation</a>. If you can't find your answers
+there, please drop us a line on the <a href="https://discuss.newrelic.com/">community forum</a>.</p>
+</article>
+
+</section>
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.3</a> on Wed Feb 12 2020 15:24:01 GMT-0800 (Pacific Standard Time) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
