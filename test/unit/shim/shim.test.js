@@ -17,7 +17,6 @@ var Promise = global.Promise || require('bluebird')
 var sinon = require('sinon')
 var Shim = require('../../../lib/shim/shim')
 
-
 describe('Shim', function() {
   var agent = null
   var shim = null
@@ -301,7 +300,10 @@ describe('Shim', function() {
         probed: false,
         start: function() { this.started = true },
         touch: function() { this.touched = true },
-        probe: function() { this.probed = true }
+        probe: function() { this.probed = true },
+        transaction: {
+          isActive: () => true
+        }
       }
     })
 
