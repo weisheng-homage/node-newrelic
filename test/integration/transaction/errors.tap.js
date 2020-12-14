@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 var test = require('tap').test
@@ -47,22 +52,9 @@ test('errors in web transactions should gather the query params', function(t) {
       'should have no custom attributes'
     )
 
-    // agent/query parameters
-    // on older versions of node the content length and response message
-    // will be omitted
-    let expectedValue = 11
-    let keys = ['response.headers.contentLength', 'httpResponseMessage']
-    for (let i = 0; i < keys.length; i++) {
-      let key = keys[i]
-      let value = attributes.agentAttributes[key]
-      if (value) {
-        expectedValue++
-      }
-    }
-
     t.equal(
       Object.keys(attributes.agentAttributes).length,
-      expectedValue,
+      9,
       'should have collected the query, request, and response params'
     )
     t.equal(
@@ -131,21 +123,9 @@ test('multiple errors in web transactions should gather the query params', funct
         'should have no custom attributes'
       )
 
-      // agent/query parameters
-      // on older versions of node the content length and response message
-      // will be omitted
-      let expectedValue = 11
-      let keys = ['response.headers.contentLength', 'httpResponseMessage']
-      for (let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        let value = attributes.agentAttributes[key]
-        if (value) {
-          expectedValue++
-        }
-      }
       t.equal(
         Object.keys(attributes.agentAttributes).length,
-        expectedValue,
+        9,
         'should have collected the query, request, and response params'
       )
       t.equal(
@@ -224,21 +204,9 @@ test('errors in web transactions should gather and merge custom params', functio
       'replace custom param from after error'
     )
 
-    // agent/query parameters
-    // on older versions of node the content length and response message
-    // will be omitted
-    let expectedValue = 9
-    let keys = ['response.headers.contentLength', 'httpResponseMessage']
-    for (let i = 0; i < keys.length; i++) {
-      let key = keys[i]
-      let value = attributes.agentAttributes[key]
-      if (value) {
-        expectedValue++
-      }
-    }
     t.equal(
       Object.keys(attributes.agentAttributes).length,
-      expectedValue,
+      7,
       'should have collected the query, request, and response params'
     )
   })
@@ -330,21 +298,9 @@ test('multiple errors in web tx should gather and merge custom params', function
       t.equal(ua.preErrorKeep, true, 'kept custom param from before error')
       t.equal(ua.postErrorKeep, 2, 'kept custom param from after error')
 
-      // agent/query parameters
-      // on older versions of node the content length and response message
-      // will be omitted
-      let expectedValue = 9
-      let keys = ['response.headers.contentLength', 'httpResponseMessage']
-      for (let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        let value = attributes.agentAttributes[key]
-        if (value) {
-          expectedValue++
-        }
-      }
       t.equal(
         Object.keys(attributes.agentAttributes).length,
-        expectedValue,
+        7,
         'should have collected the query, request, and response params'
       )
     })

@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 module.exports = {
@@ -5,8 +10,8 @@ module.exports = {
   httpAttributes: [
     'request.headers.host',
     'request.method',
-    'response.status',
-    'httpResponseCode'
+    'http.statusCode',
+    'http.statusText'
   ],
   // Default security policies
   securityPolicies: function() {

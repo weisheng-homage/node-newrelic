@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 // TODO: convert to normal tap style.
@@ -52,9 +57,9 @@ describe('recordDistributedTrace', () => {
 
   describe('when a trace payload was received', () => {
     it('records metrics with payload information', () => {
-      const payload = tx.createDistributedTracePayload().text()
+      const payload = tx._createDistributedTracePayload().text()
       tx.isDistributedTrace = null
-      tx.acceptDistributedTracePayload(payload, 'HTTP')
+      tx._acceptDistributedTracePayload(payload, 'HTTP')
 
       record({
         tx,
@@ -87,9 +92,9 @@ describe('recordDistributedTrace', () => {
 
     describe('and transaction errors exist', () => {
       it('includes error-related metrics', () => {
-        const payload = tx.createDistributedTracePayload().text()
+        const payload = tx._createDistributedTracePayload().text()
         tx.isDistributedTrace = null
-        tx.acceptDistributedTracePayload(payload, 'HTTP')
+        tx._acceptDistributedTracePayload(payload, 'HTTP')
 
         tx.exceptions.push('some error')
 

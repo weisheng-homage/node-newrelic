@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 // TODO: convert to normal tap style.
@@ -9,8 +14,6 @@ const cp = require('child_process')
 const expect = chai.expect
 const Logger = require('../../lib/util/logger')
 const path = require('path')
-const semver = require('semver')
-
 
 describe('Logger', function() {
   var logger = null
@@ -59,14 +62,6 @@ describe('Logger', function() {
 
   describe('when logging', function() {
     it('should not throw for huge messages', function(done) {
-      // In Node 7 there is a bug around the relation of the heap size to the rss. If
-      // this test runs then the sampler will fail when checking `Memory/NonHeap/Used`
-      // because the `max` value will be negative.
-      // TODO: Remove this skip check when Node 7 is deprecated.
-      if (semver.satisfies(process.version, '7')) {
-        return this.skip()
-      }
-
       process.once('warning', (warning) => {
         expect(warning).to.have.property('name', 'NewRelicWarning')
         expect(warning).to.have.property('message')

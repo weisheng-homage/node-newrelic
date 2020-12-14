@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 var test    = require('tap').test
@@ -39,8 +44,7 @@ test("Restify router introspection", function(t) {
   })
 
   server.get('/polling/:id', function(req, res, next) {
-    api.setIgnoreTransaction(true)
-
+    api.addIgnoringRule(/poll/)
     res.send(400, {status : 'pollpollpoll'})
     next()
   })

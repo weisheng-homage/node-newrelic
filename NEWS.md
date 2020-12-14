@@ -1,3 +1,270 @@
+### 7.0.2 (2020-12-01):
+
+* Fixes a bug where the `http.statusCode` attribute was not being captured for an async invoked lambda.
+* Fixed typos in code comments, documentation, and debugging logger messages.
+  Thank you @TysonAndre for the contribution.
+
+### 7.0.1 (2020-11-17):
+
+* Fixed a bug where spans queued up during backpressure situations would be improperly formatted and ultimately dropped when sent to an Infinite Tracing trace observer.
+* Updated @grpc/grpc-js to version v1.2.0.
+* Updated tap to clear up npm audit issues around lodash sub-dependency.
+
+### 7.0.0 (2020-11-09):
+
+* Added official parity support for Node 14
+
+* Dropped Node v8.x support. For further information on our support policy,
+  see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+  * Removed Node v8.x from CI
+  * Adds check that minimum Node version is >=10 and warns if >=15
+  * Sets Node engine to >=10
+  * **BREAKING** Dropped support for Node v8.x HTTP get() function signature
+    * strictly uses global.URL class in http core instrumentation
+    * removes Nodejs 8.x - 9.x checks
+  * Update New Relic Dependencies to versions with updated Node version support
+    * @newrelic/aws-sdk v3.0.0
+    * @newrelic/koa v5.0.0
+    * @newrelic/native-metrics v6.0.0
+    * @newrelic/superagent v4.0.0
+    * @newrelic/test-utilities v5.0.0
+
+* **BREAKING** Removed deprecated setIgnoreTransaction API method
+
+* **BREAKING** Removed deprecated httpResponseCode, response.status and
+  httpResponseMessage http response attributes
+
+* **BREAKING** Removed the api.custom_parameters_enabled configuration item and
+  associated environment variable NEW_RELIC_API_CUSTOM_PARAMETERS. Please use
+  api.custom_attributes_enabled instead
+
+* **BREAKING** Removed deprecated Distributed Tracing API methods,
+  createDistributedTracePayload() and acceptDistributedTracePayload()
+
+* Finalized removal of ignored_params and capture_params
+
+* Added additional logging to W3C Trace Context header creation
+
+### 6.14.0 (2020-10-28):
+
+* Updated README for consistency.
+
+* Fixed issue where gRPC connection used for infinite tracing could throw if the server
+  shutdown during disconnect of an existing connection.
+
+* Bumped @grpc/grpc-js to 1.1.7.
+
+* Bumped @grpc/proto-loader to ^0.5.5.
+
+* Infinite tracing logging and support metric improvements.
+
+  * Increased logging level of certain infinite tracing / gRPC errors.
+  * Decreased logging interval of dropped span warning for infinite tracing.
+  * Added additional support metrics and logging for infinite tracing.
+
+* Fixed bug where errors would still be collected for transactions with ignored error
+  status codes in certain situations.
+
+* Converted errors ignore unit tests to tap API.
+
+* Added Node 14 to CI test coverage.
+
+  Many thanks to @jgeurts for the contribution.
+
+### 6.13.2 (2020-10-13):
+
+* Removed lodash as a development dependency
+
+* Check for named pipe existence before each flush
+
+  This removes the cached value used in 6.13.1
+
+* Update shim documentation
+
+  Thank you to @ronen-e for the contribution!
+
+### 6.13.1 (2020-09-24):
+
+* Fixed named-pipe check for lambda invocations to avoid race-condition.
+
+  Named-pipe existence will now be checked just prior to first write and then cached.
+
+* Updated README with community-plus header.
+
+* Updated README config copy example.
+
+* Added Open Source Policy workflow.
+
+* Removed repository CoC in favor of centralized CoC at org root.
+
+### 6.13.0 (2020-08-25):
+
+* Added ability for the agent to write to a named pipe, instead of stdout, when in serverless mode.
+
+### 6.12.1 (2020-08-20):
+
+* **Security fix:** Resolves an issue where transaction traces will still capture the request URI when the Node.js agent is configured to exclude the 'request.uri' attribute. This can be problematic for certain customers in environments where sensitive information is included in the URI. See security bulletin [NR20-02](https://docs.newrelic.com/docs/security/new-relic-security/security-bulletins/security-bulletin-nr20-02).
+
+  The request URI will now be excluded from transaction traces if the 'request.uri' attribute has been set to be excluded at either the top-level 'attributes.exclude' configuration or at the 'transaction_tracer.attributes.exclude' configuration.
+
+### 6.12.0 (2020-08-11):
+
+* Fixes obfuscation of SQL queries with large data inserts.
+Special thanks to Tomáš Hanáček (@tomashanacek) for tracking down the issue and providing the fix.
+* On failed instrumentation, prevent multiple requires from re-wrapping shims.
+Special thanks to Ryan Copley (@RyanCopley) for the contribution.
+* Upgrade `async` to `v3.2.0`. Special thanks to Yohan Siguret (@Crow-EH) for the contribution
+* Bumped `@newrelic/native-metrics` to `^5.3.0`.
+* Bumped `@newrelic/aws-sdk` to `^2.0.0`.
+* Bumped `node-test-utilities` to `^4.0.0`.
+* Bumped `@newrelic/superagent` to `^3.0.0`.
+* Bumps `@newrelic/koa` to `^4.0.0`.
+* Updated `SECURITY.md` with coordinated disclosure program link.
+* Updated guidelines and templates for contributing to the project.
+
+### 6.11.0 (2020-07-07):
+
+* Updated to Apache 2.0 license
+* Added CODE_OF_CONDUCT.md file
+* Streamlined README.md file
+* Updated CONTRIBUTING.md file
+* Added additional guidance to bug report template
+* Added copyright headers to all source files
+* Added Distributed Tracing option to config file used for first time customers
+* Converted some test files to Node-tap
+* Removed "hidden" and unused code injector diagnostic capability
+* Upgraded @grpc/grpc-js from 1.0.4 to 1.0.5
+
+### 6.10.0 (2020-06-22):
+
+* Additional Transaction Information applied to Span Events
+  * When Distributed Tracing and/or Infinite Tracing are enabled, the Agent will now incorporate additional information from the Transaction Event on to the currently available Span Event of the transaction.
+    * The following items are affected:
+      * `aws-lambda` related attributes
+      * `error.message`
+      * `error.class`
+      * `error.expected`
+      * `http.statusCode`
+      * `http.statusText`
+      * `message.*`
+      * `parent.type`
+      * `parent.app`
+      * `parent.account`
+      * `parent.transportType`
+      * `parent.transportDuration`
+      * Request Parameters `request.parameters.*`
+      * `request.header.*`
+      * `request.method`
+      * `request.uri`
+  * Custom Attributes
+    * Custom transaction attributes added via `API.addCustomAttribute` or `API.addCustomAttributes` will now be propagated to the currently active span, if available.
+  * **Security Recommendation:**
+    * Review your Transaction Event attributes configuration. Any attribute include or exclude setting specific to Transaction Events should be applied to your Span Attributes configuration or global attributes configuration. Please see [Node.js agent attributes](https://docs.newrelic.com/docs/agents/nodejs-agent/attributes/nodejs-agent-attributes#configure-attributes) for more on how to configure.
+* Upgraded @grpc/grpc-js from 1.0.3 to 1.0.4
+* Modified redis callback-less versioned test to use `commandQueueLength` as indicator redis command has completed and test can continue. This is in effort to further reduce these test flickers. Additionally, added wait for client 'ready' before moving on to tests.
+* Updated force secret test runs to run on branch pushes to the main repository.
+
+### 6.9.0 (2020-06-08):
+
+* Added AWS API Gateway V2 Support to lambda instrumentation.
+
+* Added 'transaction.name' intrinsic to active span at time transaction name is finalized.
+
+  This enables finding transaction name for traces that may not have a matching transaction event.
+
+* Added 'error.expected' attribute to span active at time expected error was noticed.
+
+* Dropped errors earlier during collection when error collection is disabled.
+
+  Error attributes will no longer show up on spans when error collection has been disabled. Other unnecessary work will also be avoided.
+
+* Removed allocation of logging-only objects used by transaction naming when those log levels are disabled.
+
+* Upgraded escodegen from 1.12.0 to 1.14.1.
+
+* Upgraded readable-stream from 3.4.0 to 3.6.0.
+
+* Upgraded @grpc/proto-loader from 0.5.3 to 0.5.4.
+
+* Converted facts unit test to use tap API.
+
+* Converted transaction 'finalizeName...' unit tests to use tap API.
+
+* Added several items to .npmignore to prevent accidental publishing.
+
+* Fixed Redis client w/o callback versioned test flicker.
+
+  Doesn't end transaction until error encountered. Increases wait time for first operation which has to complete for the second operation to be successful.
+
+### 6.8.0 (2020-05-21):
+
+* Bumped @newrelic/native-metrics to ^5.1.0.
+
+  Upgraded nan to ^2.14.1 to resolve 'GetContents' deprecation warning with Node 14. This version of the native metrics module is tested against Node 14 and includes a pre-built binary download backup for Node 14.
+
+* Added whitespace trimming of license key configuration values.
+
+  Previously, when a license key was entered with leading or trailing whitespace, it would be used as-is and result in a validation failure. This most commonly occurred with environment variable based configuration.
+
+* Moved to GitHub actions for CI.
+
+* Updated PR template and added initial issue templates.
+
+* Converted most of the collector API unit tests to use the tap API. Split larger test groupings into their own test files.
+
+### 6.7.1 (2020-05-14):
+
+* Added synthetics headers to transaction event intrinsics for DT
+
+* Fixed stale comment documentation with regards to segment recording
+
+### 6.7.0 (2020-05-06):
+
+* Added a configurable-length span queue to Infinite Tracing:
+  infinite_tracing.span_events.queue_size.
+
+  The queue length can be modified to balance the needs of keeping full traces
+  against trade-off of memory usage and CPU overhead in a high-throughput
+  application.
+
+* Fixed issue where API.instrumentLoadedModule could throw an exception when it
+  failed.
+
+  Error details will now be caught and logged.
+
+* Resolved non-proxy minimist security warnings by bumping dependencies.
+
+  These updates only impact development dependencies. Thank you to @devfreddy for
+  the contribution.
+
+  * Updated minimist sub-deps to resolve most related security warnings.
+  * Updated tap to resolve remaining tap security warnings.
+  * Updated @newrelic/proxy.
+
+* Updated remaining /api unit tests to use tap API.
+
+* Updated @grpc/grpc-js to v1.0.3.
+
+### 6.6.0 (2020-04-20):
+
+* Added support for [Infinite Tracing on New Relic
+  Edge](https://docs.newrelic.com/docs/understand-dependencies/distributed-tracing/enable-configure/enable-distributed-tracing).
+
+  Infinite Tracing observes 100% of your distributed traces and provides
+  visualizations for the most actionable data so you have the examples of errors
+  and long-running traces so you can better diagnose and troubleshoot your systems.
+
+  You configure your agent to send traces to a trace observer in New Relic Edge.
+  You view your distributed traces through the New Relic’s UI. There is no need to
+  install a collector on your network.
+
+  Infinite Tracing is currently available on a sign-up basis. If you would like to
+  participate, please contact your sales representative.
+
+* Added `function_version` to lambda metadata payload.
+
+  This is pulled from an invocation's `context.functionVersion` value.
+
 ### 6.5.0 (2020-03-18):
 
 * Added error attributes to spans.
@@ -75,7 +342,7 @@
   object from API#getLinkingMetadata().
 
   This issue would cause the `@newrelic/winston-enricher` module to crash when
-  attempting to inject log metatdata.
+  attempting to inject log metadata.
 
 * Reduced logging level of raw `x-queue-start` or `x-request-start` header values
   to avoid logging very large values at default logging levels.
@@ -3027,7 +3294,7 @@
 
 * Fixed a bug where custom events weren't being sent.
 
-  In a refactor of our data collection cycle, we omited the custom
+  In a refactor of our data collection cycle, we omitted the custom
   events from the list of commands, this is now fixed.
 
 * Fixed a very rare bug where the custom event pool could be set to 10
@@ -3251,7 +3518,7 @@
   ended when the view ended.
 
 * Added a configuration option to completely disable logging. `logger.enabled`
-  defaults to true, if set to false it wont try to create the log file.
+  defaults to true, if set to false it won't try to create the log file.
 
 ### v1.16.2 (2015-02-13):
 
@@ -4022,7 +4289,7 @@
   too many times. Thanks to José F. Romaniello for confirming the fix.
 * Changed how requests handled by Express and Restify routes are named. This
   change is being rolled out both in this module and on the New Relic website,
-  so there is a chance you will see the same route (or very similiar routes)
+  so there is a chance you will see the same route (or very similar routes)
   show up twice in aggregated metrics.
 * Dropped the default apdex tolerating value from 500 milliseconds to 100
   milliseconds. This means that transactions slower than 400 milliseconds will
@@ -4259,7 +4526,7 @@
   crash.
 * Some metric normalization rules were not being interpreted correctly, leading
   to malformed normalized metric names.
-* Metric normalization rules that specifed that matching metrics were to be
+* Metric normalization rules that specified that matching metrics were to be
   ignored were not being enforced.
 
 ### v0.9.12-91 / beta-12 (2012-12-28):

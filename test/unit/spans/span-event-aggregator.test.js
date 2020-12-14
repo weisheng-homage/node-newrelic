@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 // TODO: convert to normal tap style.
@@ -23,7 +28,11 @@ describe('SpanAggregator', () => {
       runId: RUN_ID,
       limit: LIMIT
     }, {}, new Metrics(5, {}, {}))
-    agent = helper.instrumentMockedAgent()
+    agent = helper.instrumentMockedAgent({
+      distributed_tracing: {
+        enabled: true
+      }
+    })
   })
 
   afterEach(() => {

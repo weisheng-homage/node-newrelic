@@ -1,8 +1,14 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
+const tap = require('tap')
 // TODO: convert to normal tap style.
 // Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+tap.mochaGlobals()
 
 var chai = require('chai')
 var should = chai.should()
@@ -13,6 +19,7 @@ var AttributeFilter = require('../../lib/config/attribute-filter')
 var Metrics = require('../../lib/metrics')
 var Trace = require('../../lib/transaction/trace')
 var Transaction = require('../../lib/transaction')
+const Segment = require('../../lib/transaction/trace/segment')
 var hashes = require('../../lib/util/hashes')
 const sinon = require('sinon')
 
@@ -225,102 +232,6 @@ describe('Transaction', function() {
       trans = new Transaction(agent)
     })
 
-    describe('with finalizeNameFromUri', function() {
-      it('should throw when called with no parameters', function() {
-        expect(function() { trans.finalizeNameFromUri() }).to.throw()
-      })
-
-      it('should ignore a request path when told to by a rule', function() {
-        var api = new API(agent)
-        api.addIgnoringRule('^/test/')
-        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-        expect(trans.isIgnored()).to.be.true
-      })
-
-      it('should ignore a transaction when told to by a rule', function() {
-        agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
-        trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
-        expect(trans.isIgnored()).to.be.true
-      })
-
-      it('should pass through a name when told to by a rule', function() {
-        agent.userNormalizer.addSimple('^/config', '/foobar')
-        trans.finalizeNameFromUri('/config', 200)
-        expect(trans.name).to.equal('WebTransaction/NormalizedUri/foobar')
-      })
-
-      describe('when tx.nameState is populated', function() {
-        beforeEach(function() {
-          trans.baseSegment = trans.trace.root.add('basesegment')
-          trans.nameState.setPrefix('Restify')
-          trans.nameState.setVerb('COOL')
-          trans.nameState.setDelimiter('/')
-          trans.nameState.appendPath('/foo/:foo', {foo: 'biz'})
-          trans.nameState.appendPath('/bar/:bar', {bar: 'bang'})
-        })
-
-        it('should name the transaction using the name stack', function() {
-          trans.finalizeNameFromUri('/some/random/path', 200)
-          expect(trans.name)
-            .to.equal('WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
-        })
-
-        it('should copy parameters from the name stack', function() {
-          trans.finalizeNameFromUri('/some/random/path', 200)
-          var attrs = trans.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
-          expect(attrs).to.deep.equal({
-            'request.parameters.foo': 'biz',
-            'request.parameters.bar': 'bang'
-          })
-        })
-
-        describe('and high_security is on', function() {
-          beforeEach(function() {
-            agent.config.high_security = true
-            agent.config._applyHighSecurity()
-            agent.config.emit('attributes.include')
-          })
-
-          it('should still name the transaction using the name stack', function() {
-            trans.finalizeNameFromUri('/some/random/path', 200)
-            expect(trans.name)
-              .to.equal('WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
-          })
-
-          it('should not copy parameters from the name stack', function() {
-            trans.finalizeNameFromUri('/some/random/path', 200)
-            var attrs = trans.trace.attributes.get(
-              AttributeFilter.DESTINATIONS.TRANS_TRACE
-            )
-            expect(attrs).to.deep.equal({})
-          })
-        })
-      })
-    })
-
-    describe('with finalizeName', function() {
-      it('should call finalizeNameFromUri if no name is given for a web tx', function() {
-        var called = false
-        trans.finalizeNameFromUri = function() { called = true }
-        trans.type = 'web'
-        trans.url = '/foo/bar'
-        trans.finalizeName()
-        expect(called).to.be.true
-      })
-
-      it('should apply ignore rules', function() {
-        agent.transactionNameNormalizer.addSimple('foo') // Ignore foo
-        trans.finalizeName('foo')
-        expect(trans.isIgnored()).to.be.true
-      })
-
-      it('should not apply user naming rules', function() {
-        agent.userNormalizer.addSimple('^/config', '/foobar')
-        trans.finalizeName('/config')
-        expect(trans.getFullName()).to.equal('WebTransaction//config')
-      })
-    })
-
     describe('getName', function() {
       it('should return `null` if there is no name, partialName, or url', function() {
         expect(trans.getName()).to.be.null
@@ -350,15 +261,8 @@ describe('Transaction', function() {
     })
 
     describe('isIgnored', function() {
-      it('should return true if a transaction is ignored through the api', function() {
-        var api = new API(agent)
-        helper.runInTransaction(agent, function(txn) {
-          api.setIgnoreTransaction(true)
-          expect(txn.isIgnored()).to.be.true
-        })
-      })
       it ('should return true if a transaction is ignored by a rule', function() {
-        var api = new API(agent)
+        const api = new API(agent)
         api.addIgnoringRule('^/test/')
         trans.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
         expect(trans.isIgnored()).true
@@ -777,7 +681,7 @@ describe('Transaction', function() {
     })
   })
 
-  describe('acceptDistributedTracePayload', function() {
+  describe('_acceptDistributedTracePayload', function() {
     var tx = null
 
     beforeEach(function() {
@@ -797,7 +701,7 @@ describe('Transaction', function() {
     })
 
     it('records supportability metric if no payload was passed', function() {
-      tx.acceptDistributedTracePayload(null)
+      tx._acceptDistributedTracePayload(null)
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Ignored/Null'
       )
@@ -808,7 +712,7 @@ describe('Transaction', function() {
         tx.isDistributedTrace = true
         tx.parentId = 'exists'
 
-        tx.acceptDistributedTracePayload({})
+        tx._acceptDistributedTracePayload({})
         expect(tx.agent.recordSupportability.args[0][0]).to.equal(
           'DistributedTrace/AcceptPayload/Ignored/Multiple'
         )
@@ -817,7 +721,7 @@ describe('Transaction', function() {
       it('records `CreateBeforeAccept` metric if parentId does not exist', function() {
         tx.isDistributedTrace = true
 
-        tx.acceptDistributedTracePayload({})
+        tx._acceptDistributedTracePayload({})
         expect(tx.agent.recordSupportability.args[0][0]).to.equal(
           'DistributedTrace/AcceptPayload/Ignored/CreateBeforeAccept'
         )
@@ -837,7 +741,7 @@ describe('Transaction', function() {
         ti: Date.now() - 1
       }
 
-      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+      tx._acceptDistributedTracePayload({v: [0, 1], d: data})
 
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Exception'
@@ -857,7 +761,7 @@ describe('Transaction', function() {
         ti: Date.now() - 1
       }
 
-      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+      tx._acceptDistributedTracePayload({v: [0, 1], d: data})
 
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Exception'
@@ -877,13 +781,13 @@ describe('Transaction', function() {
         ti: Date.now() - 1
       }
 
-      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+      tx._acceptDistributedTracePayload({v: [0, 1], d: data})
 
       expect(tx.isDistributedTrace).to.be.true
     })
 
     it('fails if payload version is above agent-supported version', function() {
-      tx.acceptDistributedTracePayload({v: [1, 0]})
+      tx._acceptDistributedTracePayload({v: [1, 0]})
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/ParseException'
       )
@@ -900,7 +804,7 @@ describe('Transaction', function() {
         ti: Date.now()
       }
 
-      tx.acceptDistributedTracePayload({
+      tx._acceptDistributedTracePayload({
         v: [0, 1],
         d: data
       })
@@ -911,7 +815,7 @@ describe('Transaction', function() {
     })
 
     it('fails if payload data is missing required keys', function() {
-      tx.acceptDistributedTracePayload({
+      tx._acceptDistributedTracePayload({
         v: [0, 1],
         d: {
           ac: 1
@@ -935,7 +839,7 @@ describe('Transaction', function() {
         ti: Date.now()
       }
 
-      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+      tx._acceptDistributedTracePayload({v: [0, 1], d: data})
       expect(tx.sampled).to.be.true
       expect(tx.priority).to.equal(data.pr)
       // Should not truncate accepted priority
@@ -953,7 +857,7 @@ describe('Transaction', function() {
         ti: Date.now()
       }
 
-      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+      tx._acceptDistributedTracePayload({v: [0, 1], d: data})
       expect(tx.priority).to.equal(null)
       expect(tx.sampled).to.equal(null)
     })
@@ -968,7 +872,7 @@ describe('Transaction', function() {
         ti: Date.now() - 1
       }
 
-      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+      tx._acceptDistributedTracePayload({v: [0, 1], d: data})
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Success'
       )
@@ -990,7 +894,7 @@ describe('Transaction', function() {
         ti: Date.now() + 1000
       }
 
-      tx.acceptDistributedTracePayload({v: [0, 1], d: data})
+      tx._acceptDistributedTracePayload({v: [0, 1], d: data})
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/AcceptPayload/Success'
       )
@@ -1048,7 +952,7 @@ describe('Transaction', function() {
     })
   })
 
-  describe('createDistributedTracePayload', function() {
+  describe('_createDistributedTracePayload', function() {
     var tx = null
 
     beforeEach(function() {
@@ -1072,7 +976,7 @@ describe('Transaction', function() {
     it('should not create payload when DT disabled', function() {
       tx.agent.config.distributed_tracing.enabled = false
 
-      const payload = tx.createDistributedTracePayload().text()
+      const payload = tx._createDistributedTracePayload().text()
       expect(payload).to.equal('')
       expect(tx.agent.recordSupportability.callCount).to.equal(0)
       expect(tx.isDistributedTrace).to.not.be.true
@@ -1081,34 +985,24 @@ describe('Transaction', function() {
     it('should create payload when DT enabled and CAT disabled', function() {
       tx.agent.config.cross_application_tracer.enabled = false
 
-      const payload = tx.createDistributedTracePayload().text()
+      const payload = tx._createDistributedTracePayload().text()
 
       expect(payload).to.not.be.null
       expect(payload).to.not.equal('')
-    })
-
-    it('generates a priority for entry-point transactions', () => {
-      expect(tx.priority).to.equal(null)
-      expect(tx.sampled).to.equal(null)
-
-      tx.createDistributedTracePayload()
-
-      expect(tx.priority).to.be.a('number')
-      expect(tx.sampled).to.be.a('boolean')
     })
 
     it('does not change existing priority', () => {
       tx.priority = 999
       tx.sampled = false
 
-      tx.createDistributedTracePayload()
+      tx._createDistributedTracePayload()
 
       expect(tx.priority).to.equal(999)
       expect(tx.sampled).to.be.false
     })
 
     it('sets the transaction as sampled if the trace is chosen', function() {
-      const payload = JSON.parse(tx.createDistributedTracePayload().text())
+      const payload = JSON.parse(tx._createDistributedTracePayload().text())
       expect(payload.d.sa).to.equal(tx.sampled)
       expect(payload.d.pr).to.equal(tx.priority)
     })
@@ -1116,7 +1010,8 @@ describe('Transaction', function() {
     it('adds the current span id as the parent span id', function() {
       agent.config.span_events.enabled = true
       agent.tracer.segment = tx.trace.root
-      const payload = JSON.parse(tx.createDistributedTracePayload().text())
+      tx.sampled = true
+      const payload = JSON.parse(tx._createDistributedTracePayload().text())
       expect(payload.d.id).to.equal(tx.trace.root.id)
       agent.tracer.segment = null
       agent.config.span_events.enabled = false
@@ -1127,14 +1022,14 @@ describe('Transaction', function() {
       tx._calculatePriority()
       tx.sampled = false
       agent.tracer.segment = tx.trace.root
-      const payload = JSON.parse(tx.createDistributedTracePayload().text())
+      const payload = JSON.parse(tx._createDistributedTracePayload().text())
       expect(payload.d.id).to.be.undefined
       agent.tracer.segment = null
       agent.config.span_events.enabled = false
     })
 
     it('returns stringified payload object', function() {
-      const payload = tx.createDistributedTracePayload().text()
+      const payload = tx._createDistributedTracePayload().text()
       expect(typeof payload).to.equal('string')
       expect(tx.agent.recordSupportability.args[0][0]).to.equal(
         'DistributedTrace/CreatePayload/Success'
@@ -1465,6 +1360,18 @@ describe('Transaction', function() {
 
       agent.tracer.segment = null
     })
+
+    it('generates a priority for entry-point transactions', () => {
+      const tx = new Transaction(agent)
+
+      expect(tx.priority).to.equal(null)
+      expect(tx.sampled).to.equal(null)
+
+      tx.insertDistributedTraceHeaders({})
+
+      expect(tx.priority).to.be.a('number')
+      expect(tx.sampled).to.be.a('boolean')
+    })
   })
 
   describe('acceptTraceContextPayload', () => {
@@ -1582,16 +1489,6 @@ describe('Transaction', function() {
       tx = new Transaction(agent)
     })
 
-    it('generates a priority for entry-point transactions', () => {
-      expect(tx.priority).to.equal(null)
-      expect(tx.sampled).to.equal(null)
-
-      tx.addDistributedTraceIntrinsics(attributes)
-
-      expect(tx.priority).to.be.a('number')
-      expect(tx.sampled).to.be.a('boolean')
-    })
-
     it('does not change existing priority', () => {
       tx.priority = 999
       tx.sampled = false
@@ -1619,9 +1516,9 @@ describe('Transaction', function() {
       tx.agent.config.trusted_account_key = '5678'
       tx.agent.config.distributed_tracing.enabled = true
 
-      const payload = tx.createDistributedTracePayload().text()
+      const payload = tx._createDistributedTracePayload().text()
       tx.isDistributedTrace = false
-      tx.acceptDistributedTracePayload(payload, 'AMQP')
+      tx._acceptDistributedTracePayload(payload, 'AMQP')
 
       tx.addDistributedTraceIntrinsics(attributes)
 
@@ -1633,6 +1530,313 @@ describe('Transaction', function() {
     })
   })
 })
+
+tap.test('when being named with finalizeNameFromUri', (t) => {
+  t.autoend()
+
+  let agent = null
+  let transaction = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent({
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      },
+      distributed_tracing: {
+        enabled: true
+      }
+    })
+
+    transaction = new Transaction(agent)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+
+    agent = null
+    transaction = null
+
+    done()
+  })
+
+  t.test('should throw when called with no parameters', (t) => {
+    t.throws(() => transaction.finalizeNameFromUri())
+
+    t.end()
+  })
+
+  t.test('should ignore a request path when told to by a rule', (t) => {
+    const api = new API(agent)
+    api.addIgnoringRule('^/test/')
+
+    transaction.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+
+    t.equal(transaction.isIgnored(), true)
+
+    t.end()
+  })
+
+  t.test('should ignore a transaction when told to by a rule', (t) => {
+    agent.transactionNameNormalizer.addSimple('^WebTransaction/NormalizedUri')
+
+    transaction.finalizeNameFromUri('/test/string?do=thing&another=thing', 200)
+
+    t.equal(transaction.isIgnored(), true)
+
+    t.end()
+  })
+
+  t.test('should pass through a name when told to by a rule', (t) => {
+    agent.userNormalizer.addSimple('^/config', '/foobar')
+
+    transaction.finalizeNameFromUri('/config', 200)
+
+    t.equal(transaction.name, 'WebTransaction/NormalizedUri/foobar')
+
+    t.end()
+  })
+
+  t.test('should add finalized via rule transaction name to active span intrinsics', (t) => {
+    agent.userNormalizer.addSimple('^/config', '/foobar')
+
+    // force a segment in context
+    agent.tracer.segment = new Segment(transaction, 'test segment')
+
+    transaction.finalizeNameFromUri('/config', 200)
+
+    const spanContext = agent.tracer.getSpanContext()
+    const intrinsics = spanContext.intrinsicAttributes
+
+    t.ok(intrinsics)
+    t.equal(intrinsics['transaction.name'], 'WebTransaction/NormalizedUri/foobar')
+
+    t.end()
+  })
+
+  t.test('when namestate populated should use name stack', (t) => {
+    setupNameState(transaction)
+
+    transaction.finalizeNameFromUri('/some/random/path', 200)
+
+    t.equal(transaction.name, 'WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
+
+    t.end()
+  })
+
+  t.test('when namestate populated should copy parameters from the name stack', (t) => {
+    setupNameState(transaction)
+
+    transaction.finalizeNameFromUri('/some/random/path', 200)
+
+    const attrs = transaction.trace.attributes.get(AttributeFilter.DESTINATIONS.TRANS_TRACE)
+
+    t.match(attrs, {
+      'request.parameters.foo': 'biz',
+      'request.parameters.bar': 'bang'
+    })
+
+    t.end()
+  })
+
+  t.test(
+    'when namestate populated, ' +
+    'should add finalized via rule transaction name to active span intrinsics',
+    (t) => {
+      setupNameState(transaction)
+      // force a segment in context
+      agent.tracer.segment = new Segment(transaction, 'test segment')
+
+      transaction.finalizeNameFromUri('/some/random/path', 200)
+
+      const spanContext = agent.tracer.getSpanContext()
+      const intrinsics = spanContext.intrinsicAttributes
+
+      t.ok(intrinsics)
+      t.equal(intrinsics['transaction.name'], 'WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
+
+      t.end()
+    }
+  )
+
+  t.test('when namestate populated and high_security enabled, should use name stack', (t) => {
+    setupNameState(transaction)
+    setupHighSecurity(agent)
+
+    transaction.finalizeNameFromUri('/some/random/path', 200)
+
+    t.equal(transaction.name, 'WebTransaction/Restify/COOL//foo/:foo/bar/:bar')
+
+    t.end()
+  })
+
+  t.test(
+    'when namestate populated and high_security enabled, ' +
+    'should not copy parameters from the name stack',
+    (t) => {
+      setupNameState(transaction)
+      setupHighSecurity(agent)
+
+      transaction.finalizeNameFromUri('/some/random/path', 200)
+
+      const attrs = transaction.trace.attributes.get(
+        AttributeFilter.DESTINATIONS.TRANS_TRACE
+      )
+      expect(attrs).to.deep.equal({})
+
+      t.end()
+    }
+  )
+})
+
+tap.test('requestd', (t) => {
+  t.autoend()
+
+  let agent = null
+  let transaction = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent({
+      span_events: {
+        enabled: true,
+        attributes: {
+          include: ['request.parameters.*']
+        }
+      },
+      distributed_tracing: {
+        enabled: true
+      }
+    })
+
+    transaction = new Transaction(agent)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+
+    agent = null
+    transaction = null
+
+    done()
+  })
+
+  t.test('when namestate populated should copy parameters from the name stack', (t) => {
+    setupNameState(transaction)
+
+    // force a segment in context
+    agent.tracer.segment = new Segment(transaction, 'test segment')
+    
+    transaction.finalizeNameFromUri('/some/random/path', 200)
+
+    const segment = transaction.agent.tracer.getSegment()
+
+    t.match(segment.attributes.get(AttributeFilter.DESTINATIONS.SPAN_EVENT), {
+      'request.parameters.foo': 'biz',
+      'request.parameters.bar': 'bang'
+    })
+
+    t.end()
+  })
+})
+
+tap.test('when being named with finalizeName', (t) => {
+  t.autoend()
+
+  let agent = null
+  let transaction = null
+
+  t.beforeEach((done) => {
+    agent = helper.loadMockedAgent({
+      attributes: {
+        enabled: true,
+        include: ['request.parameters.*']
+      },
+      distributed_tracing: {
+        enabled: true
+      }
+    })
+
+    transaction = new Transaction(agent)
+
+    done()
+  })
+
+  t.afterEach((done) => {
+    helper.unloadAgent(agent)
+
+    agent = null
+    transaction = null
+
+    done()
+  })
+
+  t.test('should call finalizeNameFromUri if no name is given for a web tx', (t) => {
+    let called = false
+
+    transaction.finalizeNameFromUri = function() { called = true }
+    transaction.type = 'web'
+    transaction.url = '/foo/bar'
+    transaction.finalizeName()
+
+    t.ok(called)
+
+    t.end()
+  })
+
+  t.test('should apply ignore rules', (t) => {
+    agent.transactionNameNormalizer.addSimple('foo') // Ignore foo
+
+    transaction.finalizeName('foo')
+
+    t.equal(transaction.isIgnored(), true)
+
+    t.end()
+  })
+
+  t.test('should not apply user naming rules', (t) => {
+    agent.userNormalizer.addSimple('^/config', '/foobar')
+
+    transaction.finalizeName('/config')
+
+    t.equal(transaction.getFullName(), 'WebTransaction//config')
+
+    t.end()
+  })
+
+  t.test('should add finalized transaction name to active span intrinsics', (t) => {
+    // force a segment in context
+    agent.tracer.segment = new Segment(transaction, 'test segment')
+
+    transaction.finalizeName('/config')
+
+    const spanContext = agent.tracer.getSpanContext()
+    const intrinsics = spanContext.intrinsicAttributes
+
+    t.ok(intrinsics)
+    t.equal(intrinsics['transaction.name'], 'WebTransaction//config')
+
+    t.end()
+  })
+})
+
+function setupNameState(transaction) {
+  transaction.baseSegment = transaction.trace.root.add('basesegment')
+  transaction.nameState.setPrefix('Restify')
+  transaction.nameState.setVerb('COOL')
+  transaction.nameState.setDelimiter('/')
+  transaction.nameState.appendPath('/foo/:foo', {foo: 'biz'})
+  transaction.nameState.appendPath('/bar/:bar', {bar: 'bang'})
+}
+
+function setupHighSecurity(agent) {
+  agent.config.high_security = true
+  agent.config._applyHighSecurity()
+  agent.config.emit('attributes.include')
+}
 
 function getMetrics(agent) {
   return agent.metrics._metrics

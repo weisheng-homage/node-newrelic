@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 // TODO: convert to normal tap style.
@@ -28,7 +33,8 @@ var used = [
   'send_request_uri_attribute',
   'synthetics',
   'dt_format_w3c',
-  'unreleased'
+  'unreleased',
+  'fastify_instrumentation'
 ]
 
 describe('feature flags', function() {

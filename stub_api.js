@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 var logger = require('./lib/logger.js')
@@ -56,7 +61,7 @@ function setLambdaHandler(callback) {
 }
 
 function startSegment(name, record, handler, callback) {
-  logger.debug('Not calling `startSegment` becuase New Relic is disabled.')
+  logger.debug('Not calling `startSegment` because New Relic is disabled.')
   if (typeof handler === 'function') {
     return handler(callback)
   }

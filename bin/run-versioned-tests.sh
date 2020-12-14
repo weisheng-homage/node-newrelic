@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# Copyright 2020 New Relic Corporation. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 set -x
 
 VERSIONED_MODE="${VERSIONED_MODE:---major}"
@@ -21,5 +24,9 @@ fi
 
 export AGENT_PATH=`pwd`
 
-# This is meant to be temporary. Remove once new major version with fixes rolled into agent.
-time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 -s koa ${directories[@]}
+# Don't run the aws-sdk tests if we don't have the keys set
+if [[ -z "$AWS_ACCESS_KEY_ID" ]]; then
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 -s aws-sdk ${directories[@]}
+else
+  time ./node_modules/.bin/versioned-tests $VERSIONED_MODE -i 2 ${directories[@]}
+fi

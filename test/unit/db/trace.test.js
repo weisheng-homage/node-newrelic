@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 // TODO: convert to normal tap style.
@@ -35,9 +40,9 @@ describe('SQL trace', function() {
       agent.config.account_id = 1
       agent.config.simple_compression = true
       helper.runInTransaction(agent, function(tx) {
-        const payload = tx.createDistributedTracePayload().text()
+        const payload = tx._createDistributedTracePayload().text()
         tx.isDistributedTrace = null
-        tx.acceptDistributedTracePayload(payload)
+        tx._acceptDistributedTracePayload(payload)
         agent.queries.add(
           tx.trace.root,
           'postgres',

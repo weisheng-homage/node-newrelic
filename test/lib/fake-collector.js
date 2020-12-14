@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 var path = require('path')
@@ -303,7 +308,7 @@ function bootstrap(options, callback) {
   server.use(restify.plugins.bodyParser({mapParams: false}))
 
   restify.defaultResponseHeaders = function() {
-    // LOL -- the collector *always* leaves the content-type set to text/plain
+    // the collector *always* leaves the content-type set to text/plain
     this.header('Content-Type', 'text/plain')
   }
 

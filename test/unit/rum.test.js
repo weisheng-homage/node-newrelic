@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 // TODO: convert to normal tap style.
@@ -53,8 +58,8 @@ describe('the RUM API', function() {
   })
 
   it('should issue a warning if the transaction was ignored', function() {
-    helper.runInTransaction(agent, function() {
-      api.setIgnoreTransaction(true)
+    helper.runInTransaction(agent, function(tx) {
+      tx.ignore = true
       api.getBrowserTimingHeader()
         .should.equal('<!-- NREUM: (1) -->')
     })

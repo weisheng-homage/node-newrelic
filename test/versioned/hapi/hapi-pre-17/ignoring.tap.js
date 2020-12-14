@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 var tap = require('tap')
@@ -45,7 +50,7 @@ tap.test('ignoring a Hapi route', function(t) {
     method: 'GET',
     path: '/order/{id}',
     handler: function(req, reply) {
-      api.setIgnoreTransaction(true)
+      api.addIgnoringRule(/order/)
       reply({status: 'cartcartcart'}).code(400)
     }
   })

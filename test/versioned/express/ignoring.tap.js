@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 var test = require('tap').test
@@ -44,8 +49,7 @@ test("ignoring an Express route", function(t) {
   })
 
   app.get('/polling/:id', function(req, res) {
-    api.setIgnoreTransaction(true)
-
+    api.addIgnoringRule(/poll/)
     res.status(400).send({status : 'pollpollpoll'})
     res.end()
   })

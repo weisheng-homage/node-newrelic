@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const util = require('util')
@@ -272,7 +277,7 @@ API.prototype.setControllerName = function setControllerName(name, action) {
  * @param {string} value The value you want displayed. Must be serializable.
  */
 API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
-  var metric = this.agent.metrics.getOrCreateMetric(
+  const metric = this.agent.metrics.getOrCreateMetric(
     NAMES.SUPPORTABILITY.API + '/addCustomAttribute'
   )
   metric.incrementCallCount()
@@ -291,24 +296,36 @@ API.prototype.addCustomAttribute = function addCustomAttribute(key, value) {
     return false
   }
 
-  var transaction = this.agent.tracer.getTransaction()
+  const transaction = this.agent.tracer.getTransaction()
   if (!transaction) {
-    return logger.warn('No transaction found for custom attributes.')
+    logger.warn('No transaction found for custom attributes.')
+    return false
   }
 
-  var trace = transaction.trace
+  const trace = transaction.trace
   if (!trace.custom) {
-    return logger.warn(
+    logger.warn(
       'Could not add attribute %s to nonexistent custom attributes.',
       key
     )
+    return false
   }
 
   if (CUSTOM_DENYLIST.has(key)) {
-    return logger.warn('Not overwriting value of NR-only attribute %s.', key)
+    logger.warn('Not overwriting value of NR-only attribute %s.', key)
+    return false
   }
 
   trace.addCustomAttribute(key, value)
+
+  const spanContext = this.agent.tracer.getSpanContext()
+  if (!spanContext) {
+    logger.debug('No span found for custom attributes.')
+    // success/failure is ambiguous here. since at least 1 attempt tried, not returning false
+    return
+  }
+
+  spanContext.addCustomAttribute(key, value, spanContext.ATTRIBUTE_PRIORITY.LOW)
 }
 
 /**
@@ -342,13 +359,13 @@ API.prototype.addCustomAttributes = function addCustomAttributes(atts) {
 
 /**
  * Add custom span attributes in an object to the current segment/span.
- * 
+ *
  * See documentation for newrelic.addCustomSpanAttribute for more information.
- * 
+ *
  * An example of setting a custom span attribute:
- * 
+ *
  *    newrelic.addCustomSpanAttribute({test: 'value', test2: 'value2'})
- * 
+ *
  * @param {object} [atts]
  * @param {string} [atts.KEY] The name you want displayed in the RPM UI.API.
  * @param {string} [atts.KEY.VALUE] The value you want displayed.  Must be serializable.
@@ -395,52 +412,22 @@ API.prototype.addCustomSpanAttribute = function addCustomSpanAttribute(key, valu
     return false
   }
 
-  const segment = this.agent.tracer.getSegment()
-  
-  if (!segment) {
-    return logger.debug(
-      'Could not add attribute %s. No available span/segment.',
+  const spanContext = this.agent.tracer.getSpanContext()
+
+  if (!spanContext) {
+    logger.debug(
+      'Could not add attribute %s. No available span.',
       key
     )
+    return false
   }
 
   if (CUSTOM_DENYLIST.has(key)) {
-    return logger.warn('Not overwriting value of NR-only attribute %s.', key)
+    logger.warn('Not overwriting value of NR-only attribute %s.', key)
+    return false
   }
 
-  segment.addCustomSpanAttribute(key, value)
-}
-
-API.prototype.setIgnoreTransaction = util.deprecate(
-  setIgnoreTransaction, [
-    'API#setIgnoreTransaction is being deprecated!',
-    'Please use TransactionHandle#ignore to ignore a transaction.',
-    'Use API#getTransaction to create a new TransactionHandle instance.'
-  ].join(' ')
-)
-
-/**
- * Tell the tracer whether to ignore the current transaction. The most common
- * use for this will be to mark a transaction as ignored (maybe it's handling
- * a websocket polling channel, or maybe it's an external call you don't care
- * is slow), but it's also useful when you want a transaction that would
- * otherwise be ignored due to URL or transaction name normalization rules
- * to *not* be ignored.
- *
- * @param {boolean} ignored Ignore, or don't ignore, the current transaction.
- */
-function setIgnoreTransaction(ignored) {
-  var metric = this.agent.metrics.getOrCreateMetric(
-    NAMES.SUPPORTABILITY.API + '/setIgnoreTransaction'
-  )
-  metric.incrementCallCount()
-
-  var transaction = this.agent.tracer.getTransaction()
-  if (!transaction) {
-    return logger.warn("No transaction found to ignore.")
-  }
-
-  transaction.setForceIgnore(ignored)
+  spanContext.addCustomAttribute(key, value)
 }
 
 /**
@@ -1344,31 +1331,37 @@ function instrumentLoadedModule(moduleName, module) {
     NAMES.SUPPORTABILITY.API + '/instrumentLoadedModule'
   )
   metric.incrementCallCount()
+  try {
+    const instrumentationName = shimmer.getInstrumentationNameFromModuleName(moduleName)
+    if (!shimmer.registeredInstrumentations[instrumentationName]) {
+      logger.warn("No instrumentation registered for '%s'.", instrumentationName)
+      return false
+    }
 
-  const instrumentationName = shimmer.getInstrumentationNameFromModuleName(moduleName)
-  if (!shimmer.registeredInstrumentations[instrumentationName]) {
-    logger.warn("No instrumentation registered for '%s'.", instrumentationName)
-    return false
+    const instrumentation = shimmer.registeredInstrumentations[instrumentationName]
+    if (!instrumentation.onRequire) {
+      logger.warn("No onRequire function registered for '%s'.", instrumentationName)
+      return false
+    }
+
+    const resolvedName = require.resolve(moduleName)
+
+    const shim = shims.createShimFromType(
+      instrumentation.type,
+      this.agent,
+      moduleName,
+      resolvedName
+    )
+
+    instrumentation.onRequire(shim, module, moduleName)
+
+    return true
+  } catch (error) {
+    logger.error(
+      'instrumentLoadedModule encountered an error, module not instrumentend: %s',
+      error
+    )
   }
-
-  const instrumentation = shimmer.registeredInstrumentations[instrumentationName]
-  if (!instrumentation.onRequire) {
-    logger.warn("No onRequire function registered for '%s'.", instrumentationName)
-    return false
-  }
-
-  const resolvedName = require.resolve(moduleName)
-
-  const shim = shims.createShimFromType(
-    instrumentation.type,
-    this.agent,
-    moduleName,
-    resolvedName
-  )
-
-  instrumentation.onRequire(shim, module, moduleName)
-
-  return true
 }
 
 /**

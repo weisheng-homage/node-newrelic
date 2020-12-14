@@ -1,13 +1,22 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const tap = require('tap')
+const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
 
-tap.test('loading the app with invalid config', (t) => {
+
+const license = getTestSecret('TEST_LICENSE')
+const skip = shouldSkipTest(license)
+tap.test('loading the app with invalid config', {skip}, (t) => {
   t.plan(3)
 
   process.env.AWS_LAMBDA_FUNCTION_NAME = 'lambdaName'
   process.env.NEW_RELIC_DISTRIBUTED_TRACING_ENABLED = true
-  process.env.NEW_RELIC_LICENSE_KEY = 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
+  process.env.NEW_RELIC_LICENSE_KEY = license
   process.env.NEW_RELIC_NO_CONFIG_FILE = true
 
   let api = null

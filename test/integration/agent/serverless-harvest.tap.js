@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 const fs = require('fs')
 
@@ -5,13 +10,17 @@ const helper = require('../../lib/agent_helper')
 const tap = require('tap')
 const sinon = require('sinon')
 const API = require('../../../api')
+const {getTestSecret, shouldSkipTest} = require('../../helpers/secrets')
 
 const DESTS = require('../../../lib/config/attribute-filter').DESTINATIONS
 const TEST_ARN = 'test:arn'
+const TEST_FUNC_VERSION = '$LATEST'
 const TEST_EX_ENV = 'test-AWS_Lambda_nodejs8.10'
 const PROTOCOL_VERSION = 16
 
-tap.test('Serverless mode harvest', (t) => {
+const license = getTestSecret('TEST_LICENSE')
+const skip = shouldSkipTest(license)
+tap.test('Serverless mode harvest', {skip}, (t) => {
   t.autoend()
 
   let agent = null
@@ -26,9 +35,10 @@ tap.test('Serverless mode harvest', (t) => {
         enabled: true
       },
       app_name: 'serverless mode tests',
-      license_key: 'd67afc830dab717fd163bfcb0b8b88423e9a1a3b'
+      license_key: license
     })
     agent.setLambdaArn(TEST_ARN)
+    agent.setLambdaFunctionVersion(TEST_FUNC_VERSION)
 
     agent.start(done)
   })
@@ -69,6 +79,7 @@ tap.test('Serverless mode harvest', (t) => {
           decoded.metadata,
           {
             arn: TEST_ARN,
+            function_version: TEST_FUNC_VERSION,
             execution_environment: TEST_EX_ENV,
             protocol_version: PROTOCOL_VERSION,
             agent_version: agent.version

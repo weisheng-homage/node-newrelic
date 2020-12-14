@@ -1,3 +1,8 @@
+/*
+ * Copyright 2020 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 'use strict'
 
 const tap = require('tap')
@@ -267,7 +272,7 @@ describe('Errors', function() {
       expect(error[error.length - 2]).equal(testError.name)
     })
 
-    it('should not gather errors if it is switched off by user config', function() {
+    it('should not gather appliction errors if it is switched off by user config', function() {
       var error = new Error('this error will never be seen')
       agent.config.error_collector.enabled = false
 
@@ -275,6 +280,20 @@ describe('Errors', function() {
       expect(errorTraces.length).equal(0)
 
       errorCollector.add(null, error)
+
+      expect(errorTraces.length).equal(0)
+
+      agent.config.error_collector.enabled = true
+    })
+
+    it('should not gather user errors if it is switched off by user config', function() {
+      var error = new Error('this error will never be seen')
+      agent.config.error_collector.enabled = false
+
+      const errorTraces = getErrorTraces(errorCollector)
+      expect(errorTraces.length).equal(0)
+
+      errorCollector.addUserError(null, error)
 
       expect(errorTraces.length).equal(0)
 
@@ -1317,10 +1336,10 @@ describe('Errors', function() {
         agent.config.distributed_tracing.enabled = true
         agent.config.primary_application_id = 'test'
         agent.config.account_id = 1
-        var transaction = createTransaction(agent, 200)
-        var payload = transaction.createDistributedTracePayload().text()
+        let transaction = createTransaction(agent, 200)
+        let payload = transaction._createDistributedTracePayload().text()
         transaction.isDistributedTrace = null
-        transaction.acceptDistributedTracePayload(payload)
+        transaction._acceptDistributedTracePayload(payload)
 
         var error = new Error('some error')
         aggregator.add(transaction, error)
