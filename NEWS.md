@@ -1,3 +1,78 @@
+### v7.1.2 (2021-02-24)
+
+* Fixed bug where the agent failed to reconnect to Infinite Tracing gRPC streams on Status OK at higher log levels.
+
+  Node streams require all data be consumed for the end/status events to fire. We were only reading data at lower log levels where we'd use/log the data. This resulted in a failure to reconnect and 'ERR_STREAM_WRITE_AFTER_END' errors. The agent now always listens to the 'data' event, even if not logging, and will also reconnect (with 15 second delay) on any 'ERR_STREAM_WRITE_AFTER_END' error.
+
+* Removed initial harvest send() call on streaming span event aggregator to prevent warning in logs.
+
+* Bumped @newrelic/aws-sdk to ^3.1.0.
+
+### v7.1.1 (2021-02-01)
+
+* Upgrade @grpc/grpc-js to v1.2.5 to fix non-propagation of internal http2 errors
+  Now allows minor and patch auto-updates.
+
+* Added workflow for publishing to npm when a v* tag is pushed to the repo.
+
+* Fixes resolveMx test by using example.com for a valid exchange.
+
+### 7.1.0 (2021-01-05):
+
+* Fixed SQL traces being generated with invalid ID.
+* Fixed log message for minimum supported Node.js version.
+* Added Fastify v3 support.
+* Fixed empty log message for Infinite Tracing connections.
+* Upgraded grpc version.
+* Fixed bug that prevented users from changing Infinite Tracing queue size.
+
+### 7.0.2 (2020-12-01):
+
+* Fixed a bug where the `http.statusCode` attribute was not being captured for an async invoked lambda.
+* Fixed typos in code comments, documentation, and debugging logger messages.
+  Thank you @TysonAndre for the contribution.
+
+### 7.0.1 (2020-11-17):
+
+* Fixed a bug where spans queued up during backpressure situations would be improperly formatted and ultimately dropped when sent to an Infinite Tracing trace observer.
+* Updated @grpc/grpc-js to version v1.2.0.
+* Updated tap to clear up npm audit issues around lodash sub-dependency.
+
+### 7.0.0 (2020-11-09):
+
+* Added official parity support for Node 14
+
+* Dropped Node v8.x support. For further information on our support policy,
+  see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+  * Removed Node v8.x from CI
+  * Adds check that minimum Node version is >=10 and warns if >=15
+  * Sets Node engine to >=10
+  * **BREAKING** Dropped support for Node v8.x HTTP get() function signature
+    * strictly uses global.URL class in http core instrumentation
+    * removes Nodejs 8.x - 9.x checks
+  * Update New Relic Dependencies to versions with updated Node version support
+    * @newrelic/aws-sdk v3.0.0
+    * @newrelic/koa v5.0.0
+    * @newrelic/native-metrics v6.0.0
+    * @newrelic/superagent v4.0.0
+    * @newrelic/test-utilities v5.0.0
+
+* **BREAKING** Removed deprecated setIgnoreTransaction API method
+
+* **BREAKING** Removed deprecated httpResponseCode, response.status and
+  httpResponseMessage http response attributes
+
+* **BREAKING** Removed the api.custom_parameters_enabled configuration item and
+  associated environment variable NEW_RELIC_API_CUSTOM_PARAMETERS. Please use
+  api.custom_attributes_enabled instead
+
+* **BREAKING** Removed deprecated Distributed Tracing API methods,
+  createDistributedTracePayload() and acceptDistributedTracePayload()
+
+* Finalized removal of ignored_params and capture_params
+
+* Added additional logging to W3C Trace Context header creation
+
 ### 6.14.0 (2020-10-28):
 
 * Updated README for consistency.
@@ -295,7 +370,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
   object from API#getLinkingMetadata().
 
   This issue would cause the `@newrelic/winston-enricher` module to crash when
-  attempting to inject log metatdata.
+  attempting to inject log metadata.
 
 * Reduced logging level of raw `x-queue-start` or `x-request-start` header values
   to avoid logging very large values at default logging levels.
@@ -3247,7 +3322,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
 
 * Fixed a bug where custom events weren't being sent.
 
-  In a refactor of our data collection cycle, we omited the custom
+  In a refactor of our data collection cycle, we omitted the custom
   events from the list of commands, this is now fixed.
 
 * Fixed a very rare bug where the custom event pool could be set to 10
@@ -3471,7 +3546,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
   ended when the view ended.
 
 * Added a configuration option to completely disable logging. `logger.enabled`
-  defaults to true, if set to false it wont try to create the log file.
+  defaults to true, if set to false it won't try to create the log file.
 
 ### v1.16.2 (2015-02-13):
 
@@ -4242,7 +4317,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
   too many times. Thanks to José F. Romaniello for confirming the fix.
 * Changed how requests handled by Express and Restify routes are named. This
   change is being rolled out both in this module and on the New Relic website,
-  so there is a chance you will see the same route (or very similiar routes)
+  so there is a chance you will see the same route (or very similar routes)
   show up twice in aggregated metrics.
 * Dropped the default apdex tolerating value from 500 milliseconds to 100
   milliseconds. This means that transactions slower than 400 milliseconds will
@@ -4479,7 +4554,7 @@ Special thanks to Ryan Copley (@RyanCopley) for the contribution.
   crash.
 * Some metric normalization rules were not being interpreted correctly, leading
   to malformed normalized metric names.
-* Metric normalization rules that specifed that matching metrics were to be
+* Metric normalization rules that specified that matching metrics were to be
   ignored were not being enforced.
 
 ### v0.9.12-91 / beta-12 (2012-12-28):

@@ -1,18 +1,18 @@
 {
-  "lastUpdated": "Wed Oct 28 2020 11:06:05 GMT-0700 (Pacific Daylight Time)",
+  "lastUpdated": "Tue Feb 23 2021 13:40:18 GMT-0800 (Pacific Standard Time)",
   "projectName": "New Relic Node Agent",
   "projectUrl": "https://github.com/newrelic/node-newrelic",
   "includeDev": true,
   "dependencies": {
-    "@grpc/grpc-js@1.1.7": {
+    "@grpc/grpc-js@1.2.5": {
       "name": "@grpc/grpc-js",
-      "version": "1.1.7",
-      "range": "1.1.7",
+      "version": "1.2.5",
+      "range": "^1.2.5",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
-      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.1.7",
+      "versionedRepoUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.5",
       "licenseFile": "node_modules/@grpc/grpc-js/LICENSE",
-      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.1.7/LICENSE",
+      "licenseUrl": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.5/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
@@ -28,41 +28,41 @@
       "licenseTextSource": "file",
       "publisher": "Google Inc."
     },
-    "@newrelic/aws-sdk@2.0.0": {
+    "@newrelic/aws-sdk@3.1.0": {
       "name": "@newrelic/aws-sdk",
-      "version": "2.0.0",
-      "range": "^2.0.0",
+      "version": "3.1.0",
+      "range": "^3.1.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v2.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/tree/v3.1.0",
       "licenseFile": "node_modules/@newrelic/aws-sdk/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v2.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-aws-sdk/blob/v3.1.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
     },
-    "@newrelic/koa@4.0.0": {
+    "@newrelic/koa@5.0.0": {
       "name": "@newrelic/koa",
+      "version": "5.0.0",
+      "range": "^5.0.0",
+      "licenses": "Apache-2.0",
+      "repoUrl": "https://github.com/newrelic/node-newrelic-koa",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-koa/tree/v5.0.0",
+      "licenseFile": "node_modules/@newrelic/koa/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-koa/blob/v5.0.0/LICENSE",
+      "licenseTextSource": "file",
+      "publisher": "New Relic Node.js agent team",
+      "email": "nodejs@newrelic.com"
+    },
+    "@newrelic/superagent@4.0.0": {
+      "name": "@newrelic/superagent",
       "version": "4.0.0",
       "range": "^4.0.0",
       "licenses": "Apache-2.0",
-      "repoUrl": "https://github.com/newrelic/node-newrelic-koa",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-koa/tree/v4.0.0",
-      "licenseFile": "node_modules/@newrelic/koa/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-koa/blob/v4.0.0/LICENSE",
-      "licenseTextSource": "file",
-      "publisher": "New Relic Node.js agent team",
-      "email": "nodejs@newrelic.com"
-    },
-    "@newrelic/superagent@3.0.0": {
-      "name": "@newrelic/superagent",
-      "version": "3.0.0",
-      "range": "^3.0.0",
-      "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-newrelic-superagent",
-      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-superagent/tree/v3.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-newrelic-superagent/tree/v4.0.0",
       "licenseFile": "node_modules/@newrelic/superagent/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-newrelic-superagent/blob/v3.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-newrelic-superagent/blob/v4.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js Agent Team",
       "email": "nodejs@newrelic.com"
@@ -171,18 +171,29 @@
       "email": "nathan@tootallnate.net",
       "url": "http://n8.io/"
     },
-    "@newrelic/test-utilities@4.0.0": {
+    "@newrelic/test-utilities@5.0.0": {
       "name": "@newrelic/test-utilities",
-      "version": "4.0.0",
-      "range": "^4.0.0",
+      "version": "5.0.0",
+      "range": "^5.0.0",
       "licenses": "Apache-2.0",
       "repoUrl": "https://github.com/newrelic/node-test-utilities",
-      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v4.0.0",
+      "versionedRepoUrl": "https://github.com/newrelic/node-test-utilities/tree/v5.0.0",
       "licenseFile": "node_modules/@newrelic/test-utilities/LICENSE",
-      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v4.0.0/LICENSE",
+      "licenseUrl": "https://github.com/newrelic/node-test-utilities/blob/v5.0.0/LICENSE",
       "licenseTextSource": "file",
       "publisher": "New Relic Node.js agent team",
       "email": "nodejs@newrelic.com"
+    },
+    "@octokit/rest@18.0.15": {
+      "name": "@octokit/rest",
+      "version": "18.0.15",
+      "range": "^18.0.15",
+      "licenses": "MIT",
+      "repoUrl": "https://github.com/octokit/rest.js",
+      "versionedRepoUrl": "https://github.com/octokit/rest.js/tree/v18.0.15",
+      "licenseFile": "node_modules/@octokit/rest/LICENSE",
+      "licenseUrl": "https://github.com/octokit/rest.js/blob/v18.0.15/LICENSE",
+      "licenseTextSource": "file"
     },
     "JSV@4.0.2": {
       "name": "JSV",
@@ -552,15 +563,15 @@
       "licenseTextSource": "file",
       "publisher": "Christian Johansen"
     },
-    "tap@14.10.7": {
+    "tap@14.10.8": {
       "name": "tap",
-      "version": "14.10.7",
-      "range": "^14.10.7",
+      "version": "14.10.8",
+      "range": "^14.10.8",
       "licenses": "ISC",
       "repoUrl": "https://github.com/tapjs/node-tap",
-      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v14.10.7",
+      "versionedRepoUrl": "https://github.com/tapjs/node-tap/tree/v14.10.8",
       "licenseFile": "node_modules/tap/LICENSE",
-      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v14.10.7/LICENSE",
+      "licenseUrl": "https://github.com/tapjs/node-tap/blob/v14.10.8/LICENSE",
       "licenseTextSource": "file",
       "publisher": "Isaac Z. Schlueter",
       "email": "i@izs.me",

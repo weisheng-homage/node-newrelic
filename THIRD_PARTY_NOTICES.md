@@ -35,6 +35,7 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 
 * [@newrelic/proxy](#newrelicproxy)
 * [@newrelic/test-utilities](#newrelictest-utilities)
+* [@octokit/rest](#octokitrest)
 * [JSV](#JSV)
 * [architect](#architect)
 * [benchmark](#benchmark)
@@ -68,15 +69,12 @@ code, the source code can be found at [https://github.com/newrelic/node-newrelic
 * [through](#through)
 * [when](#when)
 
-**[additional-licenses](#additional-licenses)**
-
-* [symantec](#symantec)
 
 ## dependencies
 
 ### @grpc/grpc-js
 
-This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.1.7](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.1.7)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.1.7/LICENSE):
+This product includes source derived from [@grpc/grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) ([v1.2.5](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/tree/v1.2.5)), distributed under the [Apache-2.0 License](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js/blob/v1.2.5/LICENSE):
 
 ```
                                  Apache License
@@ -494,7 +492,7 @@ This product includes source derived from [@grpc/proto-loader](https://github.co
 
 ### @newrelic/aws-sdk
 
-This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v2.0.0](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v2.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v2.0.0/LICENSE):
+This product includes source derived from [@newrelic/aws-sdk](https://github.com/newrelic/node-newrelic-aws-sdk) ([v3.1.0](https://github.com/newrelic/node-newrelic-aws-sdk/tree/v3.1.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-aws-sdk/blob/v3.1.0/LICENSE):
 
 ```
                                  Apache License
@@ -702,7 +700,7 @@ This product includes source derived from [@newrelic/aws-sdk](https://github.com
 
 ### @newrelic/koa
 
-This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v4.0.0](https://github.com/newrelic/node-newrelic-koa/tree/v4.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v4.0.0/LICENSE):
+This product includes source derived from [@newrelic/koa](https://github.com/newrelic/node-newrelic-koa) ([v5.0.0](https://github.com/newrelic/node-newrelic-koa/tree/v5.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-koa/blob/v5.0.0/LICENSE):
 
 ```
 Apache License
@@ -911,7 +909,7 @@ Apache License
 
 ### @newrelic/superagent
 
-This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v3.0.0](https://github.com/newrelic/node-newrelic-superagent/tree/v3.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v3.0.0/LICENSE):
+This product includes source derived from [@newrelic/superagent](https://github.com/newrelic/node-newrelic-superagent) ([v4.0.0](https://github.com/newrelic/node-newrelic-superagent/tree/v4.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-newrelic-superagent/blob/v4.0.0/LICENSE):
 
 ```
                                  Apache License
@@ -1210,11 +1208,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 This product includes source derived from [https-proxy-agent](https://github.com/TooTallNate/node-https-proxy-agent) ([v4.0.0](https://github.com/TooTallNate/node-https-proxy-agent/tree/v4.0.0)), distributed under the [MIT License](https://github.com/TooTallNate/node-https-proxy-agent/blob/v4.0.0/README.md):
 
 ```
-MIT License Copyright (c) <year> <copyright holders>
+MIT License
+
+Copyright (c) <year> <copyright holders>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice (including the next paragraph) shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
@@ -1323,7 +1323,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ## optionalDependencies
 
 ### @newrelic/native-metrics
-This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v5.3.0](https://github.com/newrelic/node-native-metrics/tree/v5.3.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v5.3.0/LICENSE):
+This product includes source derived from [@newrelic/native-metrics](https://github.com/newrelic/node-native-metrics) ([v6.0.0](https://github.com/newrelic/node-native-metrics/tree/v6.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-native-metrics/blob/v6.0.0/LICENSE):
 
 ```
                                  Apache License
@@ -1537,18 +1537,20 @@ This product includes source derived from [@newrelic/native-metrics](https://git
 This product includes source derived from [@newrelic/proxy](https://github.com/newrelic/proxy) ([v2.0.0](https://github.com/newrelic/proxy/tree/v2.0.0)), distributed under the [MIT License](https://github.com/newrelic/proxy/blob/v2.0.0/README.md):
 
 ```
-MIT License Copyright (c) <year> <copyright holders>
+MIT License
+
+Copyright (c) <year> <copyright holders>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice (including the next paragraph) shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
 ### @newrelic/test-utilities
 
-This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v4.0.0](https://github.com/newrelic/node-test-utilities/tree/v4.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v4.0.0/LICENSE):
+This product includes source derived from [@newrelic/test-utilities](https://github.com/newrelic/node-test-utilities) ([v5.0.0](https://github.com/newrelic/node-test-utilities/tree/v5.0.0)), distributed under the [Apache-2.0 License](https://github.com/newrelic/node-test-utilities/blob/v5.0.0/LICENSE):
 
 ```
                                  Apache License
@@ -1755,23 +1757,41 @@ This product includes source derived from [@newrelic/test-utilities](https://git
 
 ```
 
+### @octokit/rest
+
+This product includes source derived from [@octokit/rest](https://github.com/octokit/rest.js) ([v18.0.15](https://github.com/octokit/rest.js/tree/v18.0.15)), distributed under the [MIT License](https://github.com/octokit/rest.js/blob/v18.0.15/LICENSE):
+
+```
+The MIT License
+
+Copyright (c) 2012 Cloud9 IDE, Inc. (Mike de Boer)
+Copyright (c) 2017-2018 Octokit contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+```
+
 ### JSV
 
 This product includes source derived from [JSV](https://github.com/garycourt/JSV) ([v4.0.2](https://github.com/garycourt/JSV/tree/v4.0.2)), distributed under the [FreeBSD License](https://github.com/garycourt/JSV/tree/v4.0.2#license):
 
 ```
-Copyright 2010 Gary Court. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are
-permitted provided that the following conditions are met:
-
-   1. Redistributions of source code must retain the above copyright notice, this list of
-      conditions and the following disclaimer.
-
-   2. Redistributions in binary form must reproduce the above copyright notice, this list
-      of conditions and the following disclaimer in the documentation and/or other materials
-      provided with the distribution.
-
 THIS SOFTWARE IS PROVIDED BY GARY COURT ``AS IS'' AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
 FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL GARY COURT OR
@@ -2000,11 +2020,13 @@ SOFTWARE.
 This product includes source derived from [generic-pool](https://github.com/coopernurse/node-pool) ([v3.7.1](https://github.com/coopernurse/node-pool/tree/v3.7.1)), distributed under the [MIT License](https://github.com/coopernurse/node-pool/blob/v3.7.1/README.md):
 
 ```
-MIT License Copyright (c) <year> <copyright holders>
+MIT License
+
+Copyright (c) <year> <copyright holders>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice (including the next paragraph) shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
@@ -2617,11 +2639,13 @@ IN THE SOFTWARE.
 This product includes source derived from [redis](https://github.com/mranney/node_redis) ([v1.0.0](https://github.com/mranney/node_redis/tree/v1.0.0)), distributed under the [MIT License](https://github.com/mranney/node_redis/blob/v1.0.0/README.md):
 
 ```
-MIT License Copyright (c) <year> <copyright holders>
+MIT License
+
+Copyright (c) <year> <copyright holders>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice (including the next paragraph) shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
@@ -2888,7 +2912,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### tap
 
-This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v14.10.7](https://github.com/tapjs/node-tap/tree/v14.10.7)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v14.10.7/LICENSE):
+This product includes source derived from [tap](https://github.com/tapjs/node-tap) ([v14.10.8](https://github.com/tapjs/node-tap/tree/v14.10.8)), distributed under the [ISC License](https://github.com/tapjs/node-tap/blob/v14.10.8/LICENSE):
 
 ```
 The ISC License
@@ -2999,6 +3023,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
+
 
 ## additional-licenses
 

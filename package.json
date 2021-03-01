@@ -1,6 +1,6 @@
 {
   "name": "newrelic",
-  "version": "6.14.0",
+  "version": "7.1.2",
   "author": "New Relic Node.js agent team <nodejs@newrelic.com>",
   "license": "Apache-2.0",
   "contributors": [
@@ -111,7 +111,7 @@
   ],
   "homepage": "http://github.com/newrelic/node-newrelic",
   "engines": {
-    "node": ">=8.0.0",
+    "node": ">=10.0.0",
     "npm": ">=3.0.0"
   },
   "directories": {
@@ -136,17 +136,19 @@
     "unit": "rm -f newrelic_agent.log && time tap --test-regex='(\\/|^test\\/unit\\/.*\\.test\\.js)$' --timeout=180 --no-coverage",
     "update-cross-agent-tests": "./bin/update-cats.sh",
     "versioned-tests": "./bin/run-versioned-tests.sh",
-    "versioned": "npm run prepare-test && time ./bin/run-versioned-tests.sh"
+    "update-changelog-version": "node ./bin/update-changelog-version",
+    "versioned": "npm run prepare-test && time ./bin/run-versioned-tests.sh",
+    "version": "npm run update-changelog-version && git add ./NEWS.md"
   },
   "bin": {
     "newrelic-naming-rules": "./bin/test-naming-rules.js"
   },
   "dependencies": {
-    "@grpc/grpc-js": "1.1.7",
+    "@grpc/grpc-js": "^1.2.5",
     "@grpc/proto-loader": "^0.5.5",
-    "@newrelic/aws-sdk": "^2.0.0",
-    "@newrelic/koa": "^4.0.0",
-    "@newrelic/superagent": "^3.0.0",
+    "@newrelic/aws-sdk": "^3.1.0",
+    "@newrelic/koa": "^5.0.0",
+    "@newrelic/superagent": "^4.0.0",
     "@tyriar/fibonacci-heap": "^2.0.7",
     "async": "^3.2.0",
     "concat-stream": "^2.0.0",
@@ -156,16 +158,18 @@
     "semver": "^5.3.0"
   },
   "optionalDependencies": {
-    "@newrelic/native-metrics": "^5.3.0"
+    "@newrelic/native-metrics": "^6.0.0"
   },
   "devDependencies": {
     "@newrelic/proxy": "^2.0.0",
-    "@newrelic/test-utilities": "^4.0.0",
+    "@newrelic/test-utilities": "^5.0.0",
+    "@octokit/rest": "^18.0.15",
     "JSV": "~4.0.2",
     "architect": "*",
     "benchmark": "^2.1.4",
     "bluebird": "^3.4.7",
     "chai": "^4.1.2",
+    "commander": "^7.0.0",
     "eslint": "^6.8.0",
     "express": "*",
     "fastify": "^2.14.1",
@@ -187,7 +191,7 @@
     "rimraf": "^2.6.3",
     "should": "*",
     "sinon": "^4.5.0",
-    "tap": "^14.10.7",
+    "tap": "^14.10.8",
     "temp": "^0.8.1",
     "through": "^2.3.6",
     "when": "*"
