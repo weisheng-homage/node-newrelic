@@ -71,27 +71,49 @@ This configuration will allow end-user-programmers to disable certain agent inst
 
 You can set the instrumentation configuration with the following *boolean* environment variables as well. Below you will see what variable maps to the corresponding instrumented module:
 `NEW_RELIC_INSTRUMENTATION_AWS_SDK_ENABLED` maps to `aws-sdk`,
+
 `NEW_RELIC_INSTRUMENTATION_AMPQLIB_ENABLED` maps to `ampqlib`,
+
 `NEW_RELIC_INSTRUMENTATION_CASSANDRA_DRIVER_ENABLED` maps to `cassandra-driver`,
+
 `NEW_RELIC_INSTRUMENTATION_CONNECT_ENABLED` maps to `connect`,
+
 `NEW_RELIC_INSTRUMENTATION_BLUEBIRD_ENABLED` maps to `bluebird`,
+
 `NEW_RELIC_INSTRUMENTATION_DIRECTOR_ENABLED` maps to `director`,
+
 `NEW_RELIC_INSTRUMENTATION_EXPRESS_ENABLED` maps to `express`,
+
 `NEW_RELIC_INSTRUMENTATION_GENERIC_POOL_ENABLED` maps to `generic-pool`,
+
 `NEW_RELIC_INSTRUMENTATION_HAPI_HAPI_ENABLED` maps to `@hapi/hapi`,
+
 `NEW_RELIC_INSTRUMENTATION_HAPI_ENABLED` maps to `hapi`,
+
 `NEW_RELIC_INSTRUMENTATION_IOREDIS_ENABLED` maps to `ioredis`,
+
 `NEW_RELIC_INSTRUMENTATION_KOA_ENABLED` maps to `koa`,
+
 `NEW_RELIC_INSTRUMENTATION_MEMCACHED_ENABLED` maps to `memcached`,
+
 `NEW_RELIC_INSTRUMENTATION_MONGODB_ENABLED` maps to `mongodb`,
+
 `NEW_RELIC_INSTRUMENTATION_MYSQL_ENABLED` maps to `mysql`,
+
 `NEW_RELIC_INSTRUMENTATION_PG_ENABLED` maps to `pg`,
+
 `NEW_RELIC_INSTRUMENTATION_Q_ENABLED` maps to `q`,
+
 `NEW_RELIC_INSTRUMENTATION_REDIS_ENABLED` maps to `redis`,
+
 `NEW_RELIC_INSTRUMENTATION_RESTIFY_ENABLED` maps to `restify`,
+
 `NEW_RELIC_INSTRUMENTATION_SUPERAGENT_ENABLED` maps to `superagent`,
+
 `NEW_RELIC_INSTRUMENTATION_ORACLE_ENABLED` maps to `oracle`,
+
 `NEW_RELIC_INSTRUMENTATION_VISION_ENABLED` maps to `vision`,
+
 `NEW_RELIC_INSTRUMENTATION_WHEN_ENABLED` maps to `when`
 
 **Important**: This is experimental.  Disabling instrumentation may cause unexpected side effects in an application.  For example, disabling `express` instrumentation would result in transaction names being radically changed.
