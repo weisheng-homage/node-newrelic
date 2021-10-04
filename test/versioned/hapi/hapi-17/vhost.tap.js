@@ -5,43 +5,45 @@
 
 'use strict'
 
-var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
-var tap = require('tap')
-var request = require('request')
-var helper = require('../../../lib/agent_helper')
-var utils = require('./hapi-17-utils')
-var HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
+const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
+const tap = require('tap')
+const request = require('request')
+const helper = require('../../../lib/agent_helper')
+const utils = require('./hapi-17-utils')
+const HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
 
-tap.test('Hapi vhost support', function(t) {
+tap.test('Hapi vhost support', function (t) {
   t.autoend()
 
-  t.test('should not explode when using vhosts', function(t) {
-    var agent = helper.instrumentMockedAgent({
+  t.test('should not explode when using vhosts', function (t) {
+    const agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true,
         include: ['request.parameters.*']
       }
     })
 
-    var server = utils.getServer()
-    var port
+    const server = utils.getServer()
+    let port
 
-    t.tearDown(function() {
+    t.teardown(function () {
       return server.stop()
     })
 
-    agent.on('transactionFinished', function(tx) {
+    agent.on('transactionFinished', function (tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      HTTP_ATTS.forEach(function(key) {
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      HTTP_ATTS.forEach(function (key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
       t.equal(
-        attributes['request.parameters.id'], '1337',
+        attributes['request.parameters.id'],
+        '1337',
         'Trace attributes include `id` route param'
       )
       t.equal(
-        attributes['request.parameters.name'], 'hapi',
+        attributes['request.parameters.name'],
+        'hapi',
         'Trace attributes include `name` query param'
       )
 
@@ -52,9 +54,9 @@ tap.test('Hapi vhost support', function(t) {
       method: 'GET',
       path: '/test/{id}/',
       vhost: 'localhost',
-      handler: function() {
+      handler: function () {
         t.ok(agent.getTransaction(), 'transaction is available')
-        return { status : 'ok' }
+        return { status: 'ok' }
       }
     })
 
@@ -62,21 +64,21 @@ tap.test('Hapi vhost support', function(t) {
       method: 'GET',
       path: '/test/{id}/2',
       vhost: 'localhost',
-      handler: function() {
+      handler: function () {
         t.ok(agent.getTransaction(), 'transaction is available')
         return { status: 'ok' }
       }
     })
 
-    server.start().then(function() {
+    server.start().then(function () {
       port = server.info.port
-      var params = {
+      const params = {
         uri: 'http://localhost:' + port + '/test/1337/2?name=hapi',
         json: true
       }
-      request.get(params, function(error, res, body) {
+      request.get(params, function (error, res, body) {
         t.equal(res.statusCode, 200, 'nothing exploded')
-        t.deepEqual(body, {status: 'ok'}, 'got expected response')
+        t.deepEqual(body, { status: 'ok' }, 'got expected response')
         t.end()
       })
     })

@@ -15,47 +15,46 @@ const crossAgentTests = require('../../lib/cross_agent_tests/cat/cat_map.json')
 const cat = require('../../../lib/util/cat.js')
 const NAMES = require('../../../lib/metrics/names.js')
 
-tap.test('when CAT is disabled', (t) => {
+tap.test('when CAT is disabled (default agent settings)', (t) => {
   t.autoend()
 
   let agent = null
 
-  t.beforeEach((done) => {
-    agent = helper.loadMockedAgent({
-      cross_application_tracer: {enabled: false}
-    })
-
-    done()
+  t.beforeEach(() => {
+    agent = helper.loadMockedAgent()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
-  crossAgentTests.forEach(function(test) {
+  crossAgentTests.forEach(function (test) {
     t.test(test.name + ' tx event should only contain non-CAT intrinsic attrs', (t) => {
-      const expectedDuration = 0.020
-      const expectedTotalTime = 0.030
+      const expectedDuration = 0.02
+      const expectedTotalTime = 0.03
 
       const start = Date.now()
 
-      const trans =
-        getMockTransaction(agent, test, start, expectedDuration, expectedTotalTime)
+      const trans = getMockTransaction(agent, test, start, expectedDuration, expectedTotalTime)
 
       const attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
-      chai.expect(Object.keys(attrs)).to.have.members([
-        'duration',
-        'name',
-        'timestamp',
-        'totalTime',
-        'type',
-        'webDuration',
-        'error'
-      ])
+      chai
+        .expect(Object.keys(attrs))
+        .to.have.members([
+          'duration',
+          'name',
+          'timestamp',
+          'totalTime',
+          'type',
+          'webDuration',
+          'error',
+          'traceId',
+          'guid',
+          'priority',
+          'sampled'
+        ])
 
       chai.expect(attrs.duration).to.be.closeTo(expectedDuration, 0.001)
       chai.expect(attrs.webDuration).to.be.closeTo(expectedDuration, 0.001)
@@ -107,7 +106,6 @@ tap.test('when CAT is disabled', (t) => {
     t.end()
   })
 
-
   t.test('includes databaseDuration', (t) => {
     const transaction = new Transaction(agent)
     transaction.measure(NAMES.DB.ALL, null, 100)
@@ -118,7 +116,7 @@ tap.test('when CAT is disabled', (t) => {
     t.end()
   })
 
-  t.test("should call transaction.hasErrors() for error attribute", (t) => {
+  t.test('should call transaction.hasErrors() for error attribute', (t) => {
     const transaction = new Transaction(agent)
     let mock = null
     let attrs = null
@@ -146,38 +144,34 @@ tap.test('when CAT is enabled', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // App name from test data
     agent = helper.loadMockedAgent({
-      apdex_t: 0.050,
-      cross_application_tracer: {enabled: true}
+      apdex_t: 0.05,
+      cross_application_tracer: { enabled: true },
+      distributed_tracing: { enabled: false }
     })
     agent.config.applications = function newFake() {
       return ['testAppName']
     }
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
-  const expectedDurationsInSeconds = [0.030, 0.150, 0.500]
+  const expectedDurationsInSeconds = [0.03, 0.15, 0.5]
 
-  crossAgentTests.forEach(function(test, index) {
+  crossAgentTests.forEach(function (test, index) {
     t.test(test.name + ' tx event should contain all intrinsic attrs', (t) => {
       const idx = index % expectedDurationsInSeconds.length
       const expectedDuration = expectedDurationsInSeconds[idx]
 
-      const expectedTotalTime = 0.030
+      const expectedTotalTime = 0.03
 
       const start = Date.now()
-      const trans =
-        getMockTransaction(agent, test, start, expectedDuration, expectedTotalTime)
+      const trans = getMockTransaction(agent, test, start, expectedDuration, expectedTotalTime)
 
       const attrs = agent._addIntrinsicAttrsFromTransaction(trans)
 
@@ -274,21 +268,21 @@ function getMockTransaction(agent, test, start, durationInSeconds, totalTimeInSe
 
   // CAT data
   if (test.inboundPayload) {
-    cat.parsedHeadersToTrans(test.inboundPayload[0], test.inboundPayload, transaction)
+    cat.assignCatToTransaction(test.inboundPayload[0], test.inboundPayload, transaction)
   } else {
     // Simulate the headers being unparsable or not existing
-    cat.parsedHeadersToTrans(null, null, transaction)
+    cat.assignCatToTransaction(null, null, transaction)
   }
 
   if (test.outboundRequests) {
-    test.outboundRequests.forEach(function(req) {
+    test.outboundRequests.forEach(function (req) {
       transaction.pushPathHash(req.expectedOutboundPayload[3])
     })
   }
 
   transaction.baseSegment = {
     // used by nr.apdexPerfZone
-    getDurationInMillis: function() {
+    getDurationInMillis: function () {
       return durationInMilliseconds
     }
   }

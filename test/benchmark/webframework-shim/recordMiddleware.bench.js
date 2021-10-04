@@ -5,15 +5,17 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
-var helper = require('../../lib/agent_helper')
-var WebFrameworkShim = require('../../../lib/shim/webframework-shim')
+const benchmark = require('../../lib/benchmark')
+const helper = require('../../lib/agent_helper')
+const WebFrameworkShim = require('../../../lib/shim/webframework-shim')
 
-var agent = helper.loadMockedAgent()
-var shim = new WebFrameworkShim(agent, 'test-module', './')
-var suite = benchmark.createBenchmark({name: 'recordMiddleware'})
+const agent = helper.loadMockedAgent()
+const shim = new WebFrameworkShim(agent, 'test-module', './')
+const suite = benchmark.createBenchmark({ name: 'recordMiddleware' })
 
-var transaction = helper.runInTransaction(agent, function(tx) { return tx })
+const transaction = helper.runInTransaction(agent, function (tx) {
+  return tx
+})
 
 shim.setFramework('benchmarks')
 
@@ -23,37 +25,37 @@ addTests('implicit spec', implicitSpec)
 addTests('explicit spec', explicitSpec)
 addTests('   mixed spec', randomSpec)
 
-setTimeout(function() {
+setTimeout(function () {
   suite.run()
 }, 500)
 
 function addTests(name, speccer) {
-  var middleware = recordFunc(speccer())
+  const middleware = recordFunc(speccer())
 
   suite.add({
     name: name + ' - function middleware',
-    fn: function() {
+    fn: function () {
       return recordFunc(speccer())
     }
   })
 
   suite.add({
     name: name + ' - property middleware',
-    fn: function() {
+    fn: function () {
       return recordProperty(speccer())
     }
   })
 
   suite.add({
     name: name + ' - mixed middleware   ',
-    fn: function() {
+    fn: function () {
       return randomRecord(speccer())
     }
   })
 
   suite.add({
     name: name + ' - wrapper (no tx)    ',
-    fn: function() {
+    fn: function () {
       agent.tracer.segment = null
       middleware(getReqd(), {}, noop)
     }
@@ -61,7 +63,7 @@ function addTests(name, speccer) {
 
   suite.add({
     name: name + ' - wrapper (tx)       ',
-    fn: function() {
+    fn: function () {
       agent.tracer.segment = transaction.trace.root
       middleware(getReqd(), {}, noop)
     }
@@ -70,7 +72,7 @@ function addTests(name, speccer) {
 
 function getTest() {
   return {
-    func: function(req, res, next) {
+    func: function (req, res, next) {
       next()
     }
   }
@@ -78,7 +80,7 @@ function getTest() {
 
 function getReqd() {
   return {
-    params: {a: 1, b: 2, c: 3},
+    params: { a: 1, b: 2, c: 3 },
     __NR_transactionInfo: {
       transaction: transaction,
       segmentStack: [],
@@ -105,14 +107,14 @@ function explicitSpec() {
     res: shim.SECOND,
     next: shim.LAST,
     name: 'funcy_name',
-    params: function(shim, fn, name, args) {
+    params: function (shim, fn, name, args) {
       return args[0].params
     }
   }
 }
 
 function randomSpec() {
-  var n = Math.random()
+  const n = Math.random()
   if (n > 0.666) {
     return implicitSpec()
   } else if (n > 0.333) {
@@ -139,10 +141,10 @@ function randomRecord(spec) {
 function noop() {}
 
 function preOptRecordMiddleware() {
-  for (var i = 0; i < 1000; ++i) {
-    var m = randomRecord(randomSpec)
+  for (let i = 0; i < 1000; ++i) {
+    let m = randomRecord(randomSpec)
     m = typeof m === 'function' ? m : m.func
-    for (var j = 0; j < 100; ++j) {
+    for (let j = 0; j < 100; ++j) {
       m(getReqd(), {}, noop)
     }
   }

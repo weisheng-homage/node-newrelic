@@ -5,63 +5,56 @@
 
 'use strict'
 
-var tap = require('tap')
-var test = tap.test
-var helper = require('../../lib/agent_helper')
-var params = require('../../lib/params')
-var findSegment = require('../../lib/metrics_helper').findSegment
-var getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
-var util = require('util')
+const tap = require('tap')
+const test = tap.test
+const helper = require('../../lib/agent_helper')
+const params = require('../../lib/params')
+const findSegment = require('../../lib/metrics_helper').findSegment
+const getMetricHostName = require('../../lib/metrics_helper').getMetricHostName
+const util = require('util')
 
+const bootstrapMemcached = util.promisify(helper.bootstrapMemcached)
 
-var METRICS_ASSERTIONS = 10
+const METRICS_ASSERTIONS = 10
 
-test('memcached instrumentation', {timeout : 5000}, function(t) {
+test('memcached instrumentation', { timeout: 5000 }, function (t) {
   t.autoend()
 
-  var agent
-  var Memcached
-  var memcached
-  var HOST_ID
+  let agent
+  let Memcached
+  let memcached
+  let HOST_ID
 
-  t.test('generates correct metrics and trace segments', function(t) {
+  t.test('generates correct metrics and trace segments', function (t) {
     t.autoend()
 
-    t.beforeEach(function(done) {
-      helper.bootstrapMemcached(function cb_bootstrapMemcached(error) {
-        if (error) {
-          return done(error)
-        }
-        agent = helper.instrumentMockedAgent()
+    t.beforeEach(async () => {
+      await bootstrapMemcached()
 
-        Memcached = require('memcached')
-        memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
+      agent = helper.instrumentMockedAgent()
 
-        var hostName = getMetricHostName(agent, params.memcached_host)
-        HOST_ID = hostName + '/' + params.memcached_port
+      Memcached = require('memcached')
+      memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
 
-        done()
-      })
+      const hostName = getMetricHostName(agent, params.memcached_host)
+      HOST_ID = hostName + '/' + params.memcached_port
     })
 
-    t.afterEach(function(done) {
-      helper.unloadAgent(agent)
-      memcached.end()
-      done()
+    t.afterEach(() => {
+      agent && helper.unloadAgent(agent)
+      memcached && memcached.end()
     })
 
-    t.test('touch()', function(t) {
+    t.test('touch()', function (t) {
       t.plan(2 + METRICS_ASSERTIONS)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.touch('foo', 1, function(err) {
+        memcached.touch('foo', 1, function (err) {
           t.notOk(err, 'should not throw an error')
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, [
-            'Datastore/operation/Memcache/touch'
-          ])
+          verifySegments(t, transaction.trace.root, ['Datastore/operation/Memcache/touch'])
 
           verifyMetrics(t, transaction.metrics, {
             'Datastore/all': 1,
@@ -74,20 +67,18 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('get()', function(t) {
+    t.test('get()', function (t) {
       t.plan(2 + METRICS_ASSERTIONS)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.get('foo', function(err) {
+        memcached.get('foo', function (err) {
           t.notOk(err, 'should not throw an error')
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
           verifySegments(t, transaction.trace.root, [
             'Datastore/operation/Memcache/get',
-            [
-              'Truncated/Callback: <anonymous>'
-            ]
+            ['Truncated/Callback: <anonymous>']
           ])
 
           verifyMetrics(t, transaction.metrics, {
@@ -101,20 +92,18 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('gets()', function(t) {
+    t.test('gets()', function (t) {
       t.plan(2 + METRICS_ASSERTIONS)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.gets('foo', function(err) {
+        memcached.gets('foo', function (err) {
           t.notOk(err, 'should not throw an error')
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
           verifySegments(t, transaction.trace.root, [
             'Datastore/operation/Memcache/gets',
-            [
-              'Truncated/Callback: <anonymous>'
-            ]
+            ['Truncated/Callback: <anonymous>']
           ])
 
           verifyMetrics(t, transaction.metrics, {
@@ -128,20 +117,18 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('getMulti()', function(t) {
+    t.test('getMulti()', function (t) {
       t.plan(2 + METRICS_ASSERTIONS)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.getMulti(['foo', 'bar'], function(err) {
+        memcached.getMulti(['foo', 'bar'], function (err) {
           t.notOk(err, 'should not throw an error')
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
           verifySegments(t, transaction.trace.root, [
             'Datastore/operation/Memcache/get',
-            [
-              'Truncated/Callback: handle'
-            ]
+            ['Truncated/Callback: handle']
           ])
 
           verifyMetrics(t, transaction.metrics, {
@@ -155,20 +142,18 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('set()', function(t) {
+    t.test('set()', function (t) {
       t.plan(2 + METRICS_ASSERTIONS)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.set('foo', 'bar', 10, function(err) {
+        memcached.set('foo', 'bar', 10, function (err) {
           t.notOk(err, 'should not throw an error')
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
           verifySegments(t, transaction.trace.root, [
             'Datastore/operation/Memcache/set',
-            [
-              'Truncated/Callback: <anonymous>'
-            ]
+            ['Truncated/Callback: <anonymous>']
           ])
 
           verifyMetrics(t, transaction.metrics, {
@@ -182,26 +167,22 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('replace()', function(t) {
+    t.test('replace()', function (t) {
       t.plan(3 + METRICS_ASSERTIONS)
 
-      memcached.set('foo', 'bar', 10, function(err) {
+      memcached.set('foo', 'bar', 10, function (err) {
         t.notOk(err, 'should not throw error')
 
         helper.runInTransaction(agent, function transactionInScope(transaction) {
-          memcached.replace('foo', 'new', 10, function(err) {
+          memcached.replace('foo', 'new', 10, function (err) {
             t.notOk(err, 'should not throw an error')
             t.ok(agent.getTransaction(), 'transaction should still be visible')
 
             transaction.end()
-            verifySegments(
-              t,
-              transaction.trace.root,
-              [
-                'Datastore/operation/Memcache/replace',
-                ['Truncated/Callback: <anonymous>']
-              ]
-            )
+            verifySegments(t, transaction.trace.root, [
+              'Datastore/operation/Memcache/replace',
+              ['Truncated/Callback: <anonymous>']
+            ])
 
             verifyMetrics(t, transaction.metrics, {
               'Datastore/all': 1,
@@ -215,20 +196,18 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('add()', function(t) {
+    t.test('add()', function (t) {
       t.plan(2 + METRICS_ASSERTIONS)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.add('foo', 'bar', 10, function(err) {
+        memcached.add('foo', 'bar', 10, function (err) {
           t.notOk(err, 'should not throw an error')
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
           verifySegments(t, transaction.trace.root, [
             'Datastore/operation/Memcache/add',
-            [
-              'Truncated/Callback: <anonymous>'
-            ]
+            ['Truncated/Callback: <anonymous>']
           ])
 
           verifyMetrics(t, transaction.metrics, {
@@ -242,26 +221,24 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('cas()', function(t) {
+    t.test('cas()', function (t) {
       t.plan(4 + METRICS_ASSERTIONS)
 
-      memcached.set('foo', 'bar', 10, function(err) {
+      memcached.set('foo', 'bar', 10, function (err) {
         t.notOk(err, 'set should not have errored')
 
-        memcached.gets('foo', function(err, data) {
+        memcached.gets('foo', function (err, data) {
           t.notOk(err, 'gets should not have errored')
 
           helper.runInTransaction(agent, function transactionInScope(transaction) {
-            memcached.cas('foo', 'bar', data.cas, 10, function(err) {
+            memcached.cas('foo', 'bar', data.cas, 10, function (err) {
               t.notOk(err, 'should not throw an error')
               t.ok(agent.getTransaction(), 'transaction should still be visible')
 
               transaction.end()
               verifySegments(t, transaction.trace.root, [
                 'Datastore/operation/Memcache/cas',
-                [
-                  'Truncated/Callback: <anonymous>'
-                ]
+                ['Truncated/Callback: <anonymous>']
               ])
 
               verifyMetrics(t, transaction.metrics, {
@@ -277,20 +254,19 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('append()', function(t) {
+    t.test('append()', function (t) {
       t.plan(3 + METRICS_ASSERTIONS)
 
-      memcached.set('foo', 'bar', 10, function(err) {
+      memcached.set('foo', 'bar', 10, function (err) {
         t.error(err)
-        helper.runInTransaction(agent, function(transaction) {
-          memcached.append('foo', 'bar', function(err) {
+        helper.runInTransaction(agent, function (transaction) {
+          memcached.append('foo', 'bar', function (err) {
             t.error(err)
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             transaction.end()
             verifySegments(t, transaction.trace.root, [
-              'Datastore/operation/Memcache/append', [
-                'Truncated/Callback: <anonymous>'
-              ]
+              'Datastore/operation/Memcache/append',
+              ['Truncated/Callback: <anonymous>']
             ])
 
             verifyMetrics(t, transaction.metrics, {
@@ -305,20 +281,19 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('prepend()', function(t) {
+    t.test('prepend()', function (t) {
       t.plan(3 + METRICS_ASSERTIONS)
 
-      memcached.set('foo', 'bar', 10, function(err) {
+      memcached.set('foo', 'bar', 10, function (err) {
         t.error(err)
-        helper.runInTransaction(agent, function(transaction) {
-          memcached.prepend('foo', 'bar', function(err) {
+        helper.runInTransaction(agent, function (transaction) {
+          memcached.prepend('foo', 'bar', function (err) {
             t.error(err)
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             transaction.end()
             verifySegments(t, transaction.trace.root, [
-              'Datastore/operation/Memcache/prepend', [
-                'Truncated/Callback: <anonymous>'
-              ]
+              'Datastore/operation/Memcache/prepend',
+              ['Truncated/Callback: <anonymous>']
             ])
 
             verifyMetrics(t, transaction.metrics, {
@@ -333,20 +308,19 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('del()', function(t) {
+    t.test('del()', function (t) {
       t.plan(3 + METRICS_ASSERTIONS)
 
-      memcached.set('foo', 'bar', 10, function(err) {
+      memcached.set('foo', 'bar', 10, function (err) {
         t.error(err)
-        helper.runInTransaction(agent, function(transaction) {
-          memcached.del('foo', function(err) {
+        helper.runInTransaction(agent, function (transaction) {
+          memcached.del('foo', function (err) {
             t.error(err)
             t.ok(agent.getTransaction(), 'transaction should still be visible')
             transaction.end()
             verifySegments(t, transaction.trace.root, [
-              'Datastore/operation/Memcache/delete', [
-                'Truncated/Callback: <anonymous>'
-              ]
+              'Datastore/operation/Memcache/delete',
+              ['Truncated/Callback: <anonymous>']
             ])
 
             verifyMetrics(t, transaction.metrics, {
@@ -361,20 +335,18 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('incr()', function(t) {
+    t.test('incr()', function (t) {
       t.plan(2 + METRICS_ASSERTIONS)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.incr('foo', 10, function(err) {
+        memcached.incr('foo', 10, function (err) {
           t.notOk(err, 'should not throw an error')
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
           verifySegments(t, transaction.trace.root, [
             'Datastore/operation/Memcache/incr',
-            [
-              'Truncated/Callback: <anonymous>'
-            ]
+            ['Truncated/Callback: <anonymous>']
           ])
 
           verifyMetrics(t, transaction.metrics, {
@@ -388,18 +360,16 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('decr()', function(t) {
+    t.test('decr()', function (t) {
       t.plan(2 + METRICS_ASSERTIONS)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.decr('foo', 10, function(err) {
+        memcached.decr('foo', 10, function (err) {
           t.notOk(err, 'should not throw an error')
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, [
-            'Datastore/operation/Memcache/decr'
-          ])
+          verifySegments(t, transaction.trace.root, ['Datastore/operation/Memcache/decr'])
 
           verifyMetrics(t, transaction.metrics, {
             'Datastore/all': 1,
@@ -414,19 +384,17 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
 
     // memcached.version() is one of the calls that gets the second argument to
     // command.
-    t.test("version()", function(t) {
+    t.test('version()', function (t) {
       t.plan(3 + METRICS_ASSERTIONS)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.version(function(err, ok) {
+        memcached.version(function (err, ok) {
           t.notOk(err, 'should not throw an error')
           t.ok(ok, 'got a version')
           t.ok(agent.getTransaction(), 'transaction should still be visible')
 
           transaction.end()
-          verifySegments(t, transaction.trace.root, [
-            'Datastore/operation/Memcache/version'
-          ])
+          verifySegments(t, transaction.trace.root, ['Datastore/operation/Memcache/version'])
 
           verifyMetrics(t, transaction.metrics, {
             'Datastore/all': 1,
@@ -440,330 +408,285 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
     })
   })
 
-  t.test('captures attributes', function(t) {
+  t.test('captures attributes', function (t) {
     t.autoend()
 
-    t.beforeEach(function(done) {
-      helper.bootstrapMemcached(function cb_bootstrapMemcached(error) {
-        if (error) {
-          return done(error)
-        }
-        agent = helper.instrumentMockedAgent()
+    t.beforeEach(async () => {
+      await bootstrapMemcached()
 
-        // capture attributes
-        agent.config.attributes.enabled = true
+      agent = helper.instrumentMockedAgent()
 
-        Memcached = require('memcached')
-        memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
-        done()
-      })
+      // capture attributes
+      agent.config.attributes.enabled = true
+
+      Memcached = require('memcached')
+      memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
     })
 
-    t.afterEach(function(done) {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
       memcached.end()
-      done()
     })
 
-    t.test('get()', function(t) {
+    t.test('get()', function (t) {
       t.plan(2)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.get('foo', function(err) {
+        memcached.get('foo', function (err) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          var segment = transaction.trace.root.children[0]
-          t.equals(
-            segment.getAttributes().key,
-            "\"foo\"",
-            "should have the get key as a parameter"
-          )
+          const segment = transaction.trace.root.children[0]
+          t.equals(segment.getAttributes().key, '"foo"', 'should have the get key as a parameter')
         })
       })
     })
 
-    t.test('get() when disabled', function(t) {
+    t.test('get() when disabled', function (t) {
       t.plan(2)
       agent.config.attributes.enabled = false
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.get('foo', function(err) {
+        memcached.get('foo', function (err) {
           t.error(err)
 
           transaction.end()
-          var segment = transaction.trace.root.children[0]
+          const segment = transaction.trace.root.children[0]
+          t.notOk(segment.getAttributes().key, 'should not have any attributes')
+        })
+      })
+    })
+
+    t.test('getMulti()', function (t) {
+      t.plan(2)
+
+      helper.runInTransaction(agent, function transactionInScope(transaction) {
+        memcached.getMulti(['foo', 'bar'], function (err) {
+          t.notOk(err, 'should not throw an error')
+
+          transaction.end()
+          const segment = transaction.trace.root.children[0]
+          t.equals(
+            segment.getAttributes().key,
+            '["foo","bar"]',
+            'should have the multiple keys fetched as a parameter'
+          )
+        })
+      })
+    })
+
+    t.test('set()', function (t) {
+      t.plan(2)
+
+      helper.runInTransaction(agent, function transactionInScope(transaction) {
+        memcached.set('foo', 'bar', 10, function (err) {
+          t.notOk(err, 'should not throw an error')
+
+          transaction.end()
+          const segment = transaction.trace.root.children[0]
+          t.equals(segment.getAttributes().key, '"foo"', 'should have the set key as a parameter')
+        })
+      })
+    })
+  })
+
+  t.test('captures datastore instance attributes', function (t) {
+    t.autoend()
+
+    t.beforeEach(async () => {
+      await bootstrapMemcached()
+
+      agent = helper.instrumentMockedAgent()
+
+      Memcached = require('memcached')
+      memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
+    })
+
+    t.afterEach(() => {
+      helper.unloadAgent(agent)
+      memcached.end()
+    })
+
+    t.test('get()', function (t) {
+      t.plan(5)
+
+      helper.runInTransaction(agent, function transactionInScope(transaction) {
+        memcached.get('foo', function (err) {
+          t.notOk(err, 'should not throw an error')
+
+          transaction.end()
+          const segment = transaction.trace.root.children[0]
+          const attributes = segment.getAttributes()
+          t.equals(
+            attributes.host,
+            getMetricHostName(agent, params.memcached_host),
+            'should collect host instance attributes'
+          )
+          t.equals(
+            attributes.port_path_or_id,
+            String(params.memcached_port),
+            'should collect port instance attributes'
+          )
+
+          const expectedMetrics = {}
+          expectedMetrics['Datastore/instance/Memcache/' + HOST_ID] = 1
+          verifyMetrics(t, transaction.metrics, expectedMetrics)
+        })
+      })
+    })
+
+    t.test('set()', function (t) {
+      t.plan(5)
+
+      helper.runInTransaction(agent, function transactionInScope(transaction) {
+        memcached.set('foo', 'bar', 10, function (err) {
+          t.notOk(err, 'should not throw an error')
+
+          transaction.end()
+          const segment = transaction.trace.root.children[0]
+          const attributes = segment.getAttributes()
+          t.equals(
+            attributes.host,
+            getMetricHostName(agent, params.memcached_host),
+            'should collect host instance attributes'
+          )
+          t.equals(
+            attributes.port_path_or_id,
+            String(params.memcached_port),
+            'should collect port instance attributes'
+          )
+
+          const expectedMetrics = {}
+          expectedMetrics['Datastore/instance/Memcache/' + HOST_ID] = 1
+          verifyMetrics(t, transaction.metrics, expectedMetrics)
+        })
+      })
+    })
+  })
+
+  t.test('does not capture datastore instance attributes when disabled', function (t) {
+    t.autoend()
+
+    t.beforeEach(async () => {
+      await bootstrapMemcached()
+
+      agent = helper.instrumentMockedAgent()
+
+      // disable
+      agent.config.datastore_tracer.instance_reporting.enabled = false
+
+      Memcached = require('memcached')
+      memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
+    })
+
+    t.afterEach(() => {
+      helper.unloadAgent(agent)
+      memcached.end()
+    })
+
+    t.test('get()', function (t) {
+      t.plan(4)
+
+      helper.runInTransaction(agent, function transactionInScope(transaction) {
+        memcached.get('foo', function (err) {
+          t.notOk(err, 'should not throw an error')
+
+          transaction.end()
+          const segment = transaction.trace.root.children[0]
+          const attributes = segment.getAttributes()
+          t.equals(attributes.host, undefined, 'should not have host instance parameter')
+          t.equals(
+            attributes.port_path_or_id,
+            undefined,
+            'should should not have port instance parameter'
+          )
+
+          const datastoreInstanceMetric = 'Datastore/instance/Memcache/' + HOST_ID
           t.notOk(
-            segment.getAttributes().key,
-            'should not have any attributes'
+            getMetrics(agent).unscoped[datastoreInstanceMetric],
+            'should not have datastore instance metric'
           )
         })
       })
     })
 
-    t.test('getMulti()', function(t) {
-      t.plan(2)
-
-      helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.getMulti(['foo', 'bar'], function(err) {
-          t.notOk(err, 'should not throw an error')
-
-          transaction.end()
-          var segment = transaction.trace.root.children[0]
-          t.equals(
-            segment.getAttributes().key,
-            "[\"foo\",\"bar\"]",
-            "should have the multiple keys fetched as a parameter"
-          )
-        })
-      })
-    })
-
-    t.test('set()', function(t) {
-      t.plan(2)
-
-      helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.set('foo', 'bar', 10, function(err) {
-          t.notOk(err, 'should not throw an error')
-
-          transaction.end()
-          var segment = transaction.trace.root.children[0]
-          t.equals(
-            segment.getAttributes().key,
-            "\"foo\"",
-            "should have the set key as a parameter"
-          )
-        })
-      })
-    })
-  })
-
-  t.test('captures datastore instance attributes', function(t) {
-    t.autoend()
-
-    t.beforeEach(function(done) {
-      helper.bootstrapMemcached(function cb_bootstrapMemcached(error) {
-        if (error) {
-          return done(error)
-        }
-        agent = helper.instrumentMockedAgent()
-
-        Memcached = require('memcached')
-        memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
-        done()
-      })
-    })
-
-    t.afterEach(function(done) {
-      helper.unloadAgent(agent)
-      memcached.end()
-      done()
-    })
-
-    t.test('get()', function(t) {
-      t.plan(5)
-
-      helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.get('foo', function(err) {
-          t.notOk(err, 'should not throw an error')
-
-          transaction.end()
-          var segment = transaction.trace.root.children[0]
-          const attributes = segment.getAttributes()
-          t.equals(
-            attributes.host,
-            getMetricHostName(agent, params.memcached_host),
-            'should collect host instance attributes'
-          )
-          t.equals(
-            attributes.port_path_or_id,
-            String(params.memcached_port),
-            'should collect port instance attributes'
-          )
-
-          var expectedMetrics = {}
-          expectedMetrics['Datastore/instance/Memcache/' + HOST_ID] = 1
-          verifyMetrics(t, transaction.metrics, expectedMetrics)
-        })
-      })
-    })
-
-    t.test('set()', function(t) {
-      t.plan(5)
-
-      helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.set('foo', 'bar', 10, function(err) {
-          t.notOk(err, 'should not throw an error')
-
-          transaction.end()
-          var segment = transaction.trace.root.children[0]
-          const attributes = segment.getAttributes()
-          t.equals(
-            attributes.host,
-            getMetricHostName(agent, params.memcached_host),
-            'should collect host instance attributes'
-          )
-          t.equals(
-            attributes.port_path_or_id,
-            String(params.memcached_port),
-            'should collect port instance attributes'
-          )
-
-          var expectedMetrics = {}
-          expectedMetrics['Datastore/instance/Memcache/' + HOST_ID] = 1
-          verifyMetrics(t, transaction.metrics, expectedMetrics)
-        })
-      })
-    })
-  })
-
-  t.test('does not capture datastore instance attributes when disabled', function(t) {
-    t.autoend()
-
-    t.beforeEach(function(done) {
-      helper.bootstrapMemcached(function cb_bootstrapMemcached(error) {
-        if (error) {
-          return done(error)
-        }
-        agent = helper.instrumentMockedAgent()
-
-        // disable
-        agent.config.datastore_tracer.instance_reporting.enabled = false
-
-        Memcached = require('memcached')
-        memcached = new Memcached(params.memcached_host + ':' + params.memcached_port)
-        done()
-      })
-    })
-
-    t.afterEach(function(done) {
-      helper.unloadAgent(agent)
-      memcached.end()
-      done()
-    })
-
-    t.test('get()', function(t) {
+    t.test('set()', function (t) {
       t.plan(4)
 
       helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.get('foo', function(err) {
+        memcached.set('foo', 'bar', 10, function (err) {
           t.notOk(err, 'should not throw an error')
 
           transaction.end()
-          var segment = transaction.trace.root.children[0]
+          const segment = transaction.trace.root.children[0]
           const attributes = segment.getAttributes()
-          t.equals(
-            attributes.host,
-            undefined,
-            'should not have host instance parameter'
-          )
+          t.equals(attributes.host, undefined, 'should not have host instance parameter')
           t.equals(
             attributes.port_path_or_id,
             undefined,
             'should should not have port instance parameter'
           )
 
-          var datastoreInstanceMetric = 'Datastore/instance/Memcache/' + HOST_ID
-          t.notOk(getMetrics(agent).unscoped[datastoreInstanceMetric],
-            'should not have datastore instance metric')
-        })
-      })
-    })
-
-    t.test('set()', function(t) {
-      t.plan(4)
-
-      helper.runInTransaction(agent, function transactionInScope(transaction) {
-        memcached.set('foo', 'bar', 10, function(err) {
-          t.notOk(err, 'should not throw an error')
-
-          transaction.end()
-          var segment = transaction.trace.root.children[0]
-          const attributes = segment.getAttributes()
-          t.equals(
-            attributes.host,
-            undefined,
-            'should not have host instance parameter'
+          const datastoreInstanceMetric = 'Datastore/instance/Memcache/' + HOST_ID
+          t.notOk(
+            getMetrics(agent).unscoped[datastoreInstanceMetric],
+            'should not have datastore instance metric'
           )
-          t.equals(
-            attributes.port_path_or_id,
-            undefined,
-            'should should not have port instance parameter'
-          )
-
-          var datastoreInstanceMetric = 'Datastore/instance/Memcache/' + HOST_ID
-          t.notOk(getMetrics(agent).unscoped[datastoreInstanceMetric],
-            'should not have datastore instance metric')
         })
       })
     })
   })
 
-  t.test('captures datastore instance attributes with multiple hosts', function(t) {
+  t.test('captures datastore instance attributes with multiple hosts', function (t) {
     t.autoend()
-    var origCommand = null
-    var realServer = params.memcached_host + ':' + params.memcached_port
+    let origCommand = null
+    const realServer = params.memcached_host + ':' + params.memcached_port
 
-    t.beforeEach(function(done) {
-      helper.bootstrapMemcached(function(error) {
-        if (error) {
-          return done(error)
-        }
+    t.beforeEach(async () => {
+      await bootstrapMemcached()
 
-        // Load memcached and replace the command func with our own that will
-        // use a real server address.
-        Memcached = require('memcached')
-        origCommand = Memcached.prototype.command
-        /* eslint-disable no-unused-vars */
-        Memcached.prototype.command = function stubbedCommand(queryCompiler, server) {
-          /* eslint-enable no-unused-vars */
-          origCommand.call(this, queryCompiler, realServer)
-        }
+      Memcached = require('memcached')
+      origCommand = Memcached.prototype.command
+      /* eslint-disable no-unused-vars */
+      Memcached.prototype.command = function stubbedCommand(queryCompiler, server) {
+        /* eslint-enable no-unused-vars */
+        origCommand.call(this, queryCompiler, realServer)
+      }
 
-        // Then load the agent and reload memcached to ensure it gets instrumented.
-        agent = helper.instrumentMockedAgent()
-        Memcached = require('memcached')
-        memcached = new Memcached(['server1:1111', 'server2:2222'])
+      // Then load the agent and reload memcached to ensure it gets instrumented.
+      agent = helper.instrumentMockedAgent()
+      Memcached = require('memcached')
+      memcached = new Memcached(['server1:1111', 'server2:2222'])
 
-        // Finally, change the hashring to something controllable.
-        memcached.HashRing.get = function(key) {
-          return key === 'foo' ? 'server1:1111' : 'server2:2222'
-        }
-
-        done()
-      })
+      // Finally, change the hashring to something controllable.
+      memcached.HashRing.get = function (key) {
+        return key === 'foo' ? 'server1:1111' : 'server2:2222'
+      }
     })
 
-    t.afterEach(function(done) {
+    t.afterEach(() => {
       helper.unloadAgent(agent)
       memcached.end()
       if (origCommand) {
         Memcached.prototype.command = origCommand
       }
-      done()
     })
 
     function checkParams(segment, host, port) {
       const attributes = segment.getAttributes()
-      t.equals(
-        attributes.host, host,
-        'should have correct host (' + host + ')'
-      )
-      t.equals(
-        attributes.port_path_or_id, port,
-        'should have correct port (' + port + ')'
-      )
+      t.equals(attributes.host, host, 'should have correct host (' + host + ')')
+      t.equals(attributes.port_path_or_id, port, 'should have correct port (' + port + ')')
     }
 
-    t.test('separate gets', function(t) {
-      helper.runInTransaction(agent, function(transaction) {
-        memcached.get('foo', function(err) {
+    t.test('separate gets', function (t) {
+      helper.runInTransaction(agent, function (transaction) {
+        memcached.get('foo', function (err) {
           if (!t.error(err)) {
             return t.end()
           }
-          var firstSegment = agent.tracer.getSegment().parent
+          const firstSegment = agent.tracer.getSegment().parent
 
-          memcached.get('bar', function(err) {
+          memcached.get('bar', function (err) {
             if (!t.error(err)) {
               return t.end()
             }
@@ -784,15 +707,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
       })
     })
 
-    t.test('multi-get', function(t) {
-      helper.runInTransaction(agent, function(transaction) {
-        memcached.getMulti(['foo', 'bar'], function(err) {
+    t.test('multi-get', function (t) {
+      helper.runInTransaction(agent, function (transaction) {
+        memcached.getMulti(['foo', 'bar'], function (err) {
           if (!t.error(err)) {
             return t.end()
           }
 
-          var firstGet = transaction.trace.root.children[0]
-          var secondGet = transaction.trace.root.children[1]
+          const firstGet = transaction.trace.root.children[0]
+          const secondGet = transaction.trace.root.children[1]
           if (firstGet.getAttributes().host === 'server1') {
             t.comment('first get is server 1')
             checkParams(firstGet, 'server1', '1111')
@@ -809,17 +732,15 @@ test('memcached instrumentation', {timeout : 5000}, function(t) {
   })
 })
 
-
 function verifySegments(t, rootSegment, expected) {
-  var previous
-  for (var i = 0; i < expected.length; i++) {
-    var child = expected[i]
+  let previous
+  for (let i = 0; i < expected.length; i++) {
+    const child = expected[i]
     if (typeof child === 'string') {
-      var childSegment = findSegment(rootSegment, child)
+      const childSegment = findSegment(rootSegment, child)
       if (!childSegment) {
         previous = null
-        t.fail(util.format('Segment %s does not have child %s', rootSegment.name,
-          child))
+        t.fail(util.format('Segment %s does not have child %s', rootSegment.name, child))
       } else {
         previous = childSegment
       }
@@ -830,13 +751,14 @@ function verifySegments(t, rootSegment, expected) {
 }
 
 function verifyMetrics(t, metrics, expected) {
-  var unscoped = metrics.unscoped
-  var expectedNames = Object.keys(expected)
+  const unscoped = metrics.unscoped
+  const expectedNames = Object.keys(expected)
 
-  expectedNames.forEach(function(name) {
+  expectedNames.forEach(function (name) {
     t.ok(unscoped[name], 'should have unscoped metric ' + name)
     t.equals(
-      unscoped[name].callCount, expected[name],
+      unscoped[name].callCount,
+      expected[name],
       'metric ' + name + ' should have correct callCount'
     )
   })

@@ -5,44 +5,43 @@
 
 'use strict'
 
-var fs = require('fs')
-var helper = require('../../lib/agent_helper')
-var path = require('path')
-var tap = require('tap')
+const fs = require('fs')
+const helper = require('../../lib/agent_helper')
+const path = require('path')
+const tap = require('tap')
 
-
-tap.test('pricing pcf info', function(t) {
-  var testFile = path.resolve(
+tap.test('pricing pcf info', function (t) {
+  const testFile = path.resolve(
     __dirname,
     '../../lib/cross_agent_tests/utilization_vendor_specific',
     'pcf.json'
   )
-  var getInfo = require('../../../lib/utilization/pcf-info')
+  const getInfo = require('../../../lib/utilization/pcf-info')
 
-  fs.readFile(testFile, function(err, data) {
+  fs.readFile(testFile, function (err, data) {
     if (err) {
       throw err
     }
-    var cases = JSON.parse(data)
+    const cases = JSON.parse(data)
 
     t.autoend()
     t.ok(cases.length > 0, 'should have tests to run')
 
-    for (var i = 0; i < cases.length; ++i) {
+    for (let i = 0; i < cases.length; ++i) {
       t.test(cases[i].testname, makeTest(cases[i], getInfo))
     }
   })
 })
 
 function makeTest(testCase, getInfo) {
-  return function(t) {
-    var agent = helper.loadMockedAgent()
-    t.tearDown(function() {
+  return function (t) {
+    const agent = helper.loadMockedAgent()
+    t.teardown(function () {
       helper.unloadAgent(agent)
     })
 
-    Object.keys(testCase.env_vars).forEach(function(key) {
-      var value = testCase.env_vars[key].response
+    Object.keys(testCase.env_vars).forEach(function (key) {
+      const value = testCase.env_vars[key].response
       if (value == null) {
         delete process.env[key]
       } else {
@@ -50,9 +49,9 @@ function makeTest(testCase, getInfo) {
       }
     })
 
-    getInfo(agent, function(err, info) {
+    getInfo(agent, function (err, info) {
       if (testCase.expected_vendors_hash) {
-        var expected = testCase.expected_vendors_hash.pcf
+        const expected = testCase.expected_vendors_hash.pcf
         t.error(err, 'should not error getting data')
         t.same(info, expected, 'should have expected info')
       } else {
@@ -72,8 +71,8 @@ function checkMetrics(t, agent, expectedMetrics) {
     return
   }
 
-  Object.keys(expectedMetrics).forEach(function(expectedMetric) {
-    var metric = agent.metrics.getOrCreateMetric(expectedMetric)
+  Object.keys(expectedMetrics).forEach(function (expectedMetric) {
+    const metric = agent.metrics.getOrCreateMetric(expectedMetric)
     t.equal(
       metric.callCount,
       expectedMetrics[expectedMetric].call_count,

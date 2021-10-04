@@ -5,24 +5,21 @@
 
 'use strict'
 
-var fs = require('fs')
-var mongoPackage = require('mongodb/package.json')
-var params = require('../../lib/params')
-var semver = require('semver')
-var urltils = require('../../../lib/util/urltils')
+const fs = require('fs')
+const mongoPackage = require('mongodb/package.json')
+const params = require('../../lib/params')
+const semver = require('semver')
+const urltils = require('../../../lib/util/urltils')
 
-var MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
-var TRANSACTION_NAME = 'mongo test'
-var DB_NAME = 'integration'
-
+const MONGO_SEGMENT_RE = /^Datastore\/.*?\/MongoDB/
+const TRANSACTION_NAME = 'mongo test'
+const DB_NAME = 'integration'
 
 exports.MONGO_SEGMENT_RE = MONGO_SEGMENT_RE
 exports.TRANSACTION_NAME = TRANSACTION_NAME
 exports.DB_NAME = DB_NAME
 
-exports.connect = semver.satisfies(mongoPackage.version, '<3')
-  ? connectV2
-  : connectV3
+exports.connect = semver.satisfies(mongoPackage.version, '<3') ? connectV2 : connectV3
 
 exports.checkMetrics = checkMetrics
 exports.close = close
@@ -30,50 +27,68 @@ exports.getHostName = getHostName
 exports.getPort = getPort
 exports.getDomainSocketPath = getDomainSocketPath
 
-function connectV2(mongodb, path, cb) {
-  var server = null
-  if (path) {
-    server = new mongodb.Server(path)
-  } else {
-    server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
-      socketOptions: {
-        connectionTimeoutMS: 30000,
-        socketTimeoutMS: 30000
-      }
-    })
-  }
-
-  var db = new mongodb.Db(DB_NAME, server)
-
-  db.open(function(err) {
-    cb(err, {db: db, client: null})
-  })
-}
-
-function connectV3(mongodb, host, cb) {
-  if (host) {
-    host = encodeURIComponent(host)
-  } else {
-    host = params.mongodb_host + ':' + params.mongodb_port
-  }
-  mongodb.MongoClient.connect('mongodb://' + host, function(err, client) {
-    if (err) {
-      return cb(err)
+function connectV2(mongodb, path) {
+  return new Promise((resolve, reject) => {
+    let server = null
+    if (path) {
+      server = new mongodb.Server(path)
+    } else {
+      server = new mongodb.Server(params.mongodb_host, params.mongodb_port, {
+        socketOptions: {
+          connectionTimeoutMS: 30000,
+          socketTimeoutMS: 30000
+        }
+      })
     }
 
-    var db = client.db(DB_NAME)
-    cb(null, {db: db, client: client})
+    const db = new mongodb.Db(DB_NAME, server)
+
+    db.open(function (err) {
+      if (err) {
+        reject(err)
+      }
+
+      resolve({ db, client: null })
+    })
   })
 }
 
-function close(client, db, cb) {
-  if (db && typeof db.close === 'function') {
-    db.close(cb)
-  } else if (client) {
-    client.close(true, cb)
-  } else {
-    cb()
-  }
+function connectV3(mongodb, host, replicaSet = false) {
+  return new Promise((resolve, reject) => {
+    if (host) {
+      host = encodeURIComponent(host)
+    } else {
+      host = params.mongodb_host + ':' + params.mongodb_port
+    }
+
+    let connString = `mongodb://${host}`
+    let options = {}
+
+    if (replicaSet) {
+      connString = `mongodb://${host},${host},${host}`
+      options = { useNewUrlParser: true, useUnifiedTopology: true }
+    }
+    mongodb.MongoClient.connect(connString, options, function (err, client) {
+      if (err) {
+        reject(err)
+      }
+
+      const db = client.db(DB_NAME)
+      resolve({ db, client })
+    })
+  })
+}
+
+function close(client, db) {
+  return new Promise((resolve) => {
+    if (db && typeof db.close === 'function') {
+      db.close(resolve)
+    } else if (client) {
+      client.close(true, resolve)
+    } else {
+      resolve()
+    }
+  })
 }
 
 function getHostName(agent) {
@@ -89,21 +104,21 @@ function getPort() {
 function checkMetrics(t, agent, host, port, metrics) {
   const agentMetrics = getMetrics(agent)
 
-  var unscopedMetrics = agentMetrics.unscoped
-  var unscopedDatastoreNames = Object.keys(unscopedMetrics).filter((input) => {
+  const unscopedMetrics = agentMetrics.unscoped
+  const unscopedDatastoreNames = Object.keys(unscopedMetrics).filter((input) => {
     return input.includes('Datastore')
   })
 
-  var scoped = agentMetrics.scoped[TRANSACTION_NAME]
-  var total = 0
+  const scoped = agentMetrics.scoped[TRANSACTION_NAME]
+  let total = 0
 
   if (!t.ok(scoped, 'should have scoped metrics')) {
     return
   }
   t.equal(Object.keys(agentMetrics.scoped).length, 1, 'should have one metric scope')
-  for (var i = 0; i < metrics.length; ++i) {
-    var count = null
-    var name = null
+  for (let i = 0; i < metrics.length; ++i) {
+    let count = null
+    let name = null
 
     if (Array.isArray(metrics[i])) {
       count = metrics[i][1]
@@ -132,19 +147,20 @@ function checkMetrics(t, agent, host, port, metrics) {
     )
   }
 
-  var expectedUnscopedCount = 5 + (2 * metrics.length)
+  const expectedUnscopedCount = 5 + 2 * metrics.length
   t.equal(
-    unscopedDatastoreNames.length, expectedUnscopedCount,
+    unscopedDatastoreNames.length,
+    expectedUnscopedCount,
     'should have ' + expectedUnscopedCount + ' unscoped metrics'
   )
-  var expectedUnscopedMetrics = [
+  const expectedUnscopedMetrics = [
     'Datastore/all',
     'Datastore/allWeb',
     'Datastore/MongoDB/all',
     'Datastore/MongoDB/allWeb',
     'Datastore/instance/MongoDB/' + host + '/' + port
   ]
-  expectedUnscopedMetrics.forEach(function(metric) {
+  expectedUnscopedMetrics.forEach(function (metric) {
     if (t.ok(unscopedMetrics[metric], 'should have unscoped metric ' + metric)) {
       t.equal(unscopedMetrics[metric].callCount, total, 'should have correct call count')
     }
@@ -152,9 +168,9 @@ function checkMetrics(t, agent, host, port, metrics) {
 }
 
 function getDomainSocketPath() {
-  var files = fs.readdirSync('/tmp')
-  for (var i = 0; i < files.length; ++i) {
-    var file = '/tmp/' + files[i]
+  const files = fs.readdirSync('/tmp')
+  for (let i = 0; i < files.length; ++i) {
+    const file = '/tmp/' + files[i]
     if (/^\/tmp\/mongodb.*?\.sock$/.test(file)) {
       return file
     }

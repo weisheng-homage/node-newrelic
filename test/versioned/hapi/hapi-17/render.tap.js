@@ -5,58 +5,54 @@
 
 'use strict'
 
-var util = require('util')
-var path = require('path')
-var tap = require('tap')
-var request = require('request')
-var helper = require('../../../lib/agent_helper')
-var API = require('../../../../api')
-var utils = require('./hapi-17-utils')
-var fixtures = require('../fixtures')
+const util = require('util')
+const path = require('path')
+const tap = require('tap')
+const request = require('request')
+const helper = require('../../../lib/agent_helper')
+const API = require('../../../../api')
+const utils = require('./hapi-17-utils')
+const fixtures = require('../fixtures')
 
-tap.test('agent instrumentation of Hapi', function(t) {
+tap.test('agent instrumentation of Hapi', function (t) {
   t.autoend()
 
-  var agent = null
-  var server = null
-  var port = null
+  let agent = null
+  let server = null
+  let port = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function () {
     agent = helper.instrumentMockedAgent()
 
     server = utils.getServer()
-    done()
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     helper.unloadAgent(agent)
     return server.stop()
   })
 
-  t.test('for a normal request', {timeout: 5000}, function(t) {
+  t.test('for a normal request', { timeout: 5000 }, function (t) {
     // set apdexT so apdex stats will be recorded
     agent.config.apdex_t = 1
 
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function() {
+      handler: function () {
         return { yep: true }
       }
     })
 
-    server.start().then(function() {
+    server.start().then(function () {
       port = server.info.port
-      request.get('http://localhost:' + port + '/test', function(error, response, body) {
+      request.get('http://localhost:' + port + '/test', function (error, response, body) {
         t.error(error, 'should not fail to make request')
 
-        t.ok(
-          /application\/json/.test(response.headers['content-type']),
-          'got correct content type'
-        )
-        t.deepEqual(JSON.parse(body), { yep: true }, 'response survived')
+        t.ok(/application\/json/.test(response.headers['content-type']), 'got correct content type')
+        t.same(JSON.parse(body), { yep: true }, 'response survived')
 
-        var stats
+        let stats
 
         stats = agent.metrics.getMetric('WebTransaction/Hapi/GET//test')
         t.ok(stats, 'found unscoped stats for request path')
@@ -76,7 +72,7 @@ tap.test('agent instrumentation of Hapi', function(t) {
         t.ok(stats, 'found HTTP dispatcher statistics')
         t.equal(stats.callCount, 1, 'only one HTTP-dispatched request was made')
 
-        var serialized = JSON.stringify(agent.metrics._toPayloadSync())
+        const serialized = JSON.stringify(agent.metrics._toPayloadSync())
         t.ok(
           serialized.match(/WebTransaction\/Hapi\/GET\/\/test/),
           'serialized metrics as expected'
@@ -87,35 +83,35 @@ tap.test('agent instrumentation of Hapi', function(t) {
     })
   })
 
-  t.test('using EJS templates', {timeout: 1000}, function(t) {
+  t.test('using EJS templates', { timeout: 1000 }, function (t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function(req, h) {
-        return h.view('index', {title: 'yo dawg'})
+      handler: function (req, h) {
+        return h.view('index', { title: 'yo dawg' })
       }
     })
 
-    agent.once('transactionFinished', function(tx) {
-      var stats = agent.metrics.getMetric('View/index/Rendering')
+    agent.once('transactionFinished', function (tx) {
+      const stats = agent.metrics.getMetric('View/index/Rendering')
       t.ok(stats, 'View metric should exist')
       t.equal(stats.callCount, 1, 'should note the view rendering')
       verifyEnded(tx.trace.root, tx)
     })
 
     function verifyEnded(root, tx) {
-      for (var i = 0, len = root.children.length; i < len; i++) {
-        var segment = root.children[i]
-        t.ok(
-          segment.timer.hasEnd(),
-          util.format('verify %s (%s) has ended', segment.name, tx.id)
-        )
-        if (segment.children) verifyEnded(segment, tx)
+      for (let i = 0, len = root.children.length; i < len; i++) {
+        const segment = root.children[i]
+        t.ok(segment.timer.hasEnd(), util.format('verify %s (%s) has ended', segment.name, tx.id))
+        if (segment.children) {
+          verifyEnded(segment, tx)
+        }
       }
     }
 
-    server.register(require('vision'))
-      .then(function() {
+    server
+      .register(require('vision'))
+      .then(function () {
         server.views({
           path: path.join(__dirname, '../views'),
           engines: {
@@ -124,10 +120,12 @@ tap.test('agent instrumentation of Hapi', function(t) {
         })
         return server.start()
       })
-      .then(function() {
+      .then(function () {
         port = server.info.port
-        request('http://localhost:' + port + '/test', function(error, response, body) {
-          if (error) t.fail(error)
+        request('http://localhost:' + port + '/test', function (error, response, body) {
+          if (error) {
+            t.fail(error)
+          }
 
           t.equal(response.statusCode, 200, 'response code should be 200')
           t.equal(body, fixtures.htmlBody, 'template should still render fine')
@@ -137,8 +135,8 @@ tap.test('agent instrumentation of Hapi', function(t) {
       })
   })
 
-  t.test('should generate rum headers', { timeout: 1000 }, function(t) {
-    var api = new API(agent)
+  t.test('should generate rum headers', { timeout: 1000 }, function (t) {
+    const api = new API(agent)
 
     agent.config.application_id = '12345'
     agent.config.browser_monitoring.browser_key = '12345'
@@ -147,21 +145,22 @@ tap.test('agent instrumentation of Hapi', function(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function(req, h) {
-        var rum = api.getBrowserTimingHeader()
-        t.equal(rum.substr(0,7), '<script')
-        return h.view('index', {title: 'yo dawg', rum: rum})
+      handler: function (req, h) {
+        const rum = api.getBrowserTimingHeader()
+        t.equal(rum.substr(0, 7), '<script')
+        return h.view('index', { title: 'yo dawg', rum: rum })
       }
     })
 
-    agent.once('transactionFinished', function() {
-      var stats = agent.metrics.getMetric('View/index/Rendering')
+    agent.once('transactionFinished', function () {
+      const stats = agent.metrics.getMetric('View/index/Rendering')
       t.ok(stats, 'View metric should exist')
       t.equal(stats.callCount, 1, 'should note the view rendering')
     })
 
-    server.register(require('vision'))
-      .then(function() {
+    server
+      .register(require('vision'))
+      .then(function () {
         server.views({
           path: path.join(__dirname, '../views'),
           engines: {
@@ -170,10 +169,12 @@ tap.test('agent instrumentation of Hapi', function(t) {
         })
         return server.start()
       })
-      .then(function() {
+      .then(function () {
         port = server.info.port
-        request('http://localhost:' + port + '/test', function(error, response, body) {
-          if (error) t.fail(error)
+        request('http://localhost:' + port + '/test', function (error, response, body) {
+          if (error) {
+            t.fail(error)
+          }
 
           t.equal(response.statusCode, 200, 'response code should be 200')
           t.equal(body, fixtures.htmlBody, 'template should still render fine')
@@ -183,38 +184,43 @@ tap.test('agent instrumentation of Hapi', function(t) {
       })
   })
 
-  t.test('should trap errors correctly', function(t) {
-    server = utils.getServer({ options: {debug: false} })
+  t.test('should trap errors correctly', function (t) {
+    server = utils.getServer({ options: { debug: false } })
 
-    agent.on('transactionFinished', function(tx) {
-      t.equal(tx.name, 'WebTransaction/Hapi/GET/' + '/test',
-        'Transaction should be named correctly.')
+    agent.on('transactionFinished', function (tx) {
+      t.equal(
+        tx.name,
+        'WebTransaction/Hapi/GET/' + '/test',
+        'Transaction should be named correctly.'
+      )
     })
 
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function() {
-        var hmm
+      handler: function () {
+        let hmm
         hmm.ohno.failure.is.terrible()
       }
     })
 
-    server.start().then(function() {
+    server.start().then(function () {
       port = server.info.port
-      request.get('http://localhost:' + port + '/test', function(error, response, body) {
-        if (error) t.fail(error)
+      request.get('http://localhost:' + port + '/test', function (error, response, body) {
+        if (error) {
+          t.fail(error)
+        }
 
         t.ok(response, 'got a response from Hapi')
         t.ok(body, 'got back a body')
 
-        var errors = agent.errors.traceAggregator.errors
+        const errors = agent.errors.traceAggregator.errors
         t.ok(errors, 'errors were found')
         t.equal(errors.length, 1, 'should be 1 error')
 
-        var first = errors[0]
+        const first = errors[0]
         t.ok(first, 'have the first error')
-        t.contains(first[2], 'ohno', 'got the expected error')
+        t.match(first[2], 'ohno', 'got the expected error')
 
         t.end()
       })

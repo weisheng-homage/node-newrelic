@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 /*
  * Copyright 2020 New Relic Corporation. All rights reserved.
  * SPDX-License-Identifier: Apache-2.0
@@ -14,11 +13,9 @@ const glob = require('glob')
 
 const CERT_PATH = path.join(__dirname, '..', '..', 'SSL_CA_cert_bundle', '*.pem')
 
-const OUTFILE =
-  path.join(__dirname, '..', 'lib', 'collector', 'ssl', 'certificates')
+const OUTFILE = path.join(__dirname, '..', 'lib', 'collector', 'ssl', 'certificates')
 
-const HEADER =
-  `/**\n
+const HEADER = `/**\n
    * certificates.js - CA bundle for SSL communication with RPM.\n
    *\n
    * This file contains the X509 certificates used to communicate with New Relic\n
@@ -36,7 +33,7 @@ class Certificate {
     const rawPEM = this.body.split('\n')
 
     for (let i = 0; i < rawPEM.length; i++) {
-      const line = rawPEM[i]
+      let line = rawPEM[i]
       // some Thawte certificates have Windows line endings
       line = line.replace('\r', '')
       if (line.match(/END CERTIFICATE/)) {
@@ -69,7 +66,7 @@ function loadCerts(root, callback) {
       certificates.push(certificate)
     }
 
-    callback(null, certificates)
+    return callback(null, certificates)
   })
 }
 
@@ -81,10 +78,7 @@ function dumpCerts(error, certs) {
 
   fs.writeFileSync(
     OUTFILE,
-    HEADER +
-    'module.exports = [\n' +
-    certs.map((cert) => cert.toEntry()).join(',\n\n') +
-    '\n]\n'
+    HEADER + 'module.exports = [\n' + certs.map((cert) => cert.toEntry()).join(',\n\n') + '\n]\n'
   )
 }
 

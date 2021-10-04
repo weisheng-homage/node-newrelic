@@ -1,6 +1,340 @@
+### v8.4.0 (2021-09-28)
+
+* **Deprecation Warning**: Cross Application Tracing (CAT) has been deprecated and will be removed in a future major release. For applications that explicitly disable Distributed Tracing (DT) to leverage CAT, we recommend migrating to DT to avoid loss of cross-service visibility.
+  * Disables CAT by default. You must explicitly enable CAT along with turning off DT.
+  * Adds a deprecation warning when CAT is enabled and active (DT disabled).
+
+* Fixed issue with `clearTimeout` that could result in dropping parent segments or spans.
+
+  This bug resulted in some MongoDB calls being dropped from Transaction Traces and Distributed Traces (spans): https://github.com/newrelic/node-newrelic/issues/922.
+
+* Removed warnings from agent tests for `no-var` eslint rule.
+
+* Added support for Cassandra driver v4.0.0 and above.
+
+* Fixed issue where DT headers would not be processed by `transaction-shim.handleCATHeaders()` when CAT was explicitly disabled. This primarily impacts `amqplib` instrumentation.
+
+* Transitioned aws-lambda.test.js to use Tap over Mocha.
+
+* Removed warnings from agent for `no-var` eslint rule.
+
+* Refactored `transaction-shim`, `http` and `http-outbound` to use centralized CAT methods in `util/cat`
+
+* Replaced http-outbound test call to use example.com to avoid unpredictable connection resets.
+
+* Migrated sql query parser tests to tap
+
+* Added more API usage examples.
+
+* Added a README to the `examples/` folder discussing how to use the examples.
+
+* Fixed `message-shim` test assertion to avoid flakiness based on precision differences(ms vs ns)
+
+* Applied new lint rules barring the use of `var` and preferring the use of `const` wherever possible.
+
+### v8.3.0 (2021-09-09)
+
+* Enabled Distributed Tracing (DT) by default.
+  * Added ability to configure the maximum number of spans that can be collected per minute via `span_events.max_samples_stored` and environment variable, `NEW_RELIC_SPAN_EVENTS_MAX_SAMPLES_STORED`.
+  * Added supportability metric SpanEvent/Limit.
+
+* Added support for properly setting the `host` and `port` for mongodb requests that are to cluster.
+
+* Fixes issue where `.fastify` and `.default` properties would be missing from the `fastify` export when instrumented.
+
+  Instrumentation now sets `.fastify` and `.default` properties to the wrapped `fastify` export function for fastify v3.
+
+* Added the following environment variables for the corresponding configuration items:
+  * **config item:** `transaction_events.max_samples_stored`
+**env var:** `NEW_RELIC_TRANSACTION_EVENTS_MAX_SAMPLES_STORED`
+
+  * **config item:** `custom_insights_events.max_samples_stored`
+**env var:** `NEW_RELIC_CUSTOM_INSIGHTS_EVENTS_MAX_SAMPLES_STORED`
+
+  * **config item:** `error_collector.max_event_samples_stored`
+**env var:** `NEW_RELIC_ERROR_COLLECTOR_MAX_EVENT_SAMPLES_STORED`
+
+* Converted several unit tests to use the tap API.
+
+* Changed assertions for 2 http error msg tests to work with all versions of Node.js.
+
+### v8.2.0 (2021-08-25)
+
+* Added a new feature flag `unresolved_promise_cleanup` that defaults to true only when `new_promise_tracking` feature flag is set to `true`.  If disabled, this will help with performance of agent when an application has a lot of promises.  To disable set in your config `feature_flag.unresolved_promise_cleanup` to `false` or pass in the env var of `NEW_RELIC_FEATURE_FLAG_UNRESOLVED_PROMISE_CLEANUP=false` when starting application with agent.
+
+    **WARNING**: If you set `unresolved_promise_cleanup` to `false`, failure to resolve all promises in your application will result in memory leaks even if those promises are garbage collected
+
+* Supported using `connect` to route middleware calls.
+
+* Removed stubbed out tests in memcached unit tests
+
+* Refactored `dropTestCollections` in mongo versioned tests to await for all `dropCollection` operations to be finished before closing connection and returning.
+
+* Ported remaining mocha tests in `test/unit/instrumentation` to exclusively use tap.
+
+* Added `@newrelic/eslint-config` to rely on a centralized eslint ruleset.
+
+* Removed integration tests for oracle.
+
+* Converted config unit tests to fully use tap API and extracted related tests into more-specific test files.
+
+* Added a pre-commit hook to check if package.json changes and run `oss third-party manifest` and `oss third-party notices`.  This will ensure the `third_party_manifest.json` and `THIRD_PARTY_NOTICES.md` up to date
+
+* Replaced `JSV` with `ajv` for JSON schema validation in tests
+
+* Removed `through` in lieu of core Node.js implementation of Transform stream in tests.
+
+### v8.1.0 (2021-08-05)
+
+* Added necessary instrumentation to support v4 of `mongodb`.
+  * Explicitly enabled APM for `mongodb` instrumentation(`client.monitorCommands = true`)
+
+* Fixed issue where Promise based `pg.Client.query` timings were always in sub-millisecond range.
+
+* Fixed bug where `API.shutdown` would not harvest or keep process active effectively after an agent restart.
+
+  The agent will now correctly update its state to 'started' after a reconnect has completed.
+
+* Added an eslint rule to verify every file includes the copyright statement.
+
+* Fixed the `homepage` field in package.json to use `https` in the link to the github repo. Thank you @pzrq for the contribution.
+
+### v8.0.0 (2021-07-26)
+
+* Added official parity support for Node 16.
+
+* **BREAKING**: Dropped Node v10.x support. For further information on our support policy,
+  see: https://docs.newrelic.com/docs/agents/nodejs-agent/getting-started/compatibility-requirements-nodejs-agent.
+  * Upgraded `@newrelic/superagent` `@newrelic/aws-sdk` `@newrelic/koa` `@newrelic/native-metrics` and `@newrelic/test-utilities` to the latest major versions.
+  * Refactored creation of span event aggregator to prevent crash of gRPC when running on invalid Node.js version.
+  * Added check for minimum `node` version >= 12.
+  * Set package.json engines `node` field >= 12 and `npm` field to >=6.
+  * Removed Node v10 from ci workflow and smoke-test version matrix.
+  * Removed comments around replacing `temporarilyOverrideTapUncaughtBehavior` test helper function.
+  * Removed non-applicable semver checks for versions the agents no longer supports.
+
+* **BREAKING**: The agent no-longer includes the New Relic certificate bundle automatically when using the 'certificates' configuration (commonly with proxies). If you find this breaking your current environment, you may leverage a feature-flag to temporarily restore this functionality. Example configuration: feature_flag: { certificate_bundle: true }. In this case, we recommend getting a certificate bundle for your environment such as the one from Mozilla. The New Relic bundle and feature flag will be fully removed in next major release.
+   * Defaulted config.feature_flags.certificate_bundle to false.
+
+* **BREAKING**: Removed `serverless_mode` as a feature flag.
+
+  The standard `serverless_mode` configuration still exists.
+
+* Added hapi 19 and 20 to versioned tests for Node.js `>=12` and `<16`
+ * Added hapi `^20.1.2` to versioned tests for for Node.js `>=16`
+
+* Upgraded tap to v15.
+
+* Upgraded https-proxy-agent to v5.0.0.
+
+* Updated linting to always use latest LTS Node version.
+
+* Updated CI and Smoke Test scripts to use setup-node@v2.
+
+* Added `no-const-assign` to eslint ruleset.
+
+* Pinned mongodb versioned tests to <4.0.0.
+
+### v7.5.2 (2021-07-07)
+
+* Fixed bug where promise-based cursor methods would not properly measure the duration of execution.
+
+### v7.5.1 (2021-06-21)
+
+* Fixed loading config from the main module's directory. Thank you @alexpls for the contribution.
+
+* Moved all integration tests that required secrets to the smoke folder.
+
+* Fixed LASP/CSP tests so they don't skip on runs where secrets are available.
+
+* Modified self-signed SSL cert to use 'localhost' instead of 'ssl.lvh.me' for SSL testing.
+
+* Removed unnecessary trace observer configuration validation for host and port.
+
+### v7.5.0 (2021-06-01)
+
+* Added default support for config files with a 'cjs' extension (`newrelic.cjs`) in addition to `newrelic.js`.
+
+  Thank you to @Maddemacher for the contribution!
+
+* Added ability to specify a custom config file name with the `NEW_RELIC_CONFIG_FILENAME` environment variable.
+
+  Thank you to @Maddemacher for the contribution!
+
+* Fixed issue when using the 'new_promise_tracking' feature flag where segment mapping may not get cleaned up for promises which never resolve but have all references removed (and thus get cleaned up by GC).
+
+  Adds segment cleanup on 'destroy' when using 'new_promise_tracking' feature flag in addition to the existing 'promiseResolve' hook. Unfortunately, preventing leaks for this edge-case does come with additional overhead due to adding another hook. Memory gains from feature flag usage should still be worth the trade-off and reduced garbage collection may offset perf/CPU impacts or event still result in net gain, depending on the application.
+
+* Bumped `@newrelic/test-utilities` to ^5.1.0.
+
+* Replaced deprecated `util.isArray` with `Array.isArray`.
+
+* Removed unused `listenerCount` method on `Shim`.
+
+* Properly bootstraped husky as a `prepare` script.
+
+* Removed commented-out console log from fastify instrumentation.
+
+### v7.4.0 (2021-05-11)
+
+* Updated third party notices and manifest for husky and lint-staged.
+
+* Updated redis versioned tests to use unique DB indexes per file to avoid collisions and flushing of in-progress tests.
+
+* Pinned hapi 17 versioned tests to only minor/patch versions within 17.x.
+
+* Bumped timeout for redis versioned tests.
+
+* Wired up husky + lint staged to execute linting on all changed files in pre-commit hook.
+
+* Handled a proxy misconfiguration of collector and log an actionable warning message.
+
+* Added `flaky_code` and `success_delay_ms` handling of flaky grpc connections to infinite tracing.
+
+* Added resources to README to highlight external modules that customers should be aware of and possibly use for their applications.
+
+* Logged all New Relic metadata env vars at startup.
+
+* Fixed images for improved reader experience.
+
+  Thank you to @henryjw for the contribution.
+
+### v7.3.1 (2021-04-14)
+
+* Fixed issue with 'new_promise_tracking' feature flag functionality where segments for ended transactions would get propagated in certain cases by promises that had no continuations scheduled (via await or manually).
+
+  If you are experiencing high overhead levels with your promise usage and the agent attached, we recommend testing your application with  'new_promise_tracking' set to true to see if overhead is reduced. You'll also want to verify your data is still being captured correctly in case it falls into a known or unknown limitation of this approach.  **NOTE: chaining of promise continuations onto an already resolved promise across an async hop (scheduled timer) will result in state-loss with this new functionality turned on. This is a less-common use-case but worth considering with your applications.**
+
+**Deprecation Warning:** The certificate bundle automatically included by New Relic when using the 'certificates' configuration (commonly with proxies) will be disabled by default in the next major version. This is currently targeted for sometime in May. The bundle will be fully removed in later major versions. We recommend testing with the 'certificate_bundle' feature flag set to `false` to determine if you will need to modify your environment or setup your own appropriate bundle. Example configuration: `feature_flag: { certificate_bundle: false }`.
+
+### v7.3.0 (2021-04-06)
+
+* Added new feature-flag 'new_promise_tracking' which enables cleaning up of segment references on native promise resolve instead of destroy. Includes usage of async-await. This can be enabled via `feature_flag: { new_promise_tracking: true }` in the config file or `NEW_RELIC_FEATURE_FLAG_NEW_PROMISE_TRACKING=1` in your ENV vars.
+
+  Applications with heavy promise usage or high-throughput applications with some promise usage should see moderate to high reduction in memory usage and may see a slight reduction in CPU usage. A bump in throughput may also be noticed in some cases. Results will vary by application.
+
+  If you are experiencing high overhead levels with your promise usage and the agent attached, we recommend testing your application with  'new_promise_tracking' set to true to see if overhead is reduced. You'll also want to verify your data is still being captured correctly in case it falls into a known or unknown limitation of this approach.  **NOTE: chaining of promise continuations onto an already resolved promise across an async hop (scheduled timer) will result in state-loss with this new functionality turned on. This is a less-common use-case but worth considering with your applications.**
+
+* Fixed memory leak introduced when Infinite Tracing is enabled.
+
+  When Infinite Tracing endpoints reconnected they would instantiate a new gRPC client prior to calling `client.recordSpan()`. It appears several objects created by grpc-js (`ChannelImplementation` and child objects, promises, etc.) are held in memory indefinitely due to scheduled timers even when the client is no-longer referenced and the associated stream closed. We now avoid this situation by only creating the client once and then reusing it to establish new stream connections.
+
+### v7.2.1 (2021-03-29)
+
+* Dev-only sub-dependency bump of 'y18n' to clear npm audit warnings.
+
+* Bumped @grpc/grpc-js to ^1.2.11.
+
+* Bumped @grpc/proto-loader to ^0.5.6.
+
+* Agent no longer propagates segments for promises via async-hooks when the transaction associated with the parentSegment has ended.
+
+  This change reduces the amount of context tracking work needed for certain rare edge-case scenarios involving promises.
+
+* Fixed issue where capturing axios request errors could result in a memory leak.
+
+  The agent now clears error references on transaction end, which are not used for later processing. Errors returned from 'axios' requests contain a reference to the request object which deeper down has a handle to a promise in `handleRequestError`. The TraceSegment associated with that promise has a handle to the transaction, which through the error capture ultimately kept the promise in memory and prevented it from being destroyed to free-up the TraceSegment from the segment map. This change also has the benefit of  freeing up some memory early for transactions held onto for transaction traces.
+
+* Added active transaction check to `wrappedResEnd` to prevent unecessary work for ended transactions in the case of multiple `Response.prototype.end()` invocations.
+
+### v7.2.0 (2021-03-23)
+
+* Added feature flag to allow disabling of certificate bundle usage.
+
+  **Deprecation Warning:** The certificate bundle included by New Relic will be disabled by default and then fully removed in later major versions. We recommend testing with the certificate_bundle feature flag set to `false` to determine if you will need to modify your environment or setup your own appropriate bundle. Example configuration: `feature_flag: { certificate_bundle: false }`.
+
+* The `NEW_RELIC_NO_CONFIG_FILE` environment variable is no longer needed to run the agent without a configuration file.
+
+  * If a configuration file is used with agent configuration environment variables, the environment variables will override the corresponding configuration file settings.
+
+* Fixed bug where applications with multiple names on a dynamically named host (UUID like) would have instances consolidated, losing per-host breakdowns.
+
+  Removed 'host' from agent 'identifier' override to prevent server safety mechanism from kicking in. Host will still be used to identify unique agent instances, so was unnecessary to include as part of the identifier. This also resulted in additional processing overhead on the back-end. The identifier override is still kept in place with multiple application names to continue to allow uniquely identifying instances on the same host with multiple application names where the first name may be identical. For example `app_name['myName', 'unique1']` and `app_name['myName', 'unique2']`. These names would consolidate down into a single instance on the same host without the identifier override.
+
+* Fixed bug where truncated http (external) or datastore segments would generate generic spans instead of appropriate http or datastore spans.
+
+* Set distributed tracing to enabled in the `newrelic.js` template configuration file supplied with the agent.
+
+* Added module root to shim.require() logging to aid debugging.
+
+* Migrated from .npmignore to 'files' list in package.json to control which files are packaged.
+
+  Thank you to @JamesPeiris for the initial nudge via PR to move in this direction.
+
+* Converted remaining collector unit tests to use tap API.
+
+* Added linting to scripts in /bin folder.
+
+  Linting rules added are slightly more permissive than production rules and allow full ecma 8.
+
+* Added new developer documentation to /docs folder.
+
+  This information is ported over from private GHE wiki used prior to going open source. S/O @astorm for original versions of the function wrapping and module instrumentation docs.
+
+### v7.1.3 (2021-03-09)
+
+* Bumped @grpc/grpc-js to ^1.2.7.
+
+* Removed index-bad-config test which tested a no-longer possible use-case.
+
+* Removed license-key test logic from serverless-harvest test.
+
+  Serverless mode does not require a license key as data transfer is handled by the integration.
+
+* Added support metric to be able to track usage of cert bundle via usage of custom certificates.
+
+* Removed requirement to configure application name when running in AWS Lambda (serverless mode).
+
+  Application name is not currently leveraged by New Relic for Lambda invocations. The agent now defaults the application name in serverless mode to remove the requirement of end-user configuration while handling cases if it were to be leveraged in the future.
+
+* Stopped binding/propagating segments via `setImmediate` for ended transactions.
+
+* Fixed bug where agent would attempt to call the 'preconnect' endpoint on the redirect host returned by the previous 'preconnect' call when reconnecting to the New Relic servers.
+
+  The 'preconnect' calls will now always use the original agent configuration value. Subsequent endpoints (connect, harvest endpoints, etc.) will continue to leverage the new redirect host value returned by 'preconnect.' The original config values are no-longer overridden.
+
+* Fixed issue where a call to `transaction.acceptDistributedTraceHeaders` would throw an error when the `headers` parameter is a string.
+
+* Improved clarity of logging between 'no log file' or disabled agent startup issues.
+
+  * Logs no-config file error to initialized logger (stdout) in addition to existing console.error() logging.
+  * Adds specific message to no config file separate from being disabled.
+
+* Removed aws-sdk versioned test filtering.
+
+* Removed unused Travis CI scripts.
+
+### v7.1.2 (2021-02-24)
+
+* Fixed bug where the agent failed to reconnect to Infinite Tracing gRPC streams on Status OK at higher log levels.
+
+  Node streams require all data be consumed for the end/status events to fire. We were only reading data at lower log levels where we'd use/log the data. This resulted in a failure to reconnect and 'ERR_STREAM_WRITE_AFTER_END' errors. The agent now always listens to the 'data' event, even if not logging, and will also reconnect (with 15 second delay) on any 'ERR_STREAM_WRITE_AFTER_END' error.
+
+* Removed initial harvest send() call on streaming span event aggregator to prevent warning in logs.
+
+* Bumped @newrelic/aws-sdk to ^3.1.0.
+
+### v7.1.1 (2021-02-01)
+
+* Upgrade @grpc/grpc-js to v1.2.5 to fix non-propagation of internal http2 errors
+  Now allows minor and patch auto-updates.
+
+* Added workflow for publishing to npm when a v* tag is pushed to the repo.
+
+* Fixes resolveMx test by using example.com for a valid exchange.
+
+### 7.1.0 (2021-01-05):
+
+* Fixed SQL traces being generated with invalid ID.
+* Fixed log message for minimum supported Node.js version.
+* Added Fastify v3 support.
+* Fixed empty log message for Infinite Tracing connections.
+* Upgraded grpc version.
+* Fixed bug that prevented users from changing Infinite Tracing queue size.
+
 ### 7.0.2 (2020-12-01):
 
-* Fixes a bug where the `http.statusCode` attribute was not being captured for an async invoked lambda.
+* Fixed a bug where the `http.statusCode` attribute was not being captured for an async invoked lambda.
 * Fixed typos in code comments, documentation, and debugging logger messages.
   Thank you @TysonAndre for the contribution.
 

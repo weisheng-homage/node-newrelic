@@ -5,24 +5,22 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
-var shimmer = require('../../../lib/shimmer')
+const benchmark = require('../../lib/benchmark')
+const shimmer = require('../../../lib/shimmer')
 
-
-var suite = benchmark.createBenchmark({name: 'shimmer wrapping', delay: 0.01})
-
+const suite = benchmark.createBenchmark({ name: 'shimmer wrapping', delay: 0.01 })
 
 suite.add({
   name: 'shimmer.patchModule()',
   agent: true,
-  fn: function(agent) {
+  fn: function (agent) {
     return shimmer.patchModule(agent)
   }
 })
 
 suite.add({
   name: 'shimmer.unpatchModule()',
-  fn: function() {
+  fn: function () {
     return shimmer.unpatchModule()
   }
 })
@@ -30,22 +28,22 @@ suite.add({
 suite.add({
   name: 'shimmer.bootstrapInstrumentation()',
   agent: true,
-  fn: function(agent) {
+  fn: function (agent) {
     return shimmer.bootstrapInstrumentation(agent)
   }
 })
 
 suite.add({
   name: 'shimmer.registerInstrumentation()',
-  fn: function() {
-    return shimmer.registerInstrumentation({moduleName: 'foobar'})
+  fn: function () {
+    return shimmer.registerInstrumentation({ moduleName: 'foobar' })
   }
 })
 
 suite.add({
   name: 'shimmer.reinstrument()',
   agent: true,
-  fn: function(agent) {
+  fn: function (agent) {
     return shimmer.reinstrument(agent, 'benchmark')
   }
 })

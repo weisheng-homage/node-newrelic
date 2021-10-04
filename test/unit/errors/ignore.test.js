@@ -15,21 +15,19 @@ tap.test('Ignored Errors', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('Ignore Classes should result in no error reported', (t) => {
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       const errorAggr = agent.errors
       agent.config.error_collector.capture_events = true
-      agent.config.error_collector.ignore_classes = ["Error"]
+      agent.config.error_collector.ignore_classes = ['Error']
 
       const error1 = new Error('ignored')
       const error2 = new ReferenceError('NOT ignored')
@@ -40,8 +38,7 @@ tap.test('Ignored Errors', (t) => {
 
       t.equal(errorAggr.traceAggregator.errors.length, 1)
 
-      const transactionErrorMetric
-        = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+      const transactionErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
       const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
       const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
@@ -59,11 +56,11 @@ tap.test('Ignored Errors', (t) => {
   })
 
   t.test('Ignore Classes should trump expected classes', (t) => {
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       const errorAggr = agent.errors
       agent.config.error_collector.capture_events = true
-      agent.config.error_collector.ignore_classes = ["Error"]
-      agent.config.error_collector.expected_classes = ["Error"]
+      agent.config.error_collector.ignore_classes = ['Error']
+      agent.config.error_collector.expected_classes = ['Error']
 
       const error1 = new Error('ignored')
       const error2 = new ReferenceError('NOT ignored')
@@ -74,8 +71,7 @@ tap.test('Ignored Errors', (t) => {
 
       t.equal(errorAggr.traceAggregator.errors.length, 1)
 
-      const transactionErrorMetric
-        = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+      const transactionErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
       const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
       const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
@@ -92,10 +88,10 @@ tap.test('Ignored Errors', (t) => {
   })
 
   t.test('Ignore messages should result in no error reported', (t) => {
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       const errorAggr = agent.errors
       agent.config.error_collector.capture_events = true
-      agent.config.error_collector.ignore_messages = {"Error":['ignored']}
+      agent.config.error_collector.ignore_messages = { Error: ['ignored'] }
 
       const error1 = new Error('ignored')
       const error2 = new Error('not ignored')
@@ -109,8 +105,7 @@ tap.test('Ignored Errors', (t) => {
 
       t.equal(errorAggr.traceAggregator.errors.length, 2)
 
-      const transactionErrorMetric
-        = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+      const transactionErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
       const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
       const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
@@ -127,11 +122,11 @@ tap.test('Ignored Errors', (t) => {
   })
 
   t.test('Ignore messages should trump expected_messages', (t) => {
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       const errorAggr = agent.errors
       agent.config.error_collector.capture_events = true
-      agent.config.error_collector.ignore_messages = {"Error":['ignore']}
-      agent.config.error_collector.expected_messages = {"Error":['ignore']}
+      agent.config.error_collector.ignore_messages = { Error: ['ignore'] }
+      agent.config.error_collector.expected_messages = { Error: ['ignore'] }
 
       const error1 = new Error('ignore')
       const error2 = new Error('not ignore')
@@ -145,8 +140,7 @@ tap.test('Ignored Errors', (t) => {
 
       t.equal(errorAggr.traceAggregator.errors.length, 2)
 
-      const transactionErrorMetric
-        = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+      const transactionErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
       const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
       const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
@@ -163,7 +157,7 @@ tap.test('Ignored Errors', (t) => {
   })
 
   t.test('Ignore status code should result in 0 errors reported', (t) => {
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       const errorAggr = agent.errors
       agent.config.error_collector.capture_events = true
       agent.config.error_collector.ignore_status_codes = [500]
@@ -181,8 +175,7 @@ tap.test('Ignored Errors', (t) => {
 
       t.equal(errorAggr.traceAggregator.errors.length, 0)
 
-      const transactionErrorMetric
-        = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+      const transactionErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
       const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
       const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
@@ -199,7 +192,7 @@ tap.test('Ignored Errors', (t) => {
   })
 
   t.test('Ignore status code should ignore when status set after collecting errors', (t) => {
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       const errorAggr = agent.errors
       agent.config.error_collector.capture_events = true
       agent.config.error_collector.ignore_status_codes = [500]
@@ -218,8 +211,7 @@ tap.test('Ignored Errors', (t) => {
 
       t.equal(errorAggr.traceAggregator.errors.length, 0)
 
-      const transactionErrorMetric
-        = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+      const transactionErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
       const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
       const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)
@@ -236,7 +228,7 @@ tap.test('Ignored Errors', (t) => {
   })
 
   t.test('Ignore status code should trump expected status code', (t) => {
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       const errorAggr = agent.errors
       agent.config.error_collector.capture_events = true
       agent.config.error_collector.ignore_status_codes = [500]
@@ -255,8 +247,7 @@ tap.test('Ignored Errors', (t) => {
 
       t.equal(errorAggr.traceAggregator.errors.length, 0)
 
-      const transactionErrorMetric
-        = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
+      const transactionErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.PREFIX + tx.getFullName())
 
       const allErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.ALL)
       const webErrorMetric = agent.metrics.getMetric(NAMES.ERRORS.WEB)

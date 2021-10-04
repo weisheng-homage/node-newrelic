@@ -40,32 +40,35 @@ tap.test('synthetics outbound header', (t) => {
     port: PORT
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
-      cross_application_tracer: {enabled: true},
+      cross_application_tracer: { enabled: true },
       trusted_account_ids: [23, 567],
       encoding_key: ENCODING_KEY
     })
     http = require('http')
-    server = http.createServer(function(req, res) {
+    server = http.createServer(function (req, res) {
       req.resume()
       res.end()
     })
-    server.listen(PORT, done)
+
+    return new Promise((resolve) => {
+      server.listen(PORT, resolve)
+    })
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    server.close(function() {
-      done()
+    return new Promise((resolve) => {
+      server.close(resolve)
     })
   })
 
   t.test('should be propegated if on tx', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       transaction.syntheticsData = SYNTHETICS_DATA
       transaction.syntheticsHeader = SYNTHETICS_HEADER
-      const req = http.request(CONNECT_PARAMS, function(res) {
+      const req = http.request(CONNECT_PARAMS, function (res) {
         res.resume()
         transaction.end()
         t.equal(res.headers['x-newrelic-synthetics'], SYNTHETICS_HEADER)
@@ -76,8 +79,8 @@ tap.test('synthetics outbound header', (t) => {
   })
 
   t.test('should not be propegated if not on tx', (t) => {
-    helper.runInTransaction(agent, function(transaction) {
-      http.get(CONNECT_PARAMS, function(res) {
+    helper.runInTransaction(agent, function (transaction) {
+      http.get(CONNECT_PARAMS, function (res) {
         res.resume()
         transaction.end()
         t.notOk(res.headers['x-newrelic-synthetics'])
@@ -103,18 +106,18 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
     port: PORT
   }
 
-  function createServer(done, requestHandler) {
+  function createServer(cb, requestHandler) {
     http = require('http')
-    const s = http.createServer(function(req, res) {
+    const s = http.createServer(function (req, res) {
       requestHandler(req, res)
       res.end()
       req.resume()
     })
-    s.listen(PORT, done)
+    s.listen(PORT, cb)
     return s
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     synthData = [
       1, // version
       567, // account id
@@ -123,41 +126,44 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
       'curly' // synthetics monitor id
     ]
     agent = helper.instrumentMockedAgent({
-      distributed_tracing: {enabled: false},
+      cross_application_tracer: { enabled: true },
+      distributed_tracing: { enabled: false },
       trusted_account_ids: [23, 567],
       encoding_key: ENCODING_KEY
     })
 
     http = require('http')
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    server.close(done)
+    return new Promise((resolve) => {
+      server.close(resolve)
+    })
   })
 
   t.test('should exist if account id and version are ok', (t) => {
-    const synthHeader = hashes.obfuscateNameUsingKey(
-      JSON.stringify(synthData),
-      ENCODING_KEY
-    )
+    const synthHeader = hashes.obfuscateNameUsingKey(JSON.stringify(synthData), ENCODING_KEY)
     const options = Object.assign({}, CONNECT_PARAMS)
     options.headers = {
       'X-NewRelic-Synthetics': synthHeader
     }
     server = createServer(
       function onListen() {
-        http.get(options, function(res) {
+        http.get(options, function (res) {
           res.resume()
         })
       },
       function onRequest() {
         const tx = agent.getTransaction()
         t.ok(tx)
-        t.match(tx, {
-          syntheticsHeader: synthHeader
-        }, 'synthetics header added to intrinsics with distributed tracing enabled')
+        t.match(
+          tx,
+          {
+            syntheticsHeader: synthHeader
+          },
+          'synthetics header added to intrinsics with distributed tracing enabled'
+        )
         t.type(tx.syntheticsData, 'object')
         t.match(tx.syntheticsData, {
           version: synthData[0],
@@ -172,23 +178,20 @@ tap.test('should add synthetics inbound header to transaction', (t) => {
   })
 
   t.test('should propegate inbound synthetics header on response', (t) => {
-    const synthHeader = hashes.obfuscateNameUsingKey(
-      JSON.stringify(synthData),
-      ENCODING_KEY
-    )
+    const synthHeader = hashes.obfuscateNameUsingKey(JSON.stringify(synthData), ENCODING_KEY)
     const options = Object.assign({}, CONNECT_PARAMS)
     options.headers = {
       'X-NewRelic-Synthetics': synthHeader
     }
     server = createServer(
       function onListen() {
-        http.get(options, function(res) {
+        http.get(options, function (res) {
           res.resume()
         })
       },
       function onRequest(req, res) {
         res.writeHead(200)
-        t.match(res._headers, {
+        t.match(res.getHeaders(), {
           'x-newrelic-synthetics': synthHeader
         })
         t.end()

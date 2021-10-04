@@ -7,33 +7,29 @@
 
 const tap = require('tap')
 
-var http = require('http')
-var https = require('https')
-var url = require('url')
-var events = require('events')
-var helper = require('../../../lib/agent_helper')
-var NAMES = require('../../../../lib/metrics/names')
-var instrumentOutbound = require('../../../../lib/instrumentation/core/http-outbound')
-var hashes = require('../../../../lib/util/hashes')
-var nock = require('nock')
-var Segment = require('../../../../lib/transaction/trace/segment')
+const http = require('http')
+const https = require('https')
+const url = require('url')
+const events = require('events')
+const helper = require('../../../lib/agent_helper')
+const NAMES = require('../../../../lib/metrics/names')
+const instrumentOutbound = require('../../../../lib/instrumentation/core/http-outbound')
+const hashes = require('../../../../lib/util/hashes')
+const nock = require('nock')
+const Segment = require('../../../../lib/transaction/trace/segment')
 const { DESTINATIONS } = require('../../../../lib/config/attribute-filter')
-
 
 tap.test('instrumentOutbound', (t) => {
   let agent
   const HOSTNAME = 'localhost'
   const PORT = 8890
 
-
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should omit query parameters from path if attributes.enabled is false', (t) => {
@@ -44,8 +40,8 @@ tap.test('instrumentOutbound', (t) => {
       }
     })
     const req = new events.EventEmitter()
-    helper.runInTransaction(agent, function(transaction) {
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+    helper.runInTransaction(agent, function (transaction) {
+      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
       t.same(transaction.trace.root.children[0].getAttributes(), {})
 
       function makeFakeRequest() {
@@ -62,11 +58,11 @@ tap.test('instrumentOutbound', (t) => {
       high_security: true
     })
     const req = new events.EventEmitter()
-    helper.runInTransaction(agent, function(transaction) {
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+    helper.runInTransaction(agent, function (transaction) {
+      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
       t.same(transaction.trace.root.children[0].getAttributes(), {
-        'procedure': 'GET',
-        'url': `http://${HOSTNAME}:${PORT}/asdf`,
+        procedure: 'GET',
+        url: `http://${HOSTNAME}:${PORT}/asdf`
       })
 
       function makeFakeRequest() {
@@ -79,11 +75,11 @@ tap.test('instrumentOutbound', (t) => {
 
   t.test('should strip query parameters from path in transaction trace segment', (t) => {
     const req = new events.EventEmitter()
-    helper.runInTransaction(agent, function(transaction) {
-      var path = '/asdf'
-      var name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
+    helper.runInTransaction(agent, function (transaction) {
+      const path = '/asdf'
+      const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
 
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
       t.equal(transaction.trace.root.children[0].name, name)
 
       function makeFakeRequest() {
@@ -96,17 +92,21 @@ tap.test('instrumentOutbound', (t) => {
 
   t.test('should save query parameters from path if attributes.enabled is true', (t) => {
     const req = new events.EventEmitter()
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       agent.config.attributes.enabled = true
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
-      t.same(transaction.trace.root.children[0].attributes.get(DESTINATIONS.SPAN_EVENT), {
-        'url': `http://${HOSTNAME}:${PORT}/asdf`,
-        'procedure': 'GET',
-        'request.parameters.a': 'b',
-        'request.parameters.another': 'yourself',
-        'request.parameters.thing': true,
-        'request.parameters.grownup': 'true'
-      }, 'adds attributes to spans')
+      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
+      t.same(
+        transaction.trace.root.children[0].attributes.get(DESTINATIONS.SPAN_EVENT),
+        {
+          'url': `http://${HOSTNAME}:${PORT}/asdf`,
+          'procedure': 'GET',
+          'request.parameters.a': 'b',
+          'request.parameters.another': 'yourself',
+          'request.parameters.thing': true,
+          'request.parameters.grownup': 'true'
+        },
+        'adds attributes to spans'
+      )
 
       function makeFakeRequest() {
         req.path = '/asdf?a=b&another=yourself&thing&grownup=true'
@@ -118,9 +118,11 @@ tap.test('instrumentOutbound', (t) => {
 
   t.test('should not accept an undefined path', (t) => {
     const req = new events.EventEmitter()
-    helper.runInTransaction(agent, function() {
-      t.throws(() => 
-        instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest), Error)
+    helper.runInTransaction(agent, function () {
+      t.throws(
+        () => instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest),
+        Error
+      )
     })
 
     function makeFakeRequest() {
@@ -132,10 +134,10 @@ tap.test('instrumentOutbound', (t) => {
   t.test('should accept a simple path with no parameters', (t) => {
     const req = new events.EventEmitter()
     const path = '/newrelic'
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + path
       req.path = path
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
       t.equal(transaction.trace.root.children[0].name, name)
     })
 
@@ -149,10 +151,10 @@ tap.test('instrumentOutbound', (t) => {
   t.test('should purge trailing slash', (t) => {
     const req = new events.EventEmitter()
     const path = '/newrelic/'
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       const name = NAMES.EXTERNAL.PREFIX + HOSTNAME + ':' + PORT + '/newrelic'
       req.path = path
-      instrumentOutbound(agent, {host: HOSTNAME, port: PORT}, makeFakeRequest)
+      instrumentOutbound(agent, { host: HOSTNAME, port: PORT }, makeFakeRequest)
       t.equal(transaction.trace.root.children[0].name, name)
     })
 
@@ -166,10 +168,10 @@ tap.test('instrumentOutbound', (t) => {
   t.test('should not throw if hostname is undefined', (t) => {
     const req = new events.EventEmitter()
 
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       let req2 = null
       t.doesNotThrow(() => {
-        req2 = instrumentOutbound(agent, {port: PORT}, makeFakeRequest)
+        req2 = instrumentOutbound(agent, { port: PORT }, makeFakeRequest)
       })
 
       t.equal(req2, req)
@@ -186,10 +188,10 @@ tap.test('instrumentOutbound', (t) => {
   t.test('should not throw if hostname is null', (t) => {
     const req = new events.EventEmitter()
 
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       let req2 = null
       t.doesNotThrow(() => {
-        req2 = instrumentOutbound(agent, {host: null, port: PORT}, makeFakeRequest)
+        req2 = instrumentOutbound(agent, { host: null, port: PORT }, makeFakeRequest)
       })
 
       t.equal(req2, req)
@@ -205,10 +207,10 @@ tap.test('instrumentOutbound', (t) => {
 
   t.test('should not throw if hostname is an empty string', (t) => {
     const req = new events.EventEmitter()
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       let req2 = null
       t.doesNotThrow(() => {
-        req2 = instrumentOutbound(agent, {host: '', port: PORT}, makeFakeRequest)
+        req2 = instrumentOutbound(agent, { host: '', port: PORT }, makeFakeRequest)
       })
 
       t.equal(req2, req)
@@ -225,10 +227,10 @@ tap.test('instrumentOutbound', (t) => {
   t.test('should not throw if port is undefined', (t) => {
     const req = new events.EventEmitter()
 
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       let req2 = null
       t.doesNotThrow(() => {
-        req2 = instrumentOutbound(agent, {host: 'hostname'}, makeFakeRequest)
+        req2 = instrumentOutbound(agent, { host: 'hostname' }, makeFakeRequest)
       })
 
       t.equal(req2, req)
@@ -249,36 +251,34 @@ tap.test('should add data from cat header to segment', (t) => {
   let server
   let agent
 
-  const appData = [
-    '123#456',
-    'abc',
-    0,
-    0,
-    -1,
-    'xyz'
-  ]
+  const appData = ['123#456', 'abc', 0, 0, -1, 'xyz']
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
-      cross_application_tracer: {enabled: true},
+      cross_application_tracer: { enabled: true },
+      distributed_tracing: { enabled: false },
       encoding_key: encKey,
       trusted_account_ids: [123]
     })
     const obfData = hashes.obfuscateNameUsingKey(JSON.stringify(appData), encKey)
-    server = http.createServer(function(req, res) {
-      res.writeHead(200, {'x-newrelic-app-data': obfData})
+    server = http.createServer(function (req, res) {
+      res.writeHead(200, { 'x-newrelic-app-data': obfData })
       res.end()
       req.resume()
     })
 
-    helper.randomPort((port) => {
-      server.listen(port, done)
+    return new Promise((resolve) => {
+      helper.randomPort((port) => {
+        server.listen(port, resolve)
+      })
     })
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    server.close(done)
+    return new Promise((resolve) => {
+      server.close(resolve)
+    })
   })
 
   function addSegment() {
@@ -288,76 +288,79 @@ tap.test('should add data from cat header to segment', (t) => {
   }
 
   t.test('should use config.obfuscatedId as the x-newrelic-id header', (t) => {
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       addSegment()
 
       const port = server.address().port
-      http.get({host: 'localhost', port: port}, function(res) {
-        var segment = agent.tracer.getTransaction().trace.root.children[0]
+      http
+        .get({ host: 'localhost', port: port }, function (res) {
+          const segment = agent.tracer.getTransaction().trace.root.children[0]
 
-        t.match(segment, {
-          catId: '123#456',
-          catTransaction: 'abc',
+          t.match(segment, {
+            catId: '123#456',
+            catTransaction: 'abc'
+          })
+
+          t.equal(segment.name, `ExternalTransaction/localhost:${port}/123#456/abc`)
+          t.equal(segment.getAttributes().transaction_guid, 'xyz')
+          res.resume()
+          agent.getTransaction().end()
+          t.end()
         })
-
-        t.equal(segment.name, `ExternalTransaction/localhost:${port}/123#456/abc`)
-        t.equal(segment.getAttributes().transaction_guid, 'xyz')
-        res.resume()
-        agent.getTransaction().end()
-        t.end()
-      }).end()
+        .end()
     })
   })
 
   t.test('should not explode with invalid data', (t) => {
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       addSegment()
 
       const port = server.address().port
-      http.get({host: 'localhost', port: port}, function(res) {
-        const segment = agent.tracer.getTransaction().trace.root.children[0]
+      http
+        .get({ host: 'localhost', port: port }, function (res) {
+          const segment = agent.tracer.getTransaction().trace.root.children[0]
 
-        t.match(segment, {
-          catId: '123#456',
-          catTransaction: 'abc'
+          t.match(segment, {
+            catId: '123#456',
+            catTransaction: 'abc'
+          })
+
+          // TODO: port in metric is a known bug. issue #142
+          t.equal(segment.name, `ExternalTransaction/localhost:${port}/123#456/abc`)
+          t.equal(segment.getAttributes().transaction_guid, 'xyz')
+          res.resume()
+          agent.getTransaction().end()
+          t.end()
         })
-
-        // TODO: port in metric is a known bug. issue #142
-        t.equal(segment.name, `ExternalTransaction/localhost:${port}/123#456/abc`)
-        t.equal(segment.getAttributes().transaction_guid, 'xyz')
-        res.resume()
-        agent.getTransaction().end()
-        t.end()
-      }).end()
+        .end()
     })
   })
 
   t.test('should collect errors only if they are not being handled', (t) => {
     const emit = events.EventEmitter.prototype.emit
-    events.EventEmitter.prototype.emit = function(evnt) {
+    events.EventEmitter.prototype.emit = function (evnt) {
       if (evnt === 'error') {
-        this.once('error', function() {})
+        this.once('error', function () {})
       }
       return emit.apply(this, arguments)
     }
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       events.EventEmitter.prototype.emit = emit
-      done()
     })
 
     helper.runInTransaction(agent, handled)
-    var errRegex = /connect ECONNREFUSED( 127.0.0.1:12345)?/
+    const errRegex = /connect ECONNREFUSED( 127.0.0.1:12345)?/
 
     function handled(transaction) {
-      var req = http.get({host : 'localhost', port : 12345}, function() {})
+      const req = http.get({ host: 'localhost', port: 12345 }, function () {})
 
-      req.on('close', function() {
+      req.on('close', function () {
         t.equal(transaction.exceptions.length, 0)
         unhandled(transaction)
       })
 
-      req.on('error', function(err) {
+      req.on('error', function (err) {
         t.match(err.message, errRegex)
       })
 
@@ -365,9 +368,9 @@ tap.test('should add data from cat header to segment', (t) => {
     }
 
     function unhandled(transaction) {
-      const req = http.get({host : 'localhost', port : 12345}, function() {})
+      const req = http.get({ host: 'localhost', port: 12345 }, function () {})
 
-      req.on('close', function() {
+      req.on('close', function () {
         t.equal(transaction.exceptions.length, 1)
         t.match(transaction.exceptions[0].error.message, errRegex)
         t.end()
@@ -383,16 +386,14 @@ tap.test('should add data from cat header to segment', (t) => {
 tap.test('when working with http.request', (t) => {
   let agent
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
     nock.disableNetConnect()
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should accept port and hostname', (t) => {
@@ -400,8 +401,8 @@ tap.test('when working with http.request', (t) => {
     const path = '/index.html'
     nock(host).get(path).reply(200, 'Hello from Google')
 
-    helper.runInTransaction(agent, function(transaction) {
-      http.get('http://www.google.com/index.html', function(res) {
+    helper.runInTransaction(agent, function (transaction) {
+      http.get('http://www.google.com/index.html', function (res) {
         const segment = agent.tracer.getSegment()
 
         t.equal(segment.name, 'External/www.google.com/index.html')
@@ -417,11 +418,11 @@ tap.test('when working with http.request', (t) => {
     const path = '/index.html'
     nock(host).post(path).reply(200)
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       const opts = url.parse(`${host}${path}`)
       opts.method = 'POST'
 
-      const req = http.request(opts, function(res) {
+      const req = http.request(opts, function (res) {
         const attributes = transaction.trace.root.children[0].getAttributes()
         t.equal(attributes.url, 'http://www.google.com/index.html')
         t.equal(attributes.procedure, 'POST')
@@ -438,8 +439,8 @@ tap.test('when working with http.request', (t) => {
     const path = '/index.html'
     nock(host).get(path).delay(10).reply(200, 'Hello from Google')
 
-    helper.runInTransaction(agent, function(transaction) {
-      http.get('http://www.google.com/index.html', function(res) {
+    helper.runInTransaction(agent, function (transaction) {
+      http.get('http://www.google.com/index.html', function (res) {
         const segment = agent.tracer.getSegment()
 
         t.ok(segment.timer.hrstart instanceof Array)
@@ -493,8 +494,7 @@ tap.test('when working with http.request', (t) => {
       distributed_tracing: {
         enabled: true
       },
-      feature_flag: {
-      }
+      feature_flag: {}
     })
     agent.config.trusted_account_key = 190
     agent.config.account_id = 190
@@ -503,16 +503,18 @@ tap.test('when working with http.request', (t) => {
     const path = '/index.html'
     let headers
 
-    nock(host).get(path).reply(200, function() {
-      headers = this.req.headers
-      t.ok(headers.traceparent, 'traceparent header')
-      t.equal(headers.traceparent.split('-').length, 4)
-      t.ok(headers.tracestate, 'tracestate header')
-      t.notOk(headers.tracestate.includes('null'))
-      t.notOk(headers.tracestate.includes('true'))
+    nock(host)
+      .get(path)
+      .reply(200, function () {
+        headers = this.req.headers
+        t.ok(headers.traceparent, 'traceparent header')
+        t.equal(headers.traceparent.split('-').length, 4)
+        t.ok(headers.tracestate, 'tracestate header')
+        t.notOk(headers.tracestate.includes('null'))
+        t.notOk(headers.tracestate.includes('true'))
 
-      t.ok(headers.newrelic, 'dt headers')
-    })
+        t.ok(headers.newrelic, 'dt headers')
+      })
 
     helper.runInTransaction(agent, (transaction) => {
       http.get(`${host}${path}`, (res) => {
@@ -533,8 +535,7 @@ tap.test('when working with http.request', (t) => {
         enabled: true,
         exclude_newrelic_header: true
       },
-      feature_flag: {
-      }
+      feature_flag: {}
     })
     agent.config.trusted_account_key = 190
     agent.config.account_id = 190
@@ -543,16 +544,18 @@ tap.test('when working with http.request', (t) => {
     const path = '/index.html'
     let headers
 
-    nock(host).get(path).reply(200, function() {
-      headers = this.req.headers
-      t.ok(headers.traceparent)
-      t.equal(headers.traceparent.split('-').length, 4)
-      t.ok(headers.tracestate)
-      t.notOk(headers.tracestate.includes('null'))
-      t.notOk(headers.tracestate.includes('true'))
+    nock(host)
+      .get(path)
+      .reply(200, function () {
+        headers = this.req.headers
+        t.ok(headers.traceparent)
+        t.equal(headers.traceparent.split('-').length, 4)
+        t.ok(headers.tracestate)
+        t.notOk(headers.tracestate.includes('null'))
+        t.notOk(headers.tracestate.includes('true'))
 
-      t.notOk(headers.newrelic)
-    })
+        t.notOk(headers.newrelic)
+      })
 
     helper.runInTransaction(agent, (transaction) => {
       http.get(`${host}${path}`, (res) => {
@@ -574,18 +577,14 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
 
   let agent = null
 
-  function beforeTest(cb) {
+  function beforeTest() {
     agent = helper.instrumentMockedAgent()
     nock.disableNetConnect()
-
-    cb()
   }
 
-  function afterTest(cb) {
+  function afterTest() {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-
-    cb()
   }
 
   t.test('http.get', (t) => {
@@ -601,7 +600,7 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
     t.beforeEach(beforeTest)
     t.afterEach(afterTest)
 
-    testSignatures('http',  'request', t)
+    testSignatures('http', 'request', t)
   })
 
   t.test('https.get', (t) => {
@@ -623,8 +622,12 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
   function getMethodFromName(nodule, method) {
     let _nodule
 
-    if (nodule === 'http') { _nodule = http }
-    if (nodule === 'https') { _nodule = https }
+    if (nodule === 'http') {
+      _nodule = http
+    }
+    if (nodule === 'https') {
+      _nodule = https
+    }
 
     return _nodule[method]
   }
@@ -639,11 +642,11 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
     const _url = `${leftPart}${path}`
 
     function testSignature(testOpts) {
-      const {urlType, headers, callback, swapHost} = testOpts
+      const { urlType, headers, callback, swapHost } = testOpts
 
       // Setup the arguments and the test name
-      let args = []   // Setup arguments to the get/request function
-      let names = []  // Capture parameters for the name of the test
+      const args = [] // Setup arguments to the get/request function
+      const names = [] // Capture parameters for the name of the test
 
       // See if a URL argument is being used
       if (urlType === 'string') {
@@ -655,9 +658,9 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
       }
 
       // See if an options argument should be used
-      let opts = {}
+      const opts = {}
       if (headers) {
-        opts.headers = {test: 'test'}
+        opts.headers = { test: 'test' }
         names.push('options')
       }
       // If options specifies a hostname, it will override the url parameter
@@ -678,7 +681,7 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
       // Name the test and start it
       const testName = names.join(', ')
 
-      t.test(testName, function(t) {
+      t.test(testName, function (t) {
         // If testing the options overriding the URL argument, set up nock differently
         if (swapHost) {
           nock(`${nodule}://www.google.com`).get(path).reply(200, 'Hello from Google')
@@ -687,7 +690,7 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
         }
 
         // Setup a function to test the response.
-        let callbackTester = (res) => {
+        const callbackTester = (res) => {
           testResult(res, testOpts, t)
         }
 
@@ -696,7 +699,7 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
           args.push(callbackTester)
         }
 
-        helper.runInTransaction(agent, function() {
+        helper.runInTransaction(agent, function () {
           // Methods have to be retrieved within the transaction scope for instrumentation
           const request = getMethodFromName(nodule, method)
           const clientRequest = request(...args)
@@ -710,7 +713,7 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
       })
     }
 
-    function testResult(res, {headers, swapHost}, t) {
+    function testResult(res, { headers, swapHost }, t) {
       let external = `External/${host}${port}${path}`
       let str = 'Hello from New Relic'
       if (swapHost) {
@@ -733,21 +736,21 @@ tap.test('Should properly handle http(s) get and request signatures', (t) => {
     }
 
     testSignature({
-      urlType: 'object',
+      urlType: 'object'
+    })
+
+    testSignature({
+      urlType: 'string'
     })
 
     testSignature({
       urlType: 'string',
-    })
-
-    testSignature({
-      urlType: 'string',
-      headers: true,
+      headers: true
     })
 
     testSignature({
       urlType: 'object',
-      headers: true,
+      headers: true
     })
 
     testSignature({

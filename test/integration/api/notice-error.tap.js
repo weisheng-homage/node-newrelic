@@ -17,11 +17,14 @@ test('http errors are noticed correctly', function testError(t) {
 
   server.listen(0)
 
-  http.get({
-    path: '/test?thing=123',
-    host: 'localhost',
-    port: server.address().port
-  }, close)
+  http.get(
+    {
+      path: '/test?thing=123',
+      host: 'localhost',
+      port: server.address().port
+    },
+    close
+  )
 
   function handler(req, res) {
     agent.errors.add(agent.getTransaction(), new Error('notice me!'))
@@ -36,7 +39,7 @@ test('http errors are noticed correctly', function testError(t) {
 
   function check() {
     t.equal(agent.errors.traceAggregator.errors.length, 1, 'should be 1 error')
-    var error = agent.errors.traceAggregator.errors[0]
+    const error = agent.errors.traceAggregator.errors[0]
     t.equal(error[1], 'WebTransaction/NormalizedUri/*', 'should have correct transaction')
     t.equal(error[2], 'notice me!', 'should have right name')
     t.end()

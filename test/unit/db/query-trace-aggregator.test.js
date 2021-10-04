@@ -22,17 +22,19 @@ describe('Query Trace Aggregator', function testQueryTracer() {
     it('_toPayload should exec callback with null data', () => {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: false},
-          transaction_tracer: {record_sql: 'off', explain_threshold: 500}
+          slow_sql: { enabled: false },
+          transaction_tracer: { record_sql: 'off', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries = new QueryTraceAggregator(opts)
 
       let cbCalledWithNull = false
 
       const cb = (err, data) => {
-        if (data === null) cbCalledWithNull = true
+        if (data === null) {
+          cbCalledWithNull = true
+        }
       }
 
       queries._toPayload(cb)
@@ -51,10 +53,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
     function testOff() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: false},
-          transaction_tracer: {record_sql: 'off', explain_threshold: 500}
+          slow_sql: { enabled: false },
+          transaction_tracer: { record_sql: 'off', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries = new QueryTraceAggregator(opts)
 
@@ -66,10 +68,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
     function testUnknown() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: false},
-          transaction_tracer: {record_sql: 'something else', explain_threshold: 500}
+          slow_sql: { enabled: false },
+          transaction_tracer: { record_sql: 'something else', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries = new QueryTraceAggregator(opts)
 
@@ -81,54 +83,66 @@ describe('Query Trace Aggregator', function testQueryTracer() {
     function testObfuscated() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: false},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          slow_sql: { enabled: false },
+          transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries = new QueryTraceAggregator(opts)
 
       const segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.getAttributes(), {
-        backtrace: 'fake stack',
-        sql_obfuscated: 'select * from foo where a=?'
-      }, 'should record sql in trace')
+      assert.deepEqual(
+        segment.getAttributes(),
+        {
+          backtrace: 'fake stack',
+          sql_obfuscated: 'select * from foo where a=?'
+        },
+        'should record sql in trace'
+      )
     }
 
     function testRaw() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: false},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+          slow_sql: { enabled: false },
+          transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries = new QueryTraceAggregator(opts)
 
       const segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.getAttributes(), {
-        backtrace: 'fake stack',
-        sql: 'select * from foo where a=2'
-      }, 'should record sql in trace')
+      assert.deepEqual(
+        segment.getAttributes(),
+        {
+          backtrace: 'fake stack',
+          sql: 'select * from foo where a=2'
+        },
+        'should record sql in trace'
+      )
     }
 
     function testThreshold() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: false},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+          slow_sql: { enabled: false },
+          transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries = new QueryTraceAggregator(opts)
 
       const segment = addQuery(queries, 100)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.getAttributes(), {
-        sql: 'select * from foo where a=2'
-      }, 'should record sql in trace')
+      assert.deepEqual(
+        segment.getAttributes(),
+        {
+          sql: 'select * from foo where a=2'
+        },
+        'should record sql in trace'
+      )
     }
   })
 
@@ -142,14 +156,14 @@ describe('Query Trace Aggregator', function testQueryTracer() {
     function testOff() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'off', explain_threshold: 500}
+          slow_sql: { enabled: true },
+          transaction_tracer: { record_sql: 'off', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
-      var queries = new QueryTraceAggregator(opts)
+      const queries = new QueryTraceAggregator(opts)
 
-      var segment = addQuery(queries, 1000)
+      const segment = addQuery(queries, 1000)
       expect(queries.samples).to.have.property('size', 0)
       assert.deepEqual(segment.getAttributes(), {}, 'should not record sql in trace')
     }
@@ -157,10 +171,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
     function testUnknown() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'something else', explain_threshold: 500}
+          slow_sql: { enabled: true },
+          transaction_tracer: { record_sql: 'something else', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries = new QueryTraceAggregator(opts)
 
@@ -172,18 +186,22 @@ describe('Query Trace Aggregator', function testQueryTracer() {
     function testObfuscated() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          slow_sql: { enabled: true },
+          transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries = new QueryTraceAggregator(opts)
 
       const segment = addQuery(queries, 1000)
-      assert.deepEqual(segment.getAttributes(), {
-        backtrace: 'fake stack',
-        sql_obfuscated: 'select * from foo where a=?'
-      }, 'should not record sql in trace')
+      assert.deepEqual(
+        segment.getAttributes(),
+        {
+          backtrace: 'fake stack',
+          sql_obfuscated: 'select * from foo where a=?'
+        },
+        'should not record sql in trace'
+      )
 
       expect(queries.samples).to.have.property('size', 1)
       expect(queries.samples.has('select*fromfoowherea=?')).to.be.true
@@ -195,18 +213,22 @@ describe('Query Trace Aggregator', function testQueryTracer() {
     function testRaw() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+          slow_sql: { enabled: true },
+          transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries = new QueryTraceAggregator(opts)
 
       const segment = addQuery(queries, 1000)
-      assert.deepEqual(segment.getAttributes(), {
-        backtrace: 'fake stack',
-        sql: 'select * from foo where a=2'
-      }, 'should not record sql in trace')
+      assert.deepEqual(
+        segment.getAttributes(),
+        {
+          backtrace: 'fake stack',
+          sql: 'select * from foo where a=2'
+        },
+        'should not record sql in trace'
+      )
 
       expect(queries.samples).to.have.property('size', 1)
       expect(queries.samples.has('select*fromfoowherea=?')).to.be.true
@@ -218,51 +240,55 @@ describe('Query Trace Aggregator', function testQueryTracer() {
     function testThreshold() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+          slow_sql: { enabled: true },
+          transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries = new QueryTraceAggregator(opts)
 
       const segment = addQuery(queries, 100)
       expect(queries.samples).to.have.property('size', 0)
-      assert.deepEqual(segment.getAttributes(), {
-        sql: 'select * from foo where a=2'
-      }, 'should record sql in trace')
+      assert.deepEqual(
+        segment.getAttributes(),
+        {
+          sql: 'select * from foo where a=2'
+        },
+        'should record sql in trace'
+      )
     }
   })
 
   describe('prepareJSON', function testPrepareJSON() {
     describe('webTransaction when record_sql is "raw"', function testWebTransaction() {
-      var queries
+      let queries
 
-      beforeEach(function() {
+      beforeEach(function () {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
         queries = new QueryTraceAggregator(opts)
       })
 
-      describe('and `simple_compression` is `false`', function() {
-        beforeEach(function() {
+      describe('and `simple_compression` is `false`', function () {
+        beforeEach(function () {
           queries.config.simple_compression = false
         })
 
-        it('should compress the query parameters', function(done) {
+        it('should compress the query parameters', function (done) {
           addQuery(queries, 600, '/abc')
 
           queries.prepareJSON(function preparedJSON(err, data) {
-            var sample = data[0]
+            const sample = data[0]
 
             codec.decode(sample[9], function decoded(error, params) {
               assert.equal(error, null, 'should not error')
 
-              var keys = Object.keys(params)
+              const keys = Object.keys(params)
 
               assert.deepEqual(keys, ['backtrace'])
               assert.deepEqual(params.backtrace, 'fake stack', 'trace should match')
@@ -272,18 +298,18 @@ describe('Query Trace Aggregator', function testQueryTracer() {
         })
       })
 
-      describe('and `simple_compression` is `true`', function() {
-        beforeEach(function() {
+      describe('and `simple_compression` is `true`', function () {
+        beforeEach(function () {
           queries.config.simple_compression = true
         })
 
-        it('should not compress the query parameters', function(done) {
+        it('should not compress the query parameters', function (done) {
           addQuery(queries, 600, '/abc')
 
           queries.prepareJSON(function preparedJSON(err, data) {
-            var sample = data[0]
-            var params = sample[9]
-            var keys = Object.keys(params)
+            const sample = data[0]
+            const params = sample[9]
+            const keys = Object.keys(params)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(params.backtrace, 'fake stack', 'trace should match')
@@ -307,10 +333,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -321,7 +347,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -338,14 +364,14 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          data.sort(function(lhs, rhs) {
+          data.sort(function (lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
@@ -356,7 +382,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -380,10 +406,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             return rhTotal - lhTotal
           })
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -394,7 +420,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -402,11 +428,11 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           })
 
           function nextSample() {
-            var sample2 = data[1]
+            const sample2 = data[1]
 
             assert.equal(sample2[0], 'FakeTransaction', 'should match transaction name')
             assert.equal(sample2[1], '/abc', 'should match transaction url')
-            assert.equal(sample2[2], 13169739137589120000, 'should match query id')
+            assert.equal(sample2[2], 487602586913804700, 'should match query id')
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
@@ -417,7 +443,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             codec.decode(sample2[9], function decoded(error, result) {
               assert.equal(error, null, 'should not error')
 
-              var keys = Object.keys(result)
+              const keys = Object.keys(result)
 
               assert.deepEqual(keys, ['backtrace'])
               assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -428,16 +454,16 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       })
     })
 
-    describe('webTransaction when record_sql is "obfuscated"', function() {
+    describe('webTransaction when record_sql is "obfuscated"', function () {
       it('should record work when empty', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
@@ -449,12 +475,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       it('should record work with a single query', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, '/abc')
 
@@ -462,10 +488,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -476,7 +502,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -488,12 +514,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       it('should record work with a multiple similar queries', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc')
@@ -502,14 +528,14 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          data.sort(function(lhs, rhs) {
+          data.sort(function (lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
@@ -520,7 +546,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -532,12 +558,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       it('should record work with a multiple unique queries', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, '/abc')
         addQuery(queries, 550, '/abc', 'drop table users')
@@ -553,10 +579,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             return rhTotal - lhTotal
           })
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '/abc', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -567,7 +593,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -575,10 +601,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           })
 
           function nextSample() {
-            var sample2 = data[1]
+            const sample2 = data[1]
             assert.equal(sample2[0], 'FakeTransaction', 'should match transaction name')
             assert.equal(sample2[1], '/abc', 'should match transaction url')
-            assert.equal(sample2[2], 13169739137589120000, 'should match query id')
+            assert.equal(sample2[2], 487602586913804700, 'should match query id')
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
@@ -589,7 +615,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             codec.decode(sample2[9], function decoded(error, result) {
               assert.equal(error, null, 'should not error')
 
-              var keys = Object.keys(result)
+              const keys = Object.keys(result)
 
               assert.deepEqual(keys, ['backtrace'])
               assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -604,12 +630,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       it('should record work when empty', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
@@ -621,12 +647,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       it('should record work with a single query', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
 
@@ -634,10 +660,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -648,7 +674,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -660,12 +686,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       it('should record work with a multiple similar queries', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null)
@@ -674,14 +700,14 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          data.sort(function(lhs, rhs) {
+          data.sort(function (lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
@@ -692,7 +718,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -704,12 +730,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       it('should record work with a multiple unique queries', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'raw', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'raw', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null, 'drop table users')
@@ -725,10 +751,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             return rhTotal - lhTotal
           })
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=2', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -739,7 +765,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -747,10 +773,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           })
 
           function nextSample() {
-            var sample2 = data[1]
+            const sample2 = data[1]
             assert.equal(sample2[0], 'FakeTransaction', 'should match transaction name')
             assert.equal(sample2[1], '<unknown>', 'should match transaction url')
-            assert.equal(sample2[2], 13169739137589120000, 'should match query id')
+            assert.equal(sample2[2], 487602586913804700, 'should match query id')
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
@@ -761,7 +787,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             codec.decode(sample2[9], function decoded(error, result) {
               assert.equal(error, null, 'should not error')
 
-              var keys = Object.keys(result)
+              const keys = Object.keys(result)
 
               assert.deepEqual(keys, ['backtrace'])
               assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -776,12 +802,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       it('should record work when empty', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         queries.prepareJSON(function preparedJSON(err, data) {
           assert.equal(err, null, 'should not error')
@@ -793,12 +819,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       it('should record work with a single query', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
 
@@ -806,10 +832,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -820,7 +846,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -832,12 +858,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       it('should record work with a multiple similar queries', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null)
@@ -846,14 +872,14 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           assert.equal(err, null, 'should not error')
           assert.equal(data.length, 1, 'should be 1 sample query')
 
-          data.sort(function(lhs, rhs) {
+          data.sort(function (lhs, rhs) {
             return rhs[2] - lhs[2]
           })
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 2, 'should have 1 call')
@@ -864,7 +890,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -876,12 +902,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
       it('should record work with a multiple unique queries', function testRaw(done) {
         const opts = {
           config: new Config({
-            slow_sql: {enabled: true},
-            transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+            slow_sql: { enabled: true },
+            transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
           }),
-          method: 'sql_trace_data',
+          method: 'sql_trace_data'
         }
-        var queries = new QueryTraceAggregator(opts)
+        const queries = new QueryTraceAggregator(opts)
 
         addQuery(queries, 600, null)
         addQuery(queries, 550, null, 'drop table users')
@@ -897,10 +923,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             return rhTotal - lhTotal
           })
 
-          var sample = data[0]
+          const sample = data[0]
           assert.equal(sample[0], 'FakeTransaction', 'should match transaction name')
           assert.equal(sample[1], '<unknown>', 'should match transaction url')
-          assert.equal(sample[2], 2680623426242782700, 'should match query id')
+          assert.equal(sample[2], 374780417029088500, 'should match query id')
           assert.equal(sample[3], 'select * from foo where a=?', 'should match raw query')
           assert.equal(sample[4], 'FakeSegment', 'should match segment name')
           assert.equal(sample[5], 1, 'should have 1 call')
@@ -911,7 +937,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           codec.decode(sample[9], function decoded(error, result) {
             assert.equal(error, null, 'should not error')
 
-            var keys = Object.keys(result)
+            const keys = Object.keys(result)
 
             assert.deepEqual(keys, ['backtrace'])
             assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -919,10 +945,10 @@ describe('Query Trace Aggregator', function testQueryTracer() {
           })
 
           function nextSample() {
-            var sample2 = data[1]
+            const sample2 = data[1]
             assert.equal(sample2[0], 'FakeTransaction', 'should match transaction name')
             assert.equal(sample2[1], '<unknown>', 'should match transaction url')
-            assert.equal(sample2[2], 13169739137589120000, 'should match query id')
+            assert.equal(sample2[2], 487602586913804700, 'should match query id')
             assert.equal(sample2[3], 'drop table users', 'should match raw query')
             assert.equal(sample2[4], 'FakeSegment', 'should match segment name')
             assert.equal(sample2[5], 1, 'should have 1 call')
@@ -933,7 +959,7 @@ describe('Query Trace Aggregator', function testQueryTracer() {
             codec.decode(sample2[9], function decoded(error, result) {
               assert.equal(error, null, 'should not error')
 
-              var keys = Object.keys(result)
+              const keys = Object.keys(result)
 
               assert.deepEqual(keys, ['backtrace'])
               assert.deepEqual(result.backtrace, 'fake stack', 'trace should match')
@@ -949,12 +975,12 @@ describe('Query Trace Aggregator', function testQueryTracer() {
     it('should limit to this.config.max_samples', function testMaxSamples() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: true, max_samples: 2},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          slow_sql: { enabled: true, max_samples: 2 },
+          transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
-      var queries = new QueryTraceAggregator(opts)
+      const queries = new QueryTraceAggregator(opts)
 
       addQuery(queries, 600, null)
       addQuery(queries, 550, null, 'create table users')
@@ -975,19 +1001,19 @@ describe('Query Trace Aggregator', function testQueryTracer() {
     it('should merge queries correctly', function testMerge() {
       const opts = {
         config: new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          slow_sql: { enabled: true },
+          transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries = new QueryTraceAggregator(opts)
 
       const opts2 = {
         config: new Config({
-          slow_sql: {enabled: true},
-          transaction_tracer: {record_sql: 'obfuscated', explain_threshold: 500}
+          slow_sql: { enabled: true },
+          transaction_tracer: { record_sql: 'obfuscated', explain_threshold: 500 }
         }),
-        method: 'sql_trace_data',
+        method: 'sql_trace_data'
       }
       const queries2 = new QueryTraceAggregator(opts2)
 
@@ -1022,8 +1048,8 @@ describe('Query Trace Aggregator', function testQueryTracer() {
 })
 
 function addQuery(queries, duration, url, query) {
-  var transaction = new FakeTransaction(url)
-  var segment = new FakeSegment(transaction, duration)
+  const transaction = new FakeTransaction(url)
+  const segment = new FakeSegment(transaction, duration)
 
   queries.add(segment, 'mysql', query || 'select * from foo where a=2', FAKE_STACK)
 
@@ -1033,9 +1059,12 @@ function addQuery(queries, duration, url, query) {
 function FakeTransaction(url = null) {
   this.url = url
   this.name = 'FakeTransaction'
+  this.addDistributedTraceIntrinsics = () => {}
 }
 
-FakeTransaction.prototype.getFullName = function() { return this.name }
+FakeTransaction.prototype.getFullName = function () {
+  return this.name
+}
 
 function FakeSegment(transaction, duration, name = 'FakeSegment') {
   this.transaction = transaction
@@ -1064,7 +1093,7 @@ function verifySample(sample, count, segment) {
 function verifyTrace(trace, segment) {
   assert.equal(trace.duration, segment.getDurationInMillis(), 'should save duration')
   assert.equal(trace.segment, segment, 'should hold onto segment')
-  assert.equal(trace.id, 2680623426242782700, 'should have correct id')
+  assert.equal(trace.id, 374780417029088500, 'should have correct id')
   assert.equal(trace.metric, segment.name, 'metric and segment name should match')
   assert.equal(trace.normalized, 'select*fromfoowherea=?', 'should set normalized')
   assert.equal(trace.obfuscated, 'select * from foo where a=?', 'should set obfuscated')

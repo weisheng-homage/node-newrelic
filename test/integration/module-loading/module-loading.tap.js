@@ -5,7 +5,7 @@
 
 'use strict'
 
-const tap  = require('tap')
+const tap = require('tap')
 const path = require('path')
 
 const helper = require('../../lib/agent_helper')
@@ -13,12 +13,12 @@ const shimmer = require('../../../lib/shimmer')
 
 const customPackagePath = './node_modules/customTestPackage'
 
-tap.test('Should properly track module paths to enable shim.require()', function(t) {
+tap.test('Should properly track module paths to enable shim.require()', function (t) {
   t.autoend()
 
   let agent = helper.instrumentMockedAgent()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
     agent = null
   })
@@ -43,9 +43,6 @@ tap.test('Should properly track module paths to enable shim.require()', function
   t.equal(shimLoadedCustom.name, 'customFunction', 'Should grab correct module')
 })
 
-
-// This test requires the --no-esm flag for tap
-// to run in a way it will trigger the failure.
 tap.test('shim.require() should play well with multiple test runs', (t) => {
   simulateTestLoadAndUnload()
 
@@ -55,7 +52,7 @@ tap.test('shim.require() should play well with multiple test runs', (t) => {
     moduleName: customPackagePath
   })
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
     agent = null
   })
@@ -77,7 +74,7 @@ tap.test('shim.require() should play well with multiple test runs', (t) => {
 })
 
 function simulateTestLoadAndUnload() {
-  let agent = helper.instrumentMockedAgent()
+  const agent = helper.instrumentMockedAgent()
 
   shimmer.registerInstrumentation({
     moduleName: customPackagePath

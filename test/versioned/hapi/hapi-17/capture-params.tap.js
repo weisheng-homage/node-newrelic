@@ -5,21 +5,21 @@
 
 'use strict'
 
-var DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
-var tap = require('tap')
-var request = require('request')
-var helper = require('../../../lib/agent_helper')
-var utils = require('./hapi-17-utils')
-var HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
+const DESTINATIONS = require('../../../../lib/config/attribute-filter').DESTINATIONS
+const tap = require('tap')
+const request = require('request')
+const helper = require('../../../lib/agent_helper')
+const utils = require('./hapi-17-utils')
+const HTTP_ATTS = require('../../../lib/fixtures').httpAttributes
 
-tap.test('Hapi capture params support', function(t) {
+tap.test('Hapi capture params support', function (t) {
   t.autoend()
 
-  var agent = null
-  var server = null
-  var port = null
+  let agent = null
+  let server = null
+  let port = null
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function () {
     agent = helper.instrumentMockedAgent({
       attributes: {
         enabled: true,
@@ -30,19 +30,18 @@ tap.test('Hapi capture params support', function(t) {
     server = utils.getServer()
 
     agent.config.attributes.enabled = true
-    done()
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     helper.unloadAgent(agent)
     return server.stop()
   })
 
-  t.test('simple case with no params', function(t) {
-    agent.on('transactionFinished', function(transaction) {
+  t.test('simple case with no params', function (t) {
+    agent.on('transactionFinished', function (transaction) {
       t.ok(transaction.trace, 'transaction has a trace.')
-      var attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
-      HTTP_ATTS.forEach(function(key) {
+      const attributes = transaction.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      HTTP_ATTS.forEach(function (key) {
         t.ok(attributes[key], 'Trace contains expected HTTP attribute: ' + key)
       })
     })
@@ -50,24 +49,25 @@ tap.test('Hapi capture params support', function(t) {
     server.route({
       method: 'GET',
       path: '/test/',
-      handler: function() {
+      handler: function () {
         t.ok(agent.getTransaction(), 'transaction is available inside route handler')
         return { status: 'ok' }
       }
     })
 
-    server.start().then(function() {
+    server.start().then(function () {
       port = server.info.port
       makeRequest(t, 'http://localhost:' + port + '/test/')
     })
   })
 
-  t.test('case with route params', function(t) {
-    agent.on('transactionFinished', function(tx) {
+  t.test('case with route params', function (t) {
+    agent.on('transactionFinished', function (tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
-        attributes['request.parameters.id'], '1337',
+        attributes['request.parameters.id'],
+        '1337',
         'Trace attributes include `id` route param'
       )
     })
@@ -75,24 +75,25 @@ tap.test('Hapi capture params support', function(t) {
     server.route({
       method: 'GET',
       path: '/test/{id}/',
-      handler: function() {
+      handler: function () {
         t.ok(agent.getTransaction(), 'transaction is available')
         return { status: 'ok' }
       }
     })
 
-    server.start().then(function() {
+    server.start().then(function () {
       port = server.info.port
       makeRequest(t, 'http://localhost:' + port + '/test/1337/')
     })
   })
 
-  t.test('case with query params', function(t) {
-    agent.on('transactionFinished', function(tx) {
+  t.test('case with query params', function (t) {
+    agent.on('transactionFinished', function (tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
-        attributes['request.parameters.name'], 'hapi',
+        attributes['request.parameters.name'],
+        'hapi',
         'Trace attributes include `name` query param'
       )
     })
@@ -100,28 +101,30 @@ tap.test('Hapi capture params support', function(t) {
     server.route({
       method: 'GET',
       path: '/test/',
-      handler: function() {
+      handler: function () {
         t.ok(agent.getTransaction(), 'transaction is available')
         return { status: 'ok' }
       }
     })
 
-    server.start().then(function() {
+    server.start().then(function () {
       port = server.info.port
       makeRequest(t, 'http://localhost:' + port + '/test/?name=hapi')
     })
   })
 
-  t.test('case with both route and query params', function(t) {
-    agent.on('transactionFinished', function(tx) {
+  t.test('case with both route and query params', function (t) {
+    agent.on('transactionFinished', function (tx) {
       t.ok(tx.trace, 'transaction has a trace.')
-      var attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = tx.trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(
-        attributes['request.parameters.id'], '1337',
+        attributes['request.parameters.id'],
+        '1337',
         'Trace attributes include `id` route param'
       )
       t.equal(
-        attributes['request.parameters.name'], 'hapi',
+        attributes['request.parameters.name'],
+        'hapi',
         'Trace attributes include `name` query param'
       )
     })
@@ -129,13 +132,13 @@ tap.test('Hapi capture params support', function(t) {
     server.route({
       method: 'GET',
       path: '/test/{id}/',
-      handler: function() {
+      handler: function () {
         t.ok(agent.getTransaction(), 'transaction is available')
         return { status: 'ok' }
       }
     })
 
-    server.start().then(function() {
+    server.start().then(function () {
       port = server.info.port
       makeRequest(t, 'http://localhost:' + port + '/test/1337/?name=hapi')
     })
@@ -143,13 +146,13 @@ tap.test('Hapi capture params support', function(t) {
 })
 
 function makeRequest(t, uri) {
-  var params = {
+  const params = {
     uri: uri,
     json: true
   }
-  request.get(params, function(err, res, body) {
-    t.equal(res.statusCode, 200, "nothing exploded")
-    t.deepEqual(body, {status: 'ok'}, "got expected response")
+  request.get(params, function (err, res, body) {
+    t.equal(res.statusCode, 200, 'nothing exploded')
+    t.deepEqual(body, { status: 'ok' }, 'got expected response')
     t.end()
   })
 }

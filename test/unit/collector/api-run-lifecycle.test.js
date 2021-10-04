@@ -20,7 +20,7 @@ tap.test('should bail out if disconnected', (t) => {
   const agent = setupMockedAgent()
   const collectorApi = new CollectorApi(agent)
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -42,7 +42,7 @@ tap.test('should discard HTTP 413 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -54,9 +54,7 @@ tap.test('should discard HTTP 413 errors', (t) => {
     helper.unloadAgent(agent)
   })
 
-  const failure = nock(URL)
-    .post(helper.generateCollectorPath('metric_data', RUN_ID))
-    .reply(413)
+  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(413)
 
   function tested(error, command) {
     t.error(error)
@@ -78,7 +76,7 @@ tap.test('should discard HTTP 415 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -90,9 +88,7 @@ tap.test('should discard HTTP 415 errors', (t) => {
     helper.unloadAgent(agent)
   })
 
-  const failure = nock(URL)
-    .post(helper.generateCollectorPath('metric_data', RUN_ID))
-    .reply(415)
+  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(415)
 
   function tested(error, command) {
     t.error(error)
@@ -114,7 +110,7 @@ tap.test('should retain after HTTP 500 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -126,9 +122,7 @@ tap.test('should retain after HTTP 500 errors', (t) => {
     helper.unloadAgent(agent)
   })
 
-  const failure = nock(URL)
-    .post(helper.generateCollectorPath('metric_data', RUN_ID))
-    .reply(500)
+  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(500)
 
   function tested(error, command) {
     t.error(error)
@@ -150,7 +144,7 @@ tap.test('should retain after HTTP 503 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -162,9 +156,7 @@ tap.test('should retain after HTTP 503 errors', (t) => {
     helper.unloadAgent(agent)
   })
 
-  const failure = nock(URL)
-    .post(helper.generateCollectorPath('metric_data', RUN_ID))
-    .reply(503)
+  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(503)
 
   function tested(error, command) {
     t.error(error)
@@ -186,7 +178,7 @@ tap.test('should indicate a restart and discard data after 401 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -198,9 +190,7 @@ tap.test('should indicate a restart and discard data after 401 errors', (t) => {
     helper.unloadAgent(agent)
   })
 
-  const failure = nock(URL)
-    .post(helper.generateCollectorPath('metric_data', RUN_ID))
-    .reply(401)
+  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(401)
 
   function tested(error, command) {
     t.error(error)
@@ -223,7 +213,7 @@ tap.test('should indicate a restart and discard data after 409 errors', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -235,9 +225,7 @@ tap.test('should indicate a restart and discard data after 409 errors', (t) => {
     helper.unloadAgent(agent)
   })
 
-  const failure = nock(URL)
-    .post(helper.generateCollectorPath('metric_data', RUN_ID))
-    .reply(409)
+  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(409)
 
   function tested(error, command) {
     t.error(error)
@@ -260,7 +248,7 @@ tap.test('should stop the agent on 410 (force disconnect)', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -274,11 +262,9 @@ tap.test('should stop the agent on 410 (force disconnect)', (t) => {
 
   const shutdownEndpoint = nock(URL)
     .post(helper.generateCollectorPath('shutdown', RUN_ID))
-    .reply(200, {return_value: null})
+    .reply(200, { return_value: null })
 
-  const failure = nock(URL)
-    .post(helper.generateCollectorPath('metric_data', RUN_ID))
-    .reply(410)
+  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(410)
 
   function tested(error, command) {
     t.error(error)
@@ -303,7 +289,7 @@ tap.test('should discard unexpected HTTP errors (501)', (t) => {
 
   nock.disableNetConnect()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -315,9 +301,7 @@ tap.test('should discard unexpected HTTP errors (501)', (t) => {
     helper.unloadAgent(agent)
   })
 
-  const failure = nock(URL)
-    .post(helper.generateCollectorPath('metric_data', RUN_ID))
-    .reply(501)
+  const failure = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(501)
 
   function tested(error, command) {
     t.error(error)
@@ -349,8 +333,8 @@ function setupMockedAgent() {
     browser_monitoring: {},
     transaction_tracer: {}
   })
-  agent.reconfigure = function() {}
-  agent.setState = function() {}
+  agent.reconfigure = function () {}
+  agent.setState = function () {}
 
   return agent
 }

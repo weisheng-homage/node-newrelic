@@ -12,23 +12,27 @@ const https = require('https')
 const url = require('url')
 const collector = require('../lib/fake-collector')
 const RemoteMethod = require('../../lib/collector/remote-method')
+const { SSL_HOST } = require('../lib/agent_helper')
 
 tap.test('DataSender (callback style) talking to fake collector', (t) => {
   const config = {
-    host: 'ssl.lvh.me',
-    port: 8765,
     run_id: 1337,
     ssl: true,
     license_key: 'whatever',
     version: '0',
-    max_payload_size_in_bytes: 1000000
+    max_payload_size_in_bytes: 1000000,
+    feature_flag: {}
   }
-  config.certificates = [
-    read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
-  ]
-  const method = new RemoteMethod('preconnect', config)
 
-  collector({port: 8765}, (error, server) => {
+  const endpoint = {
+    host: SSL_HOST,
+    port: 8765
+  }
+
+  config.certificates = [read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')]
+  const method = new RemoteMethod('preconnect', config, endpoint)
+
+  collector({ port: 8765 }, (error, server) => {
     // set a reasonable server timeout for cleanup
     // of the server's keep-alive connections
     server.server.setTimeout(5000)
@@ -37,7 +41,7 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
       return t.end()
     }
 
-    t.tearDown(() => {
+    t.teardown(() => {
       server.close()
     })
 
@@ -49,7 +53,7 @@ tap.test('DataSender (callback style) talking to fake collector', (t) => {
 
       t.equal(
         results.payload,
-        'collector-1.lvh.me:8089',
+        'collector-1.integration-test:8089',
         'parsed result should come through'
       )
       t.ok(results.status, 'response status code should come through')
@@ -83,17 +87,19 @@ tap.test('remote method to preconnect', (t) => {
 
   function createRemoteMethod() {
     const config = {
-      host: 'ssl.lvh.me',
-      port: 9876,
       ssl: true,
-      max_payload_size_in_bytes: 1000000
+      max_payload_size_in_bytes: 1000000,
+      feature_flag: {}
     }
 
-    config.certificates = [
-      read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')
-    ]
+    const endpoint = {
+      host: SSL_HOST,
+      port: 9876
+    }
 
-    const method = new RemoteMethod('preconnect', config)
+    config.certificates = [read(join(__dirname, '../lib/ca-certificate.crt'), 'utf8')]
+
+    const method = new RemoteMethod('preconnect', config, endpoint)
     return method
   }
 
@@ -115,14 +121,14 @@ tap.test('remote method to preconnect', (t) => {
       startedCallback(err, this)
     })
 
-    t.tearDown(() => {
+    t.teardown(() => {
       server.close()
     })
 
     function responder(req, res) {
       const parsed = url.parse(req.url, true)
       t.equal(parsed.query.method, 'preconnect', 'should get redirect host request')
-      res.write(JSON.stringify({return_value: 'some-collector-url'}))
+      res.write(JSON.stringify({ return_value: 'some-collector-url' }))
       res.end()
     }
   }

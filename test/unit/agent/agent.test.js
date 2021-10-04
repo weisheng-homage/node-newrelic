@@ -24,7 +24,7 @@ tap.test('should require configuration passed to constructor', (t) => {
 })
 
 tap.test('should not throw with valid config', (t) => {
-  const config = configurator.initialize({agent_enabled: false})
+  const config = configurator.initialize({ agent_enabled: false })
   const agent = new Agent(config)
 
   t.notOk(agent.config.agent_enabled)
@@ -36,17 +36,14 @@ tap.test('when loaded with defaults', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('bootstraps its configuration', (t) => {
@@ -120,10 +117,12 @@ tap.test('when loaded with defaults', (t) => {
 
 tap.test('should load naming rules when configured', (t) => {
   const config = configurator.initialize({
-    rules: {name: [
-      {pattern: '^/t',  name: 'u'},
-      {pattern: /^\/u/, name: 't'}
-    ]}
+    rules: {
+      name: [
+        { pattern: '^/t', name: 'u' },
+        { pattern: /^\/u/, name: 't' }
+      ]
+    }
   })
 
   const configured = new Agent(config)
@@ -141,9 +140,7 @@ tap.test('should load naming rules when configured', (t) => {
 
 tap.test('should load ignoring rules when configured', (t) => {
   const config = configurator.initialize({
-    rules: {ignore: [
-      /^\/ham_snadwich\/ignore/
-    ]}
+    rules: { ignore: [/^\/ham_snadwich\/ignore/] }
   })
 
   const configured = new Agent(config)
@@ -161,19 +158,15 @@ tap.test('when forcing transaction ignore status', (t) => {
 
   let agentInstance = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     const config = configurator.initialize({
-      rules: {ignore: [
-        /^\/ham_snadwich\/ignore/
-      ]}
+      rules: { ignore: [/^\/ham_snadwich\/ignore/] }
     })
     agentInstance = new Agent(config)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     agentInstance = null
-    done()
   })
 
   t.test('should not error when forcing an ignore', (t) => {
@@ -212,10 +205,10 @@ tap.test('when forcing transaction ignore status', (t) => {
 
 tap.test('#startAggregators should start all aggregators', (t) => {
   // Load agent with default 'stopped' state
-  let agent = helper.loadMockedAgent(null, false)
+  const agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -233,10 +226,10 @@ tap.test('#startAggregators should start all aggregators', (t) => {
 
 tap.test('#startAggregators should start all aggregators', (t) => {
   // Load agent with default 'stopped' state
-  let agent = helper.loadMockedAgent(null, false)
+  const agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -254,10 +247,10 @@ tap.test('#startAggregators should start all aggregators', (t) => {
 
 tap.test('#stopAggregators should stop all aggregators', (t) => {
   // Load agent with default 'stopped' state
-  let agent = helper.loadMockedAgent(null, false)
+  const agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -278,10 +271,10 @@ tap.test('#onConnect should reconfigure all the aggregators', (t) => {
   const EXPECTED_AGG_COUNT = 8
 
   // Load agent with default 'stopped' state
-  let agent = helper.loadMockedAgent(null, false)
+  const agent = helper.loadMockedAgent(null, false)
   agent.config.distributed_tracing.enabled = true // for span events
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
@@ -296,10 +289,11 @@ tap.test('#onConnect should reconfigure all the aggregators', (t) => {
     }
   }
   mock.expects('reconfigure').exactly(EXPECTED_AGG_COUNT)
-  agent.onConnect()
-  mock.verify()
+  agent.onConnect(false, () => {
+    mock.verify()
 
-  t.end()
+    t.end()
+  })
 })
 
 tap.test('when starting', (t) => {
@@ -307,15 +301,14 @@ tap.test('when starting', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     nock.disableNetConnect()
 
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
 
@@ -326,8 +319,6 @@ tap.test('when starting', (t) => {
     }
 
     nock.enableNetConnect()
-
-    done()
   })
 
   t.test('should require a callback', (t) => {
@@ -337,17 +328,17 @@ tap.test('when starting', (t) => {
   })
 
   t.test('should change state to `starting`', (t) => {
-    agent.collector.connect = function() {
+    agent.collector.connect = function () {
       t.equal(agent._state, 'starting')
       t.end()
     }
 
-    agent.start(function cb_start() {})
+    agent.start(function cbStart() {})
   })
 
   t.test('should not error when disabled via configuration', (t) => {
     agent.config.agent_enabled = false
-    agent.collector.connect = function() {
+    agent.collector.connect = function () {
       t.error(new Error('should not be called'))
       t.end()
     }
@@ -358,12 +349,12 @@ tap.test('when starting', (t) => {
 
   t.test('should emit `stopped` when disabled via configuration', (t) => {
     agent.config.agent_enabled = false
-    agent.collector.connect = function() {
+    agent.collector.connect = function () {
       t.error(new Error('should not be called'))
       t.end()
     }
 
-    agent.start(function cb_start() {
+    agent.start(function cbStart() {
       t.equal(agent._state, 'stopped')
       t.end()
     })
@@ -371,12 +362,12 @@ tap.test('when starting', (t) => {
 
   t.test('should error when no license key is included', (t) => {
     agent.config.license_key = undefined
-    agent.collector.connect = function() {
+    agent.collector.connect = function () {
       t.error(new Error('should not be called'))
       t.end()
     }
 
-    agent.start(function cb_start(error) {
+    agent.start(function cbStart(error) {
       t.ok(error)
 
       t.end()
@@ -386,12 +377,12 @@ tap.test('when starting', (t) => {
   t.test('should say why startup failed without license key', (t) => {
     agent.config.license_key = undefined
 
-    agent.collector.connect = function() {
+    agent.collector.connect = function () {
       t.error(new Error('should not be called'))
       t.end()
     }
 
-    agent.start(function cb_start(error) {
+    agent.start(function cbStart(error) {
       t.equal(error.message, 'Not starting without license key!')
 
       t.end()
@@ -401,7 +392,7 @@ tap.test('when starting', (t) => {
   t.test('should call connect when using proxy', (t) => {
     agent.config.proxy = 'fake://url'
 
-    agent.collector.connect = function(callback) {
+    agent.collector.connect = function (callback) {
       t.ok(callback)
 
       t.end()
@@ -411,7 +402,7 @@ tap.test('when starting', (t) => {
   })
 
   t.test('should call connect when config is correct', (t) => {
-    agent.collector.connect = function(callback) {
+    agent.collector.connect = function (callback) {
       t.ok(callback)
       t.end()
     }
@@ -422,11 +413,11 @@ tap.test('when starting', (t) => {
   t.test('should error when connection fails', (t) => {
     const passed = new Error('passin on through')
 
-    agent.collector.connect = function(callback) {
+    agent.collector.connect = function (callback) {
       callback(passed)
     }
 
-    agent.start(function cb_start(error) {
+    agent.start(function cbStart(error) {
       t.equal(error, passed)
 
       t.end()
@@ -436,18 +427,18 @@ tap.test('when starting', (t) => {
   t.test('should harvest at connect when metrics are already there', (t) => {
     const metrics = nock(URL)
       .post(helper.generateCollectorPath('metric_data', RUN_ID))
-      .reply(200, {return_value: []})
+      .reply(200, { return_value: [] })
 
-    agent.collector.connect = function(callback) {
+    agent.collector.connect = function (callback) {
       agent.collector.isConnected = () => true
-      callback(null, CollectorResponse.success(null, {agent_run_id: RUN_ID}))
+      callback(null, CollectorResponse.success(null, { agent_run_id: RUN_ID }))
     }
 
     agent.config.run_id = RUN_ID
 
     agent.metrics.measureMilliseconds('Test/Bogus', null, 1)
 
-    agent.start(function cb_start(error) {
+    agent.start(function cbStart(error) {
       t.error(error)
       t.ok(metrics.isDone())
 
@@ -466,11 +457,11 @@ tap.test('initial harvest', (t) => {
   let connect = null
   let settings = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     nock.disableNetConnect()
 
     global.setInterval = (callback) => {
-      return Object.assign({unref: () => {}}, setImmediate(callback))
+      return Object.assign({ unref: () => {} }, setImmediate(callback))
     }
 
     // Load agent with default 'stopped' state
@@ -498,16 +489,14 @@ tap.test('initial harvest', (t) => {
 
     connect = nock(URL)
       .post(helper.generateCollectorPath('connect'))
-      .reply(200, {return_value: {agent_run_id: RUN_ID}})
+      .reply(200, { return_value: { agent_run_id: RUN_ID } })
 
     settings = nock(URL)
       .post(helper.generateCollectorPath('agent_settings', RUN_ID))
-      .reply(200, {return_value: []})
-
-    done()
+      .reply(200, { return_value: [] })
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     global.setInterval = origInterval
 
     helper.unloadAgent(agent)
@@ -520,8 +509,6 @@ tap.test('initial harvest', (t) => {
     }
 
     nock.enableNetConnect()
-
-    done()
   })
 
   t.test('should not blow up when harvest cycle runs', (t) => {
@@ -557,12 +544,10 @@ tap.test('initial harvest', (t) => {
   })
 
   t.test('should not blow up when harvest cycle errors', (t) => {
-    const metrics = nock(URL)
-      .post(helper.generateCollectorPath('metric_data', RUN_ID))
-      .reply(503)
+    const metrics = nock(URL).post(helper.generateCollectorPath('metric_data', RUN_ID)).reply(503)
 
-    agent.start(function cb_start() {
-      setTimeout(function() {
+    agent.start(function cbStart() {
+      setTimeout(function () {
         global.setInterval = origInterval
 
         redirect.done()
@@ -583,17 +568,14 @@ tap.test('when stopping', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('should require a callback', (t) => {
@@ -620,7 +602,7 @@ tap.test('when stopping', (t) => {
   })
 
   t.test('should not shut down connection if not connected', (t) => {
-    agent.stop(function cb_stop(error) {
+    agent.stop(function cbStop(error) {
       t.error(error)
       t.end()
     })
@@ -632,15 +614,14 @@ tap.test('when stopping after connected', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     nock.disableNetConnect()
 
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
 
@@ -651,17 +632,15 @@ tap.test('when stopping after connected', (t) => {
     }
 
     nock.enableNetConnect()
-
-    done()
   })
 
   t.test('should call shutdown', (t) => {
     agent.config.run_id = RUN_ID
     const shutdown = nock(URL)
       .post(helper.generateCollectorPath('shutdown', RUN_ID))
-      .reply(200, {return_value: null})
+      .reply(200, { return_value: null })
 
-    agent.stop(function cb_stop(error) {
+    agent.stop(function cbStop(error) {
       t.error(error)
       t.notOk(agent.config.run_id)
 
@@ -691,7 +670,7 @@ tap.test('when connected', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     nock.disableNetConnect()
 
     // Load agent with default 'stopped' state
@@ -705,11 +684,9 @@ tap.test('when connected', (t) => {
       detect_gcp: false,
       detect_docker: false
     }
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
 
@@ -720,14 +697,13 @@ tap.test('when connected', (t) => {
     }
 
     nock.enableNetConnect()
-
-    done()
   })
 
   t.test('should update the metric apdexT value after connect', (t) => {
     t.equal(agent.metrics._apdexT, 0.1)
 
-    process.nextTick(function cb_nextTick() {
+    agent.config.apdex_t = 0.666
+    agent.onConnect(false, () => {
       t.ok(agent.metrics._apdexT)
 
       t.equal(agent.metrics._apdexT, 0.666)
@@ -735,9 +711,6 @@ tap.test('when connected', (t) => {
 
       t.end()
     })
-
-    agent.config.apdex_t = 0.666
-    agent.onConnect()
   })
 
   t.test('should reset the config and metrics normalizer on connection', (t) => {
@@ -758,21 +731,21 @@ tap.test('when connected', (t) => {
 
     const handshake = nock(URL)
       .post(helper.generateCollectorPath('connect'))
-      .reply(200, {return_value: config})
+      .reply(200, { return_value: config })
 
     const settings = nock(URL)
       .post(helper.generateCollectorPath('agent_settings', 404))
-      .reply(200, {return_value: config})
+      .reply(200, { return_value: config })
 
     const metrics = nock(URL)
       .post(helper.generateCollectorPath('metric_data', 404))
-      .reply(200, {return_value: []})
+      .reply(200, { return_value: [] })
 
     const shutdown = nock(URL)
       .post(helper.generateCollectorPath('shutdown', 404))
-      .reply(200, {return_value: null})
+      .reply(200, { return_value: null })
 
-    agent.start(function cb_start(error) {
+    agent.start(function cbStart(error) {
       t.error(error)
       t.ok(redirect.isDone())
       t.ok(handshake.isDone())
@@ -780,9 +753,9 @@ tap.test('when connected', (t) => {
       t.equal(agent._state, 'started')
       t.equal(agent.config.run_id, 404)
       t.equal(agent.metrics._apdexT, 0.742)
-      t.deepEqual(agent.urlNormalizer.rules, [])
+      t.same(agent.urlNormalizer.rules, [])
 
-      agent.stop(function cb_stop() {
+      agent.stop(function cbStop() {
         t.ok(settings.isDone())
         t.ok(metrics.isDone())
         t.ok(shutdown.isDone())
@@ -798,18 +771,14 @@ tap.test('when handling finished transactions', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('should capture the trace off a finished transaction', (t) => {
@@ -817,7 +786,7 @@ tap.test('when handling finished transactions', (t) => {
     // need to initialize the trace
     transaction.trace.setDurationInMillis(2100)
 
-    agent.once('transactionFinished', function() {
+    agent.once('transactionFinished', function () {
       const trace = agent.traces.trace
       t.ok(trace)
       t.equal(trace.getDurationInMillis(), 2100)
@@ -827,7 +796,6 @@ tap.test('when handling finished transactions', (t) => {
 
     transaction.end()
   })
-
 
   t.test('should capture the synthetic trace off a finished transaction', (t) => {
     const transaction = new Transaction(agent)
@@ -841,7 +809,7 @@ tap.test('when handling finished transactions', (t) => {
       monitorId: 'monId'
     }
 
-    agent.once('transactionFinished', function() {
+    agent.once('transactionFinished', function () {
       t.notOk(agent.traces.trace)
       t.equal(agent.traces.syntheticsTraces.length, 1)
 
@@ -902,31 +870,27 @@ tap.test('when sampling_target changes', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('should adjust the current sampling target', (t) => {
-    t.notEqual(agent.transactionSampler.samplingTarget, 5)
-    agent.config.onConnect({sampling_target: 5})
+    t.not(agent.transactionSampler.samplingTarget, 5)
+    agent.config.onConnect({ sampling_target: 5 })
     t.equal(agent.transactionSampler.samplingTarget, 5)
 
     t.end()
   })
 
   t.test('should adjust the sampling period', (t) => {
-    t.notEqual(agent.transactionSampler.samplingPeriod, 100)
-    agent.config.onConnect({sampling_target_period_in_seconds: 0.1})
+    t.not(agent.transactionSampler.samplingPeriod, 100)
+    agent.config.onConnect({ sampling_target_period_in_seconds: 0.1 })
     t.equal(agent.transactionSampler.samplingPeriod, 100)
 
     t.end()
@@ -947,73 +911,66 @@ tap.test('when event_harvest_config updated on connect with a valid config', (t)
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     // Load agent with default 'stopped' state
     agent = helper.loadMockedAgent(null, false)
 
-    agent.config.onConnect({event_harvest_config: validHarvestConfig})
-
-    done()
+    agent.config.onConnect({ event_harvest_config: validHarvestConfig })
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('should generate ReportPeriod supportability', (t) => {
-    agent.onConnect()
+    agent.onConnect(false, () => {
+      const expectedMetricName = 'Supportability/EventHarvest/ReportPeriod'
 
-    const expectedMetricName = 'Supportability/EventHarvest/ReportPeriod'
+      const metric = agent.metrics.getMetric(expectedMetricName)
 
-    const metric = agent.metrics.getMetric(expectedMetricName)
+      t.ok(metric)
+      t.equal(metric.total, validHarvestConfig.report_period_ms)
 
-    t.ok(metric)
-    t.equal(metric.total, validHarvestConfig.report_period_ms)
-
-    t.end()
+      t.end()
+    })
   })
 
   t.test('should generate AnalyticEventData/HarvestLimit supportability', (t) => {
-    agent.onConnect()
+    agent.onConnect(false, () => {
+      const expectedMetricName = 'Supportability/EventHarvest/AnalyticEventData/HarvestLimit'
 
-    const expectedMetricName =
-      'Supportability/EventHarvest/AnalyticEventData/HarvestLimit'
+      const metric = agent.metrics.getMetric(expectedMetricName)
 
-    const metric = agent.metrics.getMetric(expectedMetricName)
+      t.ok(metric)
+      t.equal(metric.total, validHarvestConfig.harvest_limits.analytic_event_data)
 
-    t.ok(metric)
-    t.equal(metric.total, validHarvestConfig.harvest_limits.analytic_event_data)
-
-    t.end()
+      t.end()
+    })
   })
 
   t.test('should generate CustomEventData/HarvestLimit supportability', (t) => {
-    agent.onConnect()
+    agent.onConnect(false, () => {
+      const expectedMetricName = 'Supportability/EventHarvest/CustomEventData/HarvestLimit'
 
-    const expectedMetricName =
-      'Supportability/EventHarvest/CustomEventData/HarvestLimit'
+      const metric = agent.metrics.getMetric(expectedMetricName)
 
-    const metric = agent.metrics.getMetric(expectedMetricName)
+      t.ok(metric)
+      t.equal(metric.total, validHarvestConfig.harvest_limits.custom_event_data)
 
-    t.ok(metric)
-    t.equal(metric.total, validHarvestConfig.harvest_limits.custom_event_data)
-
-    t.end()
+      t.end()
+    })
   })
 
   t.test('should generate ErrorEventData/HarvestLimit supportability', (t) => {
-    agent.onConnect()
+    agent.onConnect(false, () => {
+      const expectedMetricName = 'Supportability/EventHarvest/ErrorEventData/HarvestLimit'
 
-    const expectedMetricName =
-      'Supportability/EventHarvest/ErrorEventData/HarvestLimit'
+      const metric = agent.metrics.getMetric(expectedMetricName)
 
-    const metric = agent.metrics.getMetric(expectedMetricName)
-
-    t.ok(metric)
-    t.equal(metric.total, validHarvestConfig.harvest_limits.error_event_data)
-    t.end()
+      t.ok(metric)
+      t.equal(metric.total, validHarvestConfig.harvest_limits.error_event_data)
+      t.end()
+    })
   })
 })

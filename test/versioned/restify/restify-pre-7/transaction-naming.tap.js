@@ -17,22 +17,23 @@ tap.test('Restify transaction naming', (t) => {
   let restifyPkg = null
   let server = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
 
     restify = require('restify')
     restifyPkg = require('restify/package.json')
     server = restify.createServer()
-    done()
   })
 
-  t.afterEach((done) => {
-    helper.unloadAgent(agent)
-    if (server) {
-      server.close(done)
-    } else {
-      done()
-    }
+  t.afterEach(() => {
+    return new Promise((resolve) => {
+      helper.unloadAgent(agent)
+      if (server) {
+        server.close(resolve)
+      } else {
+        resolve()
+      }
+    })
   })
 
   t.test('transaction name with single route', (t) => {
@@ -43,7 +44,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('transaction name with async response middleware', (t) => {
@@ -69,7 +70,7 @@ tap.test('Restify transaction naming', (t) => {
       t,
       endpoint: '/path1',
       expectedName: 'GET//path1',
-      requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+      requestOpts: { headers: { 'Accept-Encoding': 'gzip' } }
     })
   })
 
@@ -96,7 +97,7 @@ tap.test('Restify transaction naming', (t) => {
       t,
       endpoint: '/path1',
       expectedName: 'GET//path1',
-      requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+      requestOpts: { headers: { 'Accept-Encoding': 'gzip' } }
     })
   })
 
@@ -112,11 +113,13 @@ tap.test('Restify transaction naming', (t) => {
       }
 
       server.get('/path1', (req, res, next) => {
-        res.sendRaw(JSON.stringify({
-          patientId: 5,
-          entries: ['hi', 'bye', 'example'],
-          total: 3
-        }))
+        res.sendRaw(
+          JSON.stringify({
+            patientId: 5,
+            entries: ['hi', 'bye', 'example'],
+            total: 3
+          })
+        )
         next()
       })
 
@@ -124,7 +127,7 @@ tap.test('Restify transaction naming', (t) => {
         t,
         endpoint: '/path1',
         expectedName: 'GET//path1',
-        requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+        requestOpts: { headers: { 'Accept-Encoding': 'gzip' } }
       })
     })
   }
@@ -147,7 +150,7 @@ tap.test('Restify transaction naming', (t) => {
       t,
       endpoint: '/path1',
       expectedName: 'GET//path1',
-      requestOpts: {headers: {'Accept-Encoding': 'gzip'}}
+      requestOpts: { headers: { 'Accept-Encoding': 'gzip' } }
     })
   })
 
@@ -160,22 +163,26 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest({t, endpoint: '/foobar', prefix: 'Nodejs', expectedName: 'GET/(not found)'})
+    runTest({ t, endpoint: '/foobar', prefix: 'Nodejs', expectedName: 'GET/(not found)' })
   })
 
   t.test('transaction name with route that has multiple handlers', (t) => {
     t.plan(3)
 
-    server.get('/path1', (req, res, next) => {
-      t.pass('should enter first middleware')
-      next()
-    }, (req, res, next) => {
-      t.pass('should enter second middleware')
-      res.send()
-      next()
-    })
+    server.get(
+      '/path1',
+      (req, res, next) => {
+        t.pass('should enter first middleware')
+        next()
+      },
+      (req, res, next) => {
+        t.pass('should enter second middleware')
+        res.send()
+        next()
+      }
+    )
 
-    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('transaction name with middleware', (t) => {
@@ -191,24 +198,24 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('multiple route handlers with the same name do not duplicate', (t) => {
     t.plan(3)
 
-    server.get({name: 'first', path: '/path1'}, (req, res, next) => {
+    server.get({ name: 'first', path: '/path1' }, (req, res, next) => {
       t.pass('should execute first handler')
       next('second')
     })
 
-    server.get({name: 'second', path: '/path1'}, (req, res, next) => {
+    server.get({ name: 'second', path: '/path1' }, (req, res, next) => {
       t.pass('should execute second handler')
       res.send()
       next()
     })
 
-    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('responding from middleware', (t) => {
@@ -224,7 +231,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest({t, endpoint: '/path1', expectedName: 'GET//'})
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//' })
   })
 
   t.test('with error', (t) => {
@@ -232,11 +239,11 @@ tap.test('Restify transaction naming', (t) => {
 
     const errors = require('restify-errors')
 
-    server.get('/path1', (req, res,  next) => {
+    server.get('/path1', (req, res, next) => {
       next(new errors.InternalServerError('foobar'))
     })
 
-    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('with error while out of context', (t) => {
@@ -244,13 +251,13 @@ tap.test('Restify transaction naming', (t) => {
 
     const errors = require('restify-errors')
 
-    server.get('/path1', (req, res,  next) => {
+    server.get('/path1', (req, res, next) => {
       helper.runOutOfContext(() => {
         next(new errors.InternalServerError('foobar'))
       })
     })
 
-    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('when using a route variable', (t) => {
@@ -262,7 +269,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest({t, endpoint: '/foo/fizz', expectedName: 'GET//foo/:bar'})
+    runTest({ t, endpoint: '/foo/fizz', expectedName: 'GET//foo/:bar' })
   })
 
   t.test('when using a regular expression in path', (t) => {
@@ -274,7 +281,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest({t, endpoint: '/foo/bar', expectedName: 'GET//^\\/foo\\/(.*)/'})
+    runTest({ t, endpoint: '/foo/bar', expectedName: 'GET//^\\/foo\\/(.*)/' })
   })
 
   t.test('when next is called after transaction state loss', (t) => {
@@ -298,7 +305,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('responding after transaction state loss', (t) => {
@@ -312,7 +319,7 @@ tap.test('Restify transaction naming', (t) => {
       })
     })
 
-    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('responding with just a status code', (t) => {
@@ -323,7 +330,7 @@ tap.test('Restify transaction naming', (t) => {
       next()
     })
 
-    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   t.test('responding with just a status code after state loss', (t) => {
@@ -336,7 +343,7 @@ tap.test('Restify transaction naming', (t) => {
       })
     })
 
-    runTest({t, endpoint: '/path1', expectedName: 'GET//path1'})
+    runTest({ t, endpoint: '/path1', expectedName: 'GET//path1' })
   })
 
   /**
@@ -356,7 +363,7 @@ tap.test('Restify transaction naming', (t) => {
 
     agent.on('transactionFinished', (tx) => {
       t.equal(tx.name, expectedName, 'should have correct name')
-      cfg.cb && cfg.cb() || t.end()
+      ;(cfg.cb && cfg.cb()) || t.end()
     })
 
     server.listen(() => {

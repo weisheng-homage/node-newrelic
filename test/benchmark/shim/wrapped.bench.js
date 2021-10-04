@@ -5,78 +5,79 @@
 
 'use strict'
 
-var shared = require('./shared')
+const shared = require('./shared')
 
+const s = shared.makeSuite('Shim segments')
+const suite = s.suite
+const shim = s.shim
 
-var s = shared.makeSuite('Shim segments')
-var suite = s.suite
-var shim = s.shim
-
-var test = null
+let test = null
 
 suite.add({
   name: 'shim.wrap',
-  before: function() {
+  before: function () {
     test = shared.getTest()
-    shim.wrap(test, 'func', function(shim, fn) {
-      return function() { return fn.apply(this, arguments) }
+    shim.wrap(test, 'func', function (shim, fn) {
+      return function () {
+        return fn.apply(this, arguments)
+      }
     })
     return test
   },
-  fn: function() {
+  fn: function () {
     return test.func()
   }
 })
 
 suite.add({
   name: 'shim.wrapReturn',
-  before: function() {
+  before: function () {
     test = shared.getTest()
-    shim.wrapReturn(test, 'func', function(shim, fn, fnName, ret) {
-      return {ret: ret}
+    shim.wrapReturn(test, 'func', function (shim, fn, fnName, ret) {
+      return { ret: ret }
     })
     return test
   },
-  fn: function() {
+  fn: function () {
     return test.func()
   }
 })
 
 suite.add({
   name: 'shim.wrapClass',
-  before: function() {
+  before: function () {
     test = shared.getTest()
-    shim.wrapClass(test, 'func', function(shim, fn, fnName, args) {
-      return {args: args}
+    shim.wrapClass(test, 'func', function (shim, fn, fnName, args) {
+      return { args: args }
     })
     return test
   },
-  fn: function() {
+  fn: function () {
     return test.func()
   }
 })
 
 suite.add({
   name: 'shim.wrapExport',
-  before: function() {
+  before: function () {
     test = shared.getTest()
-    shim.wrapExport(test, function(shim, nodule) {
-      return {nodule: nodule}
+    shim.wrapExport(test, function (shim, nodule) {
+      return { nodule: nodule }
     })
     return test
   },
-  fn: function() {
+  fn: function () {
     return test.func()
   }
 })
 
 suite.add({
   name: 'no wrapping',
-  before: function() {
+  before: function () {
     test = shared.getTest()
     return test
   },
-  fn: function() {
+  fn: function () {
     return test.func()
   }
 })

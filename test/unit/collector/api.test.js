@@ -28,7 +28,7 @@ tap.test('reportSettings', (t) => {
     return_value: []
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     agent.config.run_id = RUN_ID
     collectorApi = new CollectorApi(agent)
@@ -38,11 +38,9 @@ tap.test('reportSettings', (t) => {
     settings = nock(URL)
       .post(helper.generateCollectorPath('agent_settings', RUN_ID))
       .reply(200, emptySettingsPayload)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -55,8 +53,6 @@ tap.test('reportSettings', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should not error out', (t) => {
@@ -71,7 +67,7 @@ tap.test('reportSettings', (t) => {
 
   t.test('should return the expected `empty` response', (t) => {
     collectorApi.reportSettings((error, res) => {
-      t.deepEqual(res.payload, emptySettingsPayload.return_value)
+      t.same(res.payload, emptySettingsPayload.return_value)
 
       settings.done()
 
@@ -87,7 +83,7 @@ tap.test('error_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -103,11 +99,13 @@ tap.test('error_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
-    t.throws(() => { collectorApi.error_data([], null) }, new Error('callback is required'))
+    t.throws(() => {
+      collectorApi.error_data([], null)
+    }, new Error('callback is required'))
     t.end()
   })
 
@@ -121,31 +119,29 @@ tap.test('error_data', (t) => {
 
     const errors = [
       [
-        0,                          // timestamp, which is always ignored
+        0, // timestamp, which is always ignored
         'TestTransaction/Uri/TEST', // transaction name
-        'You done screwed up',      // helpful, informative message
-        'SampleError',              // Error type (almost always Error in practice)
-        {},                         // request parameters
+        'You done screwed up', // helpful, informative message
+        'SampleError', // Error type (almost always Error in practice)
+        {} // request parameters
       ]
     ]
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
 
       nock.disableNetConnect()
 
-      const response = {return_value: []}
+      const response = { return_value: [] }
 
       errorDataEndpoint = nock(URL)
         .post(helper.generateCollectorPath('error_data', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -158,8 +154,6 @@ tap.test('error_data', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -193,7 +187,7 @@ tap.test('sql_trace_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -209,11 +203,13 @@ tap.test('sql_trace_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
-    t.throws(() => { collectorApi.sql_trace_data([], null) }, new Error('callback is required'))
+    t.throws(() => {
+      collectorApi.sql_trace_data([], null)
+    }, new Error('callback is required'))
     t.end()
   })
 
@@ -240,23 +236,21 @@ tap.test('sql_trace_data', (t) => {
       ]
     ]
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
 
       nock.disableNetConnect()
 
-      const response = {return_value: []}
+      const response = { return_value: [] }
 
       sqlTraceEndpoint = nock(URL)
         .post(helper.generateCollectorPath('sql_trace_data', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -269,8 +263,6 @@ tap.test('sql_trace_data', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -304,7 +296,7 @@ tap.test('analytic_event_data (transaction events)', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -320,14 +312,13 @@ tap.test('analytic_event_data (transaction events)', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
-    t.throws(
-      () => { collectorApi.analytic_event_data([], null) },
-      new Error('callback is required')
-    )
+    t.throws(() => {
+      collectorApi.analytic_event_data([], null)
+    }, new Error('callback is required'))
 
     t.end()
   })
@@ -342,35 +333,36 @@ tap.test('analytic_event_data (transaction events)', (t) => {
 
     const transactionEvents = [
       RUN_ID,
-      [{
-        'webDuration': 1.0,
-        'timestamp': 1000,
-        'name': 'Controller/rails/welcome/index',
-        'duration': 1.0,
-        'type': 'Transaction'
-      },{
-        'A': 'a',
-        'B': 'b',
-      }]
+      [
+        {
+          webDuration: 1.0,
+          timestamp: 1000,
+          name: 'Controller/rails/welcome/index',
+          duration: 1.0,
+          type: 'Transaction'
+        },
+        {
+          A: 'a',
+          B: 'b'
+        }
+      ]
     ]
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
 
       nock.disableNetConnect()
 
-      const response = {return_value: []}
+      const response = { return_value: [] }
 
       analyticEventEndpoint = nock(URL)
         .post(helper.generateCollectorPath('analytic_event_data', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -383,8 +375,6 @@ tap.test('analytic_event_data (transaction events)', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -418,7 +408,7 @@ tap.test('metric_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -434,14 +424,13 @@ tap.test('metric_data', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
-    t.throws(
-      () => { collectorApi.metric_data([], null) },
-      new Error('callback is required')
-    )
+    t.throws(() => {
+      collectorApi.metric_data([], null)
+    }, new Error('callback is required'))
 
     t.end()
   })
@@ -455,32 +444,30 @@ tap.test('metric_data', (t) => {
     let metricsEndpoint = null
 
     const metrics = {
-      toJSON: function() {
+      toJSON: function () {
         return [
-          [{name: 'Test/Parent'},  [1,0.026,0.006,0.026,0.026,0.000676]],
-          [{name: 'Test/Child/1'}, [1,0.012,0.012,0.012,0.012,0.000144]],
-          [{name: 'Test/Child/2'}, [1,0.008,0.008,0.008,0.008,0.000064]]
+          [{ name: 'Test/Parent' }, [1, 0.026, 0.006, 0.026, 0.026, 0.000676]],
+          [{ name: 'Test/Child/1' }, [1, 0.012, 0.012, 0.012, 0.012, 0.000144]],
+          [{ name: 'Test/Child/2' }, [1, 0.008, 0.008, 0.008, 0.008, 0.000064]]
         ]
       }
     }
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
 
       nock.disableNetConnect()
 
-      const response = {return_value: []}
+      const response = { return_value: [] }
 
       metricsEndpoint = nock(URL)
         .post(helper.generateCollectorPath('metric_data', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -493,8 +480,6 @@ tap.test('metric_data', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -528,7 +513,7 @@ tap.test('transaction_sample_data (transaction trace)', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
@@ -544,14 +529,13 @@ tap.test('transaction_sample_data (transaction trace)', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
-    t.throws(
-      () => { collectorApi.transaction_sample_data([], null) },
-      new Error('callback is required')
-    )
+    t.throws(() => {
+      collectorApi.transaction_sample_data([], null)
+    }, new Error('callback is required'))
 
     t.end()
   })
@@ -567,23 +551,21 @@ tap.test('transaction_sample_data (transaction trace)', (t) => {
     // imagine this is a serialized transaction trace
     const trace = []
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
 
       nock.disableNetConnect()
 
-      const response = {return_value: []}
+      const response = { return_value: [] }
 
       transactionTraceEndpoint = nock(URL)
         .post(helper.generateCollectorPath('transaction_sample_data', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -596,8 +578,6 @@ tap.test('transaction_sample_data (transaction trace)', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -631,14 +611,13 @@ tap.test('shutdown', (t) => {
     const agent = setupMockedAgent()
     const collectorApi = new CollectorApi(agent)
 
-    t.tearDown(() => {
+    t.teardown(() => {
       helper.unloadAgent(agent)
     })
 
-    t.throws(
-      () => { collectorApi.shutdown(null) },
-      new Error('callback is required')
-    )
+    t.throws(() => {
+      collectorApi.shutdown(null)
+    }, new Error('callback is required'))
 
     t.end()
   })
@@ -651,23 +630,21 @@ tap.test('shutdown', (t) => {
 
     let shutdownEndpoint = null
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
 
       nock.disableNetConnect()
 
-      const response = {return_value: null}
+      const response = { return_value: null }
 
       shutdownEndpoint = nock(URL)
         .post(helper.generateCollectorPath('shutdown', RUN_ID))
         .reply(200, response)
-
-      done()
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -680,8 +657,6 @@ tap.test('shutdown', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -713,21 +688,17 @@ tap.test('shutdown', (t) => {
 
     let shutdownEndpoint = null
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent = setupMockedAgent()
       agent.config.run_id = RUN_ID
       collectorApi = new CollectorApi(agent)
 
       nock.disableNetConnect()
 
-      shutdownEndpoint = nock(URL)
-        .post(helper.generateCollectorPath('shutdown', RUN_ID))
-        .reply(503)
-
-      done()
+      shutdownEndpoint = nock(URL).post(helper.generateCollectorPath('shutdown', RUN_ID)).reply(503)
     })
 
-    t.afterEach((done) => {
+    t.afterEach(() => {
       if (!nock.isDone()) {
         /* eslint-disable no-console */
         console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -740,8 +711,6 @@ tap.test('shutdown', (t) => {
       helper.unloadAgent(agent)
       agent = null
       collectorApi = null
-
-      done()
     })
 
     t.test('should not error out', (t) => {
@@ -794,8 +763,8 @@ function setupMockedAgent() {
     browser_monitoring: {},
     transaction_tracer: {}
   })
-  agent.reconfigure = function() {}
-  agent.setState = function() {}
+  agent.reconfigure = function () {}
+  agent.setState = function () {}
 
   return agent
 }

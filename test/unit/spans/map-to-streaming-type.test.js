@@ -12,66 +12,66 @@ const mapToStreamingType = require('../../../lib/spans/map-to-streaming-type')
 tap.test('should corectly convert strings', (t) => {
   const stringValue = 'myString'
   const expected = {
-    'string_value': stringValue
+    string_value: stringValue
   }
 
   const result = mapToStreamingType(stringValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 
 tap.test('should not drop empty strings', (t) => {
   const stringValue = ''
   const expected = {
-    'string_value': stringValue
+    string_value: stringValue
   }
 
   const result = mapToStreamingType(stringValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 
 tap.test('should correctly convert bools when true', (t) => {
   const boolValue = true
   const expected = {
-    'bool_value': boolValue
+    bool_value: boolValue
   }
 
   const result = mapToStreamingType(boolValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 
 tap.test('should correctly convert bools when false', (t) => {
   const boolValue = false
   const expected = {
-    'bool_value': boolValue
+    bool_value: boolValue
   }
 
   const result = mapToStreamingType(boolValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 
 tap.test('should correctly convert integers', (t) => {
   const intValue = 9999999999999999
   const expected = {
-    'int_value': intValue
+    int_value: intValue
   }
 
   const result = mapToStreamingType(intValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 
 tap.test('should correctly convert doubles', (t) => {
   const doubleValue = 999.99
   const expected = {
-    'double_value': doubleValue
+    double_value: doubleValue
   }
 
   const result = mapToStreamingType(doubleValue)
-  t.deepEqual(result, expected)
+  t.same(result, expected)
   t.end()
 })
 

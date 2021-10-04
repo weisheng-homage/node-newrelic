@@ -18,29 +18,24 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
   let expressMock
   let shimHelper
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = agentHelper.instrumentMockedAgent()
 
     api = new API(agent)
 
     expressMock = {}
     expressMock.application = {}
-    expressMock.application.use = function use() {
-    }
+    expressMock.application.use = function use() {}
     expressMock.Router = {}
 
     shimHelper = new Shim(agent, 'fake')
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     agentHelper.unloadAgent(agent)
     agent = null
     api = null
     expressMock = null
-
-    done()
   })
 
   t.test('should be callable without an error', (t) => {
@@ -67,14 +62,14 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
     t.end()
   })
 
-  t.test('should not throw if supported module is not installed', function(t) {
+  t.test('should not throw if supported module is not installed', function (t) {
     // We need a supported module in our test. We need that module _not_ to be
     // installed. We'll use aws-sdk.  This first bit ensures
     let awsSdk = false
     try {
+      // eslint-disable-next-line node/no-missing-require
       awsSdk = require('aws-sdk')
-    } catch (e) {
-    }
+    } catch (e) {}
     t.ok(awsSdk === false, 'aws-sdk is not installed')
 
     // attempt to instrument -- if nothing throws we're good

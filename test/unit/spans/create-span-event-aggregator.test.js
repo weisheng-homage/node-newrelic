@@ -6,16 +6,14 @@
 'use strict'
 
 const tap = require('tap')
-const semver = require('semver')
-
 const Config = require('../../../lib/config')
 const SpanEventAggregator = require('../../../lib/spans/span-event-aggregator')
 const StreamingSpanEventAggregator = require('../../../lib/spans/streaming-span-event-aggregator')
 const createSpanEventAggregator = require('../../../lib/spans/create-span-event-aggregator')
+const sinon = require('sinon')
+const proxyquire = require('proxyquire')
 
 const VALID_HOST = 'infinite-tracing.test'
-
-const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
 
 tap.test('should return standard when trace observer not configured', (t) => {
   const config = Config.initialize({})
@@ -26,31 +24,14 @@ tap.test('should return standard when trace observer not configured', (t) => {
   t.end()
 })
 
-tap.test(
-  'should return standard when in serverless mode, trace observer valid',
-  {skip: !isGrpcSupportedVersion},
-  (t) => {
-    const config = Config.initialize({
-      serverless_mode: { enabled: true },
-      infinite_tracing: { trace_observer: {
-        host: VALID_HOST
-      }}
-    })
-
-    const aggregator = createSpanEventAggregator(config)
-    assertStandardSpanAggregator(t, aggregator)
-
-    t.end()
-  }
-)
-
-tap.test('should return standard aggregator when node version < gprc minimum', (t) => {
-  tempOverrideNodeVersion(t, 'v10.0.0')
-
+tap.test('should return standard when in serverless mode, trace observer valid', (t) => {
   const config = Config.initialize({
-    infinite_tracing: { trace_observer: {
-      host: VALID_HOST
-    } }
+    serverless_mode: { enabled: true },
+    infinite_tracing: {
+      trace_observer: {
+        host: VALID_HOST
+      }
+    }
   })
 
   const aggregator = createSpanEventAggregator(config)
@@ -59,114 +40,85 @@ tap.test('should return standard aggregator when node version < gprc minimum', (
   t.end()
 })
 
-tap.test('should reset/disable trace observer when node version < gprc minimum', (t) => {
-  tempOverrideNodeVersion(t, 'v10.0.0')
-
+tap.test('should return streaming when trace observer configured', (t) => {
   const config = Config.initialize({
-    infinite_tracing: { trace_observer: {
-      host: VALID_HOST
-    }}
+    infinite_tracing: {
+      trace_observer: {
+        host: VALID_HOST
+      }
+    }
   })
 
-  createSpanEventAggregator(config)
-  t.equal(config.infinite_tracing.trace_observer.host, '')
+  const aggregator = createSpanEventAggregator(config)
+  const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
+
+  t.ok(isStreamingAggregator)
 
   t.end()
 })
 
-tap.test('should reset/disable trace observer with invalid character host name', (t) => {
+tap.test('should trim host and port options when they are strings', (t) => {
   const config = Config.initialize({
-    infinite_tracing: { trace_observer: {
-      host: 'infinite_tracing.test'
-    }}
+    infinite_tracing: {
+      trace_observer: {
+        host: `   ${VALID_HOST}  `,
+        port: '   300  '
+      }
+    }
   })
 
   createSpanEventAggregator(config)
-  t.equal(config.infinite_tracing.trace_observer.host, '')
-
-  t.end()
-})
-
-tap.test('should reset/disable trace observer with port in host name', (t) => {
-  const config = Config.initialize({
-    infinite_tracing: { trace_observer: {
-      host: 'infinite-tracing.test:666'
-    }}
+  t.same(config.infinite_tracing.trace_observer, {
+    host: VALID_HOST,
+    port: '300'
   })
-
-  createSpanEventAggregator(config)
-  t.equal(config.infinite_tracing.trace_observer.host, '')
-
-  t.end()
-})
-
-
-tap.test('should reset/disable trace observer with route in host name', (t) => {
-  const config = Config.initialize({
-    infinite_tracing: { trace_observer: {
-      host: 'infinite-tracing.test/trace'
-    }}
-  })
-
-  createSpanEventAggregator(config)
-  t.equal(config.infinite_tracing.trace_observer.host, '')
-
-  t.end()
-})
-
-tap.test('should reset/disable trace observer when port NaN', (t) => {
-  const config = Config.initialize({
-    infinite_tracing: { trace_observer: {
-      host: VALID_HOST,
-      port: 'dogs'
-    }}
-  })
-
-  createSpanEventAggregator(config)
-  t.equal(config.infinite_tracing.trace_observer.host, '')
-
-  t.end()
-})
-
-tap.test('should reset/disable trace observer when port is empty string', (t) => {
-  const config = Config.initialize({
-    infinite_tracing: { trace_observer: {
-      host: VALID_HOST,
-      port: ''
-    }}
-  })
-  createSpanEventAggregator(config)
-  t.equal(config.infinite_tracing.trace_observer.host, '')
 
   t.end()
 })
 
 tap.test(
-  'should return streaming when trace observer configured',
-  {skip: !isGrpcSupportedVersion},
+  'should revert to standard aggregator when it fails to create streaming aggregator',
   (t) => {
     const config = Config.initialize({
-      infinite_tracing: { trace_observer: {
-        host: VALID_HOST
-      }}
+      infinite_tracing: {
+        trace_observer: {
+          host: VALID_HOST
+        }
+      }
     })
 
-    const aggregator = createSpanEventAggregator(config)
-    const isStreamingAggregator = aggregator instanceof StreamingSpanEventAggregator
+    const err = new Error('failed to craete streaming aggregator')
+    const stub = sinon.stub().throws(err)
+    const loggerStub = {
+      warn: sinon.stub(),
+      trace: sinon.stub()
+    }
 
-    t.ok(isStreamingAggregator)
+    const createSpanAggrStubbed = proxyquire('../../../lib/spans/create-span-event-aggregator', {
+      './streaming-span-event-aggregator': stub,
+      '../logger': loggerStub
+    })
+
+    const aggregator = createSpanAggrStubbed(config)
+    assertStandardSpanAggregator(t, aggregator)
+    t.same(
+      config.infinite_tracing.trace_observer,
+      { host: '', port: '' },
+      'should set host and port to empty strings when failing to create streaming aggregator'
+    )
+    t.same(
+      loggerStub.warn.args[0],
+      [
+        err,
+        'Failed to create streaming span event aggregator for infinite tracing. ' +
+          'Reverting to standard span event aggregator and disabling infinite tracing'
+      ],
+      'should log warning about failed streaming construction'
+    )
 
     t.end()
   }
 )
-
-function tempOverrideNodeVersion(t, newVersion) {
-  const originalVersion = process.version
-  Object.defineProperty(process, 'version', {value: newVersion, writable: true})
-  t.teardown(() => {
-    process.version = originalVersion
-  })
-}
 
 function assertStandardSpanAggregator(t, aggregator) {
   const isSpanEventAggregator = aggregator instanceof SpanEventAggregator

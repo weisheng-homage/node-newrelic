@@ -5,20 +5,21 @@
 
 'use strict'
 
-var helper = require('../../lib/agent_helper')
-var shared = require('./shared')
+const helper = require('../../lib/agent_helper')
+const shared = require('./shared')
 
-var s = shared.makeSuite()
-var suite = s.suite
-var tracer = s.agent.tracer
-var tx = helper.runInTransaction(s.agent, function(_tx) { return _tx })
+const s = shared.makeSuite()
+const suite = s.suite
+const tracer = s.agent.tracer
+const tx = helper.runInTransaction(s.agent, function (_tx) {
+  return _tx
+})
 tracer.segment = tx.root
 
-
 preOptBind()
-var bound = tracer.bindFunction(shared.getTest().func, tx.root, true)
+const bound = tracer.bindFunction(shared.getTest().func, tx.root, true)
 
-setTimeout(function() {
+setTimeout(function () {
   suite.add({
     name: 'all parameters',
     fn: allParamBind
@@ -46,7 +47,7 @@ setTimeout(function() {
 
   suite.add({
     name: 'wrapped',
-    fn: function() {
+    fn: function () {
       return bound(Math.random(), Math.random(), Math.random())
     }
   })
@@ -55,29 +56,29 @@ setTimeout(function() {
 }, 15)
 
 function allParamBind() {
-  var test = shared.getTest()
+  const test = shared.getTest()
   test.func = tracer.bindFunction(test.func, tx.root, Math.random() > 0.5)
 }
 
 function twoParamBind() {
-  var test = shared.getTest()
+  const test = shared.getTest()
   Math.random() > 0.5 // rand call so all tests perform same amount of work.
   test.func = tracer.bindFunction(test.func, tx.root)
 }
 
 function oneParamBind() {
-  var test = shared.getTest()
+  const test = shared.getTest()
   Math.random() > 0.5 // rand call so all tests perform same amount of work.
   test.func = tracer.bindFunction(test.func)
 }
 
 function nullSegmentBind() {
-  var test = shared.getTest()
+  const test = shared.getTest()
   test.func = tracer.bindFunction(test.func, null, Math.random() > 0.5)
 }
 
 function randomBind() {
-  var n = Math.random()
+  const n = Math.random()
   if (n >= 0.75) {
     allParamBind()
   } else if (n >= 0.5) {
@@ -90,7 +91,7 @@ function randomBind() {
 }
 
 function preOptBind() {
-  for (var i = 0; i < 1000000; ++i) {
+  for (let i = 0; i < 1000000; ++i) {
     randomBind()
   }
 }

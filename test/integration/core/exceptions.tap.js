@@ -12,82 +12,82 @@ const helper = require('../../lib/agent_helper')
 const helpersDir = path.join(path.resolve(__dirname, '../../'), 'helpers')
 
 tap.test('Uncaught exceptions', (t) => {
-  var proc = startProc()
+  const proc = startProc()
 
-  var timer = setTimeout(function() {
+  const timer = setTimeout(function () {
     t.fail('child did not exit')
     proc.kill()
     t.end()
   }, 10000)
 
-  proc.on('exit', function() {
+  proc.on('exit', function () {
     t.ok(true, 'Did not timeout')
     clearTimeout(timer)
     t.end()
   })
 
-  proc.send({name: 'uncaughtException'})
+  proc.send({ name: 'uncaughtException' })
 })
 
 tap.test('Caught uncaught exceptions', (t) => {
-  var proc = startProc()
+  const proc = startProc()
 
-  var theRightStuff = 31415927
-  var timer = setTimeout(function() {
+  const theRightStuff = 31415927
+  const timer = setTimeout(function () {
     t.fail('child hung')
     proc.kill()
     t.end()
   }, 10000)
 
-  proc.on('message', function(code) {
+  proc.on('message', function (code) {
     t.equal(parseInt(code, 10), theRightStuff, 'should have the correct code')
     clearTimeout(timer)
     proc.kill()
     t.end()
   })
 
-  proc.send({name: 'caughtUncaughtException', args: theRightStuff})
+  proc.send({ name: 'caughtUncaughtException', args: theRightStuff })
 })
 
 tap.test('Report uncaught exceptions', (t) => {
   t.plan(3)
 
-  var proc = startProc()
-  var message = 'I am a test error'
-  var messageReceived = false
+  const proc = startProc()
+  const message = 'I am a test error'
+  let messageReceived = false
 
-  proc.on('message', function(errors) {
+  proc.on('message', function (errors) {
     messageReceived = true
     t.equal(errors.count, 1, 'should have collected an error')
     t.equal(errors.messages[0], message, 'should have the correct message')
     proc.kill()
   })
 
-  proc.on('exit', function() {
+  proc.on('exit', function () {
     t.ok(messageReceived, 'should receive message')
     t.end()
   })
 
-  proc.send({name: 'checkAgent', args: message})
+  proc.send({ name: 'checkAgent', args: message })
 })
 
 tap.test('Triggers harvest while in serverless mode', (t) => {
   t.plan(9)
 
-  var proc = startProc({
-    'NEW_RELIC_SERVERLESS_MODE_ENABLED': 'y',
-    'NEW_RELIC_LOG_ENABLED': 'false',
-    'NEW_RELIC_DISTRIBUTED_TRACING_ENABLED': 'false',
-    'NEW_RELIC_HOME': helpersDir
+  const proc = startProc({
+    NEW_RELIC_SERVERLESS_MODE_ENABLED: 'y',
+    NEW_RELIC_LOG_ENABLED: 'false',
+    NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: 'false',
+    NEW_RELIC_HOME: helpersDir
   })
-  var message = 'I am a test error'
-  var messageReceived = false
-  var payload = ''
+  const message = 'I am a test error'
+  let messageReceived = false
+  let payload = ''
   proc.stdout.on('data', function bufferData(data) {
     payload += data.toString('utf8')
   })
 
-  proc.on('message', function(errors) {
+  proc.on('message', function (errors) {
     messageReceived = true
     t.equal(errors.count, 0, 'should have harvested the error')
 
@@ -110,77 +110,74 @@ tap.test('Triggers harvest while in serverless mode', (t) => {
     })
   })
 
-  proc.on('exit', function() {
+  proc.on('exit', function () {
     t.ok(messageReceived, 'should receive message')
     t.end()
   })
 
-  proc.send({name: 'runServerlessTransaction', args: message})
+  proc.send({ name: 'runServerlessTransaction', args: message })
 })
 
 tap.test('Do not report domained exceptions', (t) => {
   t.plan(3)
-  var proc = startProc()
-  var message = 'I am a test error'
-  var messageReceived = false
+  const proc = startProc()
+  const message = 'I am a test error'
+  let messageReceived = false
 
-  proc.on('message', function(errors) {
+  proc.on('message', function (errors) {
     messageReceived = true
     t.equal(errors.count, 0, 'should not have collected an error')
     t.same(errors.messages, [], 'should have no error messages')
     proc.kill()
   })
 
-  proc.on('exit', function() {
+  proc.on('exit', function () {
     t.ok(messageReceived, 'should receive message')
     t.end()
   })
 
-  proc.send({name: 'domainUncaughtException', args: message})
+  proc.send({ name: 'domainUncaughtException', args: message })
 })
 
-// only available on Node >=9.3
-if (process.setUncaughtExceptionCaptureCallback) {
-  tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
-    t.plan(3)
-    const proc = startProc()
-    let messageReceived = false
+tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+  t.plan(3)
+  const proc = startProc()
+  let messageReceived = false
 
-    proc.on('message', (errors) => {
-      messageReceived = true
-      t.equal(errors.count, 0, 'should not have collected an error')
-      t.same(errors.messages, [], 'should have no error messages')
-      proc.kill()
-    })
-
-    proc.on('exit', () => {
-      t.ok(messageReceived, 'should receive message')
-      t.end()
-    })
-
-    proc.send({ name: 'setUncaughtExceptionCallback' })
+  proc.on('message', (errors) => {
+    messageReceived = true
+    t.equal(errors.count, 0, 'should not have collected an error')
+    t.same(errors.messages, [], 'should have no error messages')
+    proc.kill()
   })
 
-  tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
-    t.plan(3)
-    const proc = startProc()
-    let messageReceived = false
-
-    proc.on('message', (errors) => {
-      messageReceived = true
-      t.equal(errors.count, 1, 'should have collected an error')
-      t.same(errors.messages, ['nothing can keep me down'], 'should have error messages')
-      proc.kill()
-    })
-
-    proc.on('exit', () => {
-      t.ok(messageReceived, 'should receive message')
-      t.end()
-    })
-
-    proc.send({ name: 'unsetUncaughtExceptionCallback' })
+  proc.on('exit', () => {
+    t.ok(messageReceived, 'should receive message')
+    t.end()
   })
-}
+
+  proc.send({ name: 'setUncaughtExceptionCallback' })
+})
+
+tap.test('Report exceptions handled in setUncaughtExceptionCaptureCallback', (t) => {
+  t.plan(3)
+  const proc = startProc()
+  let messageReceived = false
+
+  proc.on('message', (errors) => {
+    messageReceived = true
+    t.equal(errors.count, 1, 'should have collected an error')
+    t.same(errors.messages, ['nothing can keep me down'], 'should have error messages')
+    proc.kill()
+  })
+
+  proc.on('exit', () => {
+    t.ok(messageReceived, 'should receive message')
+    t.end()
+  })
+
+  proc.send({ name: 'unsetUncaughtExceptionCallback' })
+})
 
 function startProc(env) {
   return cp.fork(path.join(helpersDir, 'exceptions.js'), {
@@ -193,7 +190,7 @@ function findLambdaPayload(rawLogData) {
   const logLines = rawLogData.split('\n')
   for (let i = 0; i < logLines.length; i++) {
     const logLine = logLines[i]
-    if (logLine.includes("NR_LAMBDA_MONITORING")) {
+    if (logLine.includes('NR_LAMBDA_MONITORING')) {
       return logLine
     }
   }

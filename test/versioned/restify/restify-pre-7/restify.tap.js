@@ -5,10 +5,9 @@
 
 'use strict'
 
-const tap     = require('tap')
+const tap = require('tap')
 const request = require('request')
-const helper  = require('../../../lib/agent_helper')
-
+const helper = require('../../../lib/agent_helper')
 
 const METRIC = 'WebTransaction/Restify/GET//hello/:name'
 
@@ -17,94 +16,89 @@ tap.test('Restify', (t) => {
 
   let agent = null
   let restify = null
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
 
     restify = require('restify')
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
-  t.test('should not crash when handling a connection', function(t) {
+  t.test('should not crash when handling a connection', function (t) {
     t.plan(7)
 
-    var server  = restify.createServer()
-    t.tearDown(() => server.close())
+    const server = restify.createServer()
+    t.teardown(() => server.close())
 
     server.get('/hello/:name', function sayHello(req, res) {
       t.ok(agent.getTransaction(), 'transaction should be available in handler')
       res.send('hello ' + req.params.name)
     })
 
-    server.listen(0, function() {
-      var port = server.address().port
+    server.listen(0, function () {
+      const port = server.address().port
       t.notOk(agent.getTransaction(), 'transaction should not leak into server')
 
-      var url = 'http://localhost:' + port + '/hello/friend'
-      request.get(url, function(error, response, body) {
-        if (error) return t.fail(error)
-        t.notOk(
-          agent.getTransaction(),
-          'transaction should not leak into external request'
-        )
+      const url = `http://localhost:${port}/hello/friend`
+      request.get(url, function (error, response, body) {
+        if (error) {
+          return t.fail(error)
+        }
+        t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
 
-        var metric = agent.metrics.getMetric(METRIC)
+        const metric = agent.metrics.getMetric(METRIC)
         t.ok(metric, 'request metrics should have been gathered')
         t.equals(metric.callCount, 1, 'handler should have been called')
         t.equals(body, '"hello friend"', 'should return expected data')
 
-        var isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
+        const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
         t.ok(isFramework, 'should indicate that restify is a framework')
       })
     })
   })
 
-  t.test('should still be instrumented when run with SSL', function(t) {
+  t.test('should still be instrumented when run with SSL', function (t) {
     t.plan(7)
 
-    helper.withSSL(function cb_withSSL(error, key, certificate, ca) {
-      if (error) {
-        t.fail('unable to set up SSL: ' + error)
-        t.end()
-      }
+    helper
+      .withSSL()
+      .then(([key, certificate, ca]) => {
+        const server = restify.createServer({ key: key, certificate: certificate })
+        t.teardown(() => server.close())
 
-      var server  = restify.createServer({key : key, certificate : certificate})
-      t.tearDown(() => server.close())
+        server.get('/hello/:name', function sayHello(req, res) {
+          t.ok(agent.getTransaction(), 'transaction should be available in handler')
+          res.send('hello ' + req.params.name)
+        })
 
-      server.get('/hello/:name', function sayHello(req, res) {
-        t.ok(agent.getTransaction(), 'transaction should be available in handler')
-        res.send('hello ' + req.params.name)
-      })
+        server.listen(0, function () {
+          const port = server.address().port
+          t.notOk(agent.getTransaction(), 'transaction should not leak into server')
 
-      server.listen(0, function() {
-        var port = server.address().port
-        t.notOk(agent.getTransaction(), 'transaction should not leak into server')
+          const opts = { url: `https://${helper.SSL_HOST}:${port}/hello/friend`, ca }
+          request.get(opts, function (error, response, body) {
+            if (error) {
+              t.fail(error)
+              return t.end()
+            }
 
-        var opts = {url : 'https://ssl.lvh.me:' + port + '/hello/friend', ca : ca}
-        request.get(opts, function(error, response, body) {
-          if (error) {
-            t.fail(error)
-            return t.end()
-          }
+            t.notOk(agent.getTransaction(), 'transaction should not leak into external request')
 
-          t.notOk(
-            agent.getTransaction(),
-            'transaction should not leak into external request'
-          )
+            const metric = agent.metrics.getMetric(METRIC)
+            t.ok(metric, 'request metrics should have been gathered')
+            t.equals(metric.callCount, 1, 'handler should have been called')
+            t.equals(body, '"hello friend"', 'should return expected data')
 
-          var metric = agent.metrics.getMetric(METRIC)
-          t.ok(metric, 'request metrics should have been gathered')
-          t.equals(metric.callCount, 1, 'handler should have been called')
-          t.equals(body, '"hello friend"', 'should return expected data')
-
-          var isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
-          t.ok(isFramework, 'should indicate that restify is a framework')
+            const isFramework = agent.environment.get('Framework').indexOf('Restify') > -1
+            t.ok(isFramework, 'should indicate that restify is a framework')
+          })
         })
       })
-    })
+      .catch((error) => {
+        t.fail('unable to set up SSL: ' + error)
+        t.end()
+      })
   })
 })

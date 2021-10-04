@@ -5,19 +5,18 @@
 
 'use strict'
 
-var path = require('path')
-var util = require('util')
-var fs = require('fs')
-var jsv = require('JSV').JSV
-var env = jsv.createEnvironment()
-var restify = require('restify')
-var codec = require('../../lib/util/codec')
-var logger = require('../../lib/logger').child({component: 'fake_collector'})
+const path = require('path')
+const util = require('util')
+const fs = require('fs')
+const Ajv = require('ajv')
+const ajv = new Ajv()
+const restify = require('restify')
+const codec = require('../../lib/util/codec')
+const logger = require('../../lib/logger').child({ component: 'fake_collector' })
 
-var DEFAULT_HOST = 'ssl.lvh.me'
-var ACTUAL_HOST = 'collector-1.lvh.me'
-var PORT = 8089
-var PATHS = {
+const ACTUAL_HOST = 'collector-1.integration-test'
+const PORT = 8089
+const PATHS = {
   connect: path.join(__dirname, 'schemas/connect.json'),
   container: path.join(__dirname, 'schemas/transaction_sample_data.json'),
   trace: path.join(__dirname, 'schemas/transaction_trace.json'),
@@ -26,39 +25,50 @@ var PATHS = {
   sql: path.join(__dirname, 'schemas/sql_trace_data.json'),
   sqlParams: path.join(__dirname, 'schemas/sql_params.json')
 }
+const { SSL_HOST } = require('./agent_helper')
 
-
-var schemas = {}
-Object.keys(PATHS).forEach(function(key) {
+const schemas = {}
+Object.keys(PATHS).forEach(function (key) {
   schemas[key] = JSON.parse(fs.readFileSync(PATHS[key]))
 })
+
+function validateSchema(data, schema) {
+  const checkSchema = ajv.compile(schema)
+  return checkSchema(data)
+}
 
 function getHostname(request) {
   return request.header('Host').split(/:/)[0]
 }
 
 function decodeTraceData(encodedArray, callback) {
-  var toDecode = encodedArray.length
-  var decoded = []
+  let toDecode = encodedArray.length
+  const decoded = []
 
-  encodedArray.forEach(function(data) {
-    var element = data[4]
-    codec.decode(element, function(error, extracted) {
-      if (error) return callback(error)
+  encodedArray.forEach(function (data) {
+    const element = data[4]
+    codec.decode(element, function (error, extracted) {
+      if (error) {
+        return callback(error)
+      }
 
       decoded.push(extracted)
       toDecode -= 1
-      if (toDecode < 1) callback(null, decoded)
+      if (toDecode < 1) {
+        callback(null, decoded)
+      }
     })
   })
 }
 
 function validate(schema, namespace) {
-  return function(submitted, validations, callback) {
-    var data = submitted
+  return function (submitted, validations, callback) {
+    const data = submitted
 
-    var report = env.validate(data, schema)
-    if (report.errors.length) validations[namespace] = report.errors
+    const report = validateSchema(data, schema)
+    if (report.errors.length) {
+      validations[namespace] = report.errors
+    }
     return callback(null, validations)
   }
 }
@@ -68,17 +78,19 @@ function getRedirectURL() {
 }
 
 function returnData(validations, returned) {
-  if (Object.keys(validations).length) returned.validations = validations
+  if (Object.keys(validations).length) {
+    returned.validations = validations
+  }
   return returned
 }
 
-var validators = {
+const validators = {
   originalHost: function originalHost(request, validations) {
-    var host = getHostname(request)
+    const host = getHostname(request)
 
     validations.host_name_errors = []
 
-    if (host !== DEFAULT_HOST) {
+    if (host !== SSL_HOST) {
       validations.host_name_errors.push('not connecting to root collector')
     }
 
@@ -86,13 +98,15 @@ var validators = {
       validations.host_name_errors.push('already connected to redirect target')
     }
 
-    if (validations.host_name_errors.length < 1) delete validations.host_name_errors
+    if (validations.host_name_errors.length < 1) {
+      delete validations.host_name_errors
+    }
 
     return validations
   },
 
-  redirectedHost: function(request, validations) {
-    var host = getHostname(request)
+  redirectedHost: function (request, validations) {
+    const host = getHostname(request)
     if (host !== ACTUAL_HOST) {
       validations.host_name_errors = ['did not redirect to ' + ACTUAL_HOST]
     }
@@ -104,24 +118,35 @@ var validators = {
   errors: validate(schemas.error, 'error_data'),
   metrics: validate(schemas.metric, 'metric_data'),
 
-  transactionTraces: function(transactionData, validations, callback) {
-    var data = JSON.parse(transactionData)
+  transactionTraces: function (transactionData, validations, callback) {
+    const data = JSON.parse(transactionData)
 
-    var report = env.validate(data, schemas.container)
-    if (report.errors.length) validations.transaction_sample_data = report.errors
+    const report = validateSchema(data, schemas.container)
+    if (report.errors.length) {
+      validations.transaction_sample_data = report.errors
+    }
 
-    var traces = data[1]
-    decodeTraceData(traces, function(err, traceList) {
+    const traces = data[1]
+    decodeTraceData(traces, function (err, traceList) {
       if (err) {
-        validations.transaction_traces =
-          [util.format('unable to inflate encoded traces. zlib says: %s', err.message)]
+        validations.transaction_traces = [
+          util.format('unable to inflate encoded traces. zlib says: %s', err.message)
+        ]
         return callback(null, validations)
       }
 
-      validations.transaction_traces = traceList.map(function(trace) {
-        var validateReport = env.validate(trace, schemas.trace)
-        if (validateReport.errors.length) return validateReport.errors
-      }).filter(function(trace) { if (trace) return true })
+      validations.transaction_traces = traceList
+        .map(function (trace) {
+          const validateReport = validateSchema(trace, schemas.trace)
+          if (validateReport.errors.length) {
+            return validateReport.errors
+          }
+        })
+        .filter(function (trace) {
+          if (trace) {
+            return true
+          }
+        })
 
       if (validations.transaction_traces.length < 1) {
         delete validations.transaction_traces
@@ -131,26 +156,28 @@ var validators = {
     })
   },
 
-  sqlTraces: function(sqlTraceData, validations, callback) {
-    var data = JSON.parse(sqlTraceData)
+  sqlTraces: function (sqlTraceData, validations, callback) {
+    const data = JSON.parse(sqlTraceData)
 
-    var report = env.validate(data, schemas.sql)
-    if (report.errors.length) validations.sql_trace_data = report.errors
+    const report = validateSchema(data, schemas.sql)
+    if (report.errors.length) {
+      validations.sql_trace_data = report.errors
+    }
 
     validations.sql_param_decode_errors = []
     validations.sql_params = []
 
-    var toDecode = data.length
-    data.forEach(function(trace) {
-      codec.decode(trace[9], function(error, extracted) {
+    let toDecode = data.length
+    data.forEach(function (trace) {
+      codec.decode(trace[9], function (error, extracted) {
         if (error) {
-          var message = util.format(
+          const message = util.format(
             'unable to inflate encoded SQL parameters. zlib says: %s',
             error.message
           )
           validations.sql_param_decode_errors.push(message)
         } else {
-          var validateReport = env.validate(extracted, schemas.sqlParams)
+          const validateReport = validateSchema(extracted, schemas.sqlParams)
           if (validateReport.errors.length) {
             validations.sql_params.push(validateReport.errors)
           }
@@ -172,7 +199,7 @@ var validators = {
     })
   },
 
-  queryString: function(query, validation) {
+  queryString: function (query, validation) {
     validation.query_errors = []
 
     if (!query.marshal_format) {
@@ -183,10 +210,10 @@ var validators = {
       )
     }
 
-    var version = query.protocol_version
+    const version = query.protocol_version
     if (!version) {
       validation.query_errors.push('protocol_version not set')
-    } else if ((version < 9 || version > 17)) {
+    } else if (version < 9 || version > 17) {
       validation.query_errors.push(
         util.format('protocol_version %d is not between 9 and 17', version)
       )
@@ -200,40 +227,41 @@ var validators = {
       validation.query_errors.push('no method to be invoked')
     }
 
-    if (validation.query_errors.length === 0) delete validation.query_errors
+    if (validation.query_errors.length === 0) {
+      delete validation.query_errors
+    }
 
     return validation
   },
 
-  httpHeaders: function(request, validation) {
+  httpHeaders: function (request, validation) {
     validation.header_errors = []
 
-    var encoding = request.header('content-encoding')
+    const encoding = request.header('content-encoding')
     if (!encoding) {
       validation.header_errors.push("'Content-Encoding' not set")
     } else if (!(encoding === 'identity' || encoding === 'deflate')) {
       validation.header_errors.push(
-        util.format(
-          "Content-Encoding' must be 'identity' or 'deflate', not '%s'",
-          encoding
-        )
+        util.format("Content-Encoding' must be 'identity' or 'deflate', not '%s'", encoding)
       )
     }
 
     if (request.header('content-type') !== 'application/json') {
       validation.header_errors.push(
         "you really ought to be setting 'Content-Type' to 'application/json'" +
-        " (The collector doesn't care, though)"
+          " (The collector doesn't care, though)"
       )
     }
 
     // NewRelic-NodeAgent/0.9.1-46 (nodejs 0.8.12 darwin-x64)
-    var userAgentPattern = /^NewRelic-[a-zA-Z0-9]+\/[0-9.\-]+ \(.+\)$/
+    const userAgentPattern = /^NewRelic-[a-zA-Z0-9]+\/[0-9.\-]+ \(.+\)$/
     if (!userAgentPattern.test(request.header('User-Agent'))) {
       validation.header_errors.push("'User-Agent' should conform to New Relic standards")
     }
 
-    if (validation.header_errors.length === 0) delete validation.header_errors
+    if (validation.header_errors.length === 0) {
+      delete validation.header_errors
+    }
 
     return validation
   }
@@ -242,45 +270,46 @@ var validators = {
 function handleGenerically(validator) {
   return function handle(req, res, validations, next) {
     validators.redirectedHost(req, validations)
-    validator(req.body, validations, function(error, validationList) {
-      if (error) return next(error)
+    validator(req.body, validations, function (error, validationList) {
+      if (error) {
+        return next(error)
+      }
 
-      res.send(returnData(validationList, {return_value: {}}))
+      res.send(returnData(validationList, { return_value: {} }))
       return next()
     })
   }
 }
 
-var methods = {
-  preconnect: function(req, res, validations, next) {
+const methods = {
+  preconnect: function (req, res, validations, next) {
     validators.originalHost(req, validations)
 
     if (!Array.isArray(req.body) || req.body.length) {
       validations.body_errors = ["preconnect expects a body of '[]'"]
     }
 
-    res.send(returnData(validations, {return_value: getRedirectURL()}))
+    res.send(returnData(validations, { return_value: getRedirectURL() }))
     return next()
   },
 
-  connect: function(req, res, validations, next) {
+  connect: function (req, res, validations, next) {
     validators.redirectedHost(req, validations)
-    validators.connect(req.body, validations, function(error, validationList) {
-      if (error) return next(error)
+    validators.connect(req.body, validations, function (error, validationList) {
+      if (error) {
+        return next(error)
+      }
 
       res.send(
-        returnData(
-          validationList,
-          {
-            return_value: {
-              agent_run_id: 1337,
-              collect_errors: true,
-              collect_traces: true,
-              apdex_t: 0.5,
-              encoding_key: req.query.license_key
-            }
+        returnData(validationList, {
+          return_value: {
+            agent_run_id: 1337,
+            collect_errors: true,
+            collect_traces: true,
+            apdex_t: 0.5,
+            encoding_key: req.query.license_key
           }
-        )
+        })
       )
 
       return next()
@@ -294,31 +323,29 @@ var methods = {
 }
 
 function bootstrap(options, callback) {
-  var server = restify.createServer({
+  const server = restify.createServer({
     key: fs.readFileSync(path.join(__dirname, './test-key.key')),
-    certificate: fs.readFileSync(
-      path.join(
-        __dirname,
-        './self-signed-test-certificate.crt'
-      )
-    )
+    certificate: fs.readFileSync(path.join(__dirname, './self-signed-test-certificate.crt'))
   })
 
-  server.use(restify.plugins.queryParser({mapParams: false}))
-  server.use(restify.plugins.bodyParser({mapParams: false}))
+  server.use(restify.plugins.queryParser({ mapParams: false }))
+  server.use(restify.plugins.bodyParser({ mapParams: false }))
 
-  restify.defaultResponseHeaders = function() {
+  restify.defaultResponseHeaders = function () {
     // the collector *always* leaves the content-type set to text/plain
     this.header('Content-Type', 'text/plain')
   }
 
-  server.on('after', restify.plugins.auditLogger({
-    log: logger,
-    event: 'after'
-  }))
+  server.on(
+    'after',
+    restify.plugins.auditLogger({
+      log: logger,
+      event: 'after'
+    })
+  )
 
-  server.post('/agent_listener/invoke_raw_method', function(req, res, next) {
-    var validations = {}
+  server.post('/agent_listener/invoke_raw_method', function (req, res, next) {
+    const validations = {}
     validators.queryString(req.query, validations)
     validators.httpHeaders(req, validations)
 
@@ -331,18 +358,18 @@ function bootstrap(options, callback) {
     }
   })
 
-  server.pre(function(req, res, next) {
+  server.pre(function (req, res, next) {
     // Restify will short-circuit with UnsupportedMediaTypeError for non-gzip encodings.
     // It will try its best when there is no encoding, so we force that here to
     // handle our identity case.
-    if (req.headers["content-encoding"] !== 'gzip') {
-      req.headers["content-encoding"] = undefined
+    if (req.headers['content-encoding'] !== 'gzip') {
+      req.headers['content-encoding'] = undefined
     }
 
     return next()
   })
 
-  server.listen(options.port, function() {
+  server.listen(options.port, function () {
     callback(null, server)
   })
 }

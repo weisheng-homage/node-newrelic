@@ -5,9 +5,8 @@
 
 'use strict'
 
-var tap = require('tap')
+const tap = require('tap')
 
-
-tap.test('pricing gcp info', function(t) {
+tap.test('pricing gcp info', function (t) {
   require('./vendor-info-tests')(t, 'gcp')
 })

@@ -5,79 +5,74 @@
 
 'use strict'
 
-var helper = require('../../../lib/agent_helper')
-var http = require('http')
-var tap = require('tap')
-var utils = require('./hapi-17-utils')
+const helper = require('../../../lib/agent_helper')
+const http = require('http')
+const tap = require('tap')
+const utils = require('./hapi-17-utils')
 
-var agent
-var server
-var port
+let agent
+let server
+let port
 
-tap.test('Hapi v17 error handling', function(t) {
+tap.test('Hapi v17 error handling', function (t) {
   t.autoend()
 
-  t.beforeEach(function(done) {
+  t.beforeEach(function () {
     agent = helper.instrumentMockedAgent()
 
     server = utils.getServer()
-    done()
   })
 
-  t.afterEach(function() {
+  t.afterEach(function () {
     helper.unloadAgent(agent)
     return server.stop()
   })
 
-  t.test('does not report error when handler returns a string', function(t) {
+  t.test('does not report error when handler returns a string', function (t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function() {
+      handler: function () {
         return 'ok'
       }
     })
 
-    runTest(t, function(errors, statusCode) {
+    runTest(t, function (errors, statusCode) {
       t.equals(errors.length, 0, 'should have no errors')
       t.equals(statusCode, 200, 'should have a 200 status code')
       t.end()
     })
   })
 
-  t.test('reports error when an instance of Error is returned', function(t) {
+  t.test('reports error when an instance of Error is returned', function (t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function() {
+      handler: function () {
         return Promise.reject(new Error('rejected promise error'))
       }
     })
 
-    runTest(t, function(errors, statusCode) {
+    runTest(t, function (errors, statusCode) {
       t.equals(errors.length, 1, 'should have one error')
 
-      t.equals(
-        errors[0][2],
-        'rejected promise error',
-        'should have expected error message'
-      )
+      t.equals(errors[0][2], 'rejected promise error', 'should have expected error message')
 
       t.equals(statusCode, 500, 'should have expected error code')
       t.end()
     })
   })
 
-  t.test('reports error when thrown from a route', function(t) {
+  t.test('reports error when thrown from a route', function (t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function() {
+      handler: function () {
         throw new Error('thrown error')
       }
     })
 
-    runTest(t, function(errors, statusCode) {
+    runTest(t, function (errors, statusCode) {
       t.equals(errors.length, 1, 'should have one error')
       t.equals(errors[0][2], 'thrown error', 'should have expected error message')
       t.equals(statusCode, 500, 'should have expected error code')
@@ -85,20 +80,20 @@ tap.test('Hapi v17 error handling', function(t) {
     })
   })
 
-  t.test('reports error when thrown from a middleware', function(t) {
-    server.ext('onRequest', function() {
+  t.test('reports error when thrown from a middleware', function (t) {
+    server.ext('onRequest', function () {
       throw new Error('middleware error')
     })
 
     server.route({
       method: 'GET',
       path: '/test',
-      handler: function() {
+      handler: function () {
         return 'ok'
       }
     })
 
-    runTest(t, function(errors, statusCode) {
+    runTest(t, function (errors, statusCode) {
       t.equals(errors.length, 1, 'should have one error')
       t.equals(errors[0][2], 'middleware error', 'should have expected error message')
       t.equals(statusCode, 500, 'should have expected error code')
@@ -116,7 +111,7 @@ tap.test('Hapi v17 error handling', function(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: () =>  {
+      handler: () => {
         throw new Error('route handler error')
       }
     })
@@ -139,7 +134,7 @@ tap.test('Hapi v17 error handling', function(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: () =>  {
+      handler: () => {
         throw new Error('route handler error')
       }
     })
@@ -161,7 +156,7 @@ tap.test('Hapi v17 error handling', function(t) {
     server.route({
       method: 'GET',
       path: '/test',
-      handler: () =>  {
+      handler: () => {
         throw new Error('route handler error')
       }
     })
@@ -197,20 +192,20 @@ tap.test('Hapi v17 error handling', function(t) {
 })
 
 function runTest(t, callback) {
-  var statusCode
-  var errors
+  let statusCode
+  let errors
 
-  agent.on('transactionFinished', function() {
+  agent.on('transactionFinished', function () {
     errors = agent.errors.traceAggregator.errors
     if (statusCode) {
       callback(errors, statusCode)
     }
   })
 
-  var endpoint = '/test'
-  server.start().then(function() {
+  const endpoint = '/test'
+  server.start().then(function () {
     port = server.info.port
-    makeRequest(endpoint, function(response) {
+    makeRequest(endpoint, function (response) {
       statusCode = response.statusCode
       if (errors) {
         callback(errors, statusCode)
@@ -218,11 +213,11 @@ function runTest(t, callback) {
       response.resume()
     })
   })
-  t.tearDown(function() {
+  t.teardown(function () {
     server.stop()
   })
 }
 
 function makeRequest(path, callback) {
-  http.request({port: port, path: path}, callback).end()
+  http.request({ port: port, path: path }, callback).end()
 }

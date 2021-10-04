@@ -13,18 +13,16 @@ tap.test('Test Module Instrumentation Loading', (t) => {
   t.autoend()
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-    done()
   })
 
-  t.test("__NR_instrumented set correctly", (t) => {
+  t.test('__NR_instrumented set correctly', (t) => {
     // path to our module fixture from this file
     const modulePathLocal = './module-load-fixture'
 
@@ -54,7 +52,7 @@ tap.test('Test Module Instrumentation Loading', (t) => {
     t.end()
   })
 
-  t.test("__NR_instrumented_errored set correctly", (t) => {
+  t.test('__NR_instrumented_errored set correctly', (t) => {
     // path to our module fixture from this file
     const modulePathLocal = './module-load-fixture-errored'
 

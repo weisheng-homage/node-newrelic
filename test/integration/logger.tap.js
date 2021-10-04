@@ -5,32 +5,34 @@
 
 'use strict'
 
-var path   = require ('path')
-var fs     = require('fs')
-var tap    = require('tap')
-var rimraf = require('rimraf')
+const path = require('path')
+const fs = require('fs')
+const tap = require('tap')
+const rimraf = require('rimraf')
 
-var DIRNAME = 'XXXNOCONFTEST'
+const DIRNAME = 'XXXNOCONFTEST'
 
-
-tap.test('logger', function(t) {
+tap.test('logger', function (t) {
   t.autoend()
 
-  t.afterEach(function(done) {
+  t.afterEach(async () => {
     if (path.basename(process.cwd()) === DIRNAME) {
       process.chdir('..')
     }
 
-    var dirPath = path.join(process.cwd(), DIRNAME)
-    if (fs.existsSync(dirPath)) {
-      rimraf(dirPath, done)
-    } else {
-      done()
-    }
+    const dirPath = path.join(process.cwd(), DIRNAME)
+
+    await new Promise((resolve) => {
+      if (fs.existsSync(dirPath)) {
+        rimraf(dirPath, resolve)
+      } else {
+        resolve()
+      }
+    })
   })
 
-  t.test('configuration from environment', function(t) {
-    fs.mkdir(DIRNAME, function(error) {
+  t.test('configuration from environment', function (t) {
+    fs.mkdir(DIRNAME, function (error) {
       if (!t.error(error, 'should not fail to make directory')) {
         return t.end()
       }
@@ -38,9 +40,8 @@ tap.test('logger', function(t) {
       process.chdir(DIRNAME)
 
       process.env.NEW_RELIC_LOG = 'stdout'
-      process.env.NEW_RELIC_NO_CONFIG_FILE = 'true'
 
-      t.doesNotThrow(function() {
+      t.doesNotThrow(function () {
         t.ok(require('../../lib/logger'), 'requiring logger returned a logging object')
       })
 

@@ -21,31 +21,25 @@ tap.test('built-in http queueTime', (t) => {
   let PORT = null
   let THRESHOLD = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent()
 
     testDate = Date.now()
     PORT = 0
     THRESHOLD = 200
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('header should allow t=${time} style headers', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -68,7 +62,7 @@ tap.test('built-in http queueTime', (t) => {
   t.test('bad header should log a warning', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.equal(transTime, 0, 'queueTime is not added')
       response.end()
@@ -93,13 +87,10 @@ tap.test('built-in http queueTime', (t) => {
   t.test('x-request should verify milliseconds', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -122,13 +113,10 @@ tap.test('built-in http queueTime', (t) => {
   t.test('x-queue should verify milliseconds', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -151,13 +139,10 @@ tap.test('built-in http queueTime', (t) => {
   t.test('x-request should verify microseconds', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -180,13 +165,10 @@ tap.test('built-in http queueTime', (t) => {
   t.test('x-queue should verify nanoseconds', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 
@@ -209,13 +191,10 @@ tap.test('built-in http queueTime', (t) => {
   t.test('x-request should verify seconds', (t) => {
     let server = null
 
-    server = http.createServer(function cb_createServer(request, response) {
+    server = http.createServer(function createServerCb(request, response) {
       const transTime = agent.getTransaction().queueTime
       t.ok(transTime > 0, 'must be positive')
-      t.ok(
-        transTime < THRESHOLD,
-        `should be less than ${THRESHOLD}ms (${transTime}ms)`
-      )
+      t.ok(transTime < THRESHOLD, `should be less than ${THRESHOLD}ms (${transTime}ms)`)
       response.end()
     })
 

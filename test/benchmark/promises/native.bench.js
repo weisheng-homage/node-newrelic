@@ -5,10 +5,9 @@
 
 'use strict'
 
-var shared = require('./shared')
+const shared = require('./shared')
 
-
-var suite = shared.makeSuite('Promises')
+const suite = shared.makeSuite('Promises')
 shared.tests.forEach(function registerTest(testFn) {
   suite.add({
     defer: true,
@@ -16,7 +15,7 @@ shared.tests.forEach(function registerTest(testFn) {
     fn: testFn(Promise),
     agent: {
       config: {
-        feature_flag: {await_support: false}
+        feature_flag: { await_support: false }
       }
     }
   })

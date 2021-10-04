@@ -5,32 +5,30 @@
 
 'use strict'
 
-var test = require('tap').test
-var helper = require('../../lib/agent_helper')
+const test = require('tap').test
+const helper = require('../../lib/agent_helper')
 
-
-test("new relic should not break route iteration", function(t) {
+test('new relic should not break route iteration', function (t) {
   t.plan(1)
-  var agent = helper.instrumentMockedAgent()
-  var express = require('express')
-  var router = new express.Router()
-  var childA = new express.Router()
-  var childB = new express.Router()
+  const agent = helper.instrumentMockedAgent()
+  const express = require('express')
+  const router = new express.Router()
+  const childA = new express.Router()
+  const childB = new express.Router()
 
-
-  t.tearDown(function cb_tearDown() {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
-  router.get('/get', function(req, res) {
+  router.get('/get', function (req, res) {
     res.end()
   })
 
-  childA.get('/test', function(req, res) {
+  childA.get('/test', function (req, res) {
     res.end()
   })
 
-  childB.get('/hello', function(req, res) {
+  childB.get('/hello', function (req, res) {
     res.end()
   })
 
@@ -45,9 +43,7 @@ function findAllRoutes(router, path) {
     return path
   }
 
-  return router.stack.map(function(routerr) {
-    return findAllRoutes(
-      routerr.handle, path + (routerr.route && routerr.route.path || '')
-    )
+  return router.stack.map(function (routerr) {
+    return findAllRoutes(routerr.handle, path + ((routerr.route && routerr.route.path) || ''))
   })
 }

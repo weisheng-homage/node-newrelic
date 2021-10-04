@@ -5,18 +5,15 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
-var helper = require('../../lib/agent_helper')
-var assertMetrics = require('../../lib/metrics_helper').assertMetrics
-var recordWeb = require('../../../lib/metrics/recorders/http')
-var Transaction = require('../../../lib/transaction')
-
+const helper = require('../../lib/agent_helper')
+const tapAssertMetrics = require('../../lib/metrics_helper').tapAssertMetrics
+const recordWeb = require('../../../lib/metrics/recorders/http')
+const Transaction = require('../../../lib/transaction')
 
 function makeSegment(options) {
-  var segment = options.transaction.trace.root.add('placeholder')
+  const segment = options.transaction.trace.root.add('placeholder')
   segment.setDurationInMillis(options.duration)
   segment._setExclusiveDurationInMillis(options.exclusive)
 
@@ -24,11 +21,12 @@ function makeSegment(options) {
 }
 
 function record(options) {
-  if (options.apdexT) options.transaction.metrics.apdexT = options.apdexT
+  if (options.apdexT) {
+    options.transaction.metrics.apdexT = options.apdexT
+  }
 
-  var segment = makeSegment(options)
-  var transaction = options.transaction
-
+  const segment = makeSegment(options)
+  const transaction = options.transaction
 
   transaction.finalizeNameFromUri(options.url, options.code)
   transaction.queueTime = options.queueTime
@@ -36,76 +34,91 @@ function record(options) {
   recordWeb(segment, options.transaction.name)
 }
 
-describe("when recording queueTime", function() {
-  var agent
-  var trans
+tap.test('when recording queueTime', (test) => {
+  let agent
+  let trans
 
-
-  beforeEach(function() {
-    agent = helper.loadMockedAgent()
+  test.beforeEach(() => {
+    agent = helper.instrumentMockedAgent()
     trans = new Transaction(agent)
   })
 
-  afterEach(function() {
+  test.afterEach(() => {
     helper.unloadAgent(agent)
   })
 
-  it("non zero times should record a metric", function() {
+  test.test('non zero times should record a metric', (t) => {
     record({
-      transaction : trans,
-      apdexT      : 0.2,
-      url         : '/test',
-      code        : 200,
-      duration    : 1,
-      exclusive   : 1,
-      queueTime   : 2200,
+      transaction: trans,
+      apdexT: 0.2,
+      url: '/test',
+      code: 200,
+      duration: 1,
+      exclusive: 1,
+      queueTime: 2200
     })
 
     const result = [
-      [{name: 'WebTransaction'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name: 'WebTransactionTotalTime'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name: 'HttpDispatcher'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{ name: 'WebTransaction' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{ name: 'WebTransactionTotalTime' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{ name: 'HttpDispatcher' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{ name: 'WebTransaction/NormalizedUri/*' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
       [
-        {name: 'WebTransaction/NormalizedUri/*'},
+        { name: 'WebTransactionTotalTime/NormalizedUri/*' },
         [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
       ],
       [
-        {name: 'WebTransactionTotalTime/NormalizedUri/*'},
+        { name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all' },
         [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
       ],
-      [{name: 'WebFrontend/QueueTime'}, [1, 2.2, 2.2, 2.2, 2.2, 4.840000000000001]],
-      [{name: 'Apdex/NormalizedUri/*'}, [1,0,0,0.2,0.2,0]],
-      [{name: 'Apdex'}, [1, 0, 0, 0.2, 0.2, 0]]
+      [
+        { name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb' },
+        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
+      ],
+      [{ name: 'WebFrontend/QueueTime' }, [1, 2.2, 2.2, 2.2, 2.2, 4.840000000000001]],
+      [{ name: 'Apdex/NormalizedUri/*' }, [1, 0, 0, 0.2, 0.2, 0]],
+      [{ name: 'Apdex' }, [1, 0, 0, 0.2, 0.2, 0]]
     ]
-    assertMetrics(trans.metrics, result, true)
+
+    tapAssertMetrics(t, trans, result, true)
+
+    t.end()
   })
 
-  it("zero times should not record a metric", function() {
+  test.test('zero times should not record a metric', (t) => {
     record({
-      transaction : trans,
-      apdexT      : 0.2,
-      url         : '/test',
-      code        : 200,
-      duration    : 1,
-      exclusive   : 1,
-      queueTime   : 0,
+      transaction: trans,
+      apdexT: 0.2,
+      url: '/test',
+      code: 200,
+      duration: 1,
+      exclusive: 1,
+      queueTime: 0
     })
 
     const result = [
-      [{name: 'WebTransaction'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name: 'WebTransactionTotalTime'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
-      [{name: 'HttpDispatcher'}, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{ name: 'WebTransaction' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{ name: 'WebTransactionTotalTime' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{ name: 'HttpDispatcher' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
+      [{ name: 'WebTransaction/NormalizedUri/*' }, [1, 0.001, 0.001, 0.001, 0.001, 0.000001]],
       [
-        {name: 'WebTransaction/NormalizedUri/*'},
+        { name: 'WebTransactionTotalTime/NormalizedUri/*' },
         [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
       ],
       [
-        {name: 'WebTransactionTotalTime/NormalizedUri/*'},
+        { name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/all' },
         [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
       ],
-      [{name: 'Apdex/NormalizedUri/*'}, [1, 0, 0, 0.2, 0.2, 0]],
-      [{name: 'Apdex'}, [1, 0, 0, 0.2, 0.2, 0]]
+      [
+        { name: 'DurationByCaller/Unknown/Unknown/Unknown/Unknown/allWeb' },
+        [1, 0.001, 0.001, 0.001, 0.001, 0.000001]
+      ],
+      [{ name: 'Apdex/NormalizedUri/*' }, [1, 0, 0, 0.2, 0.2, 0]],
+      [{ name: 'Apdex' }, [1, 0, 0, 0.2, 0.2, 0]]
     ]
-    assertMetrics(trans.metrics, result, true)
+    tapAssertMetrics(t, trans, result, true)
+
+    t.end()
   })
+  test.end()
 })

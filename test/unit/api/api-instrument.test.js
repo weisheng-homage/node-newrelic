@@ -17,25 +17,21 @@ tap.test('Agent API - instrument', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
 
     sinon.spy(shimmer, 'registerInstrumentation')
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
 
     shimmer.registerInstrumentation.restore()
-
-    done()
   })
 
-  t.test("exports a function for adding custom instrumentation", (t) => {
+  t.test('exports a function for adding custom instrumentation', (t) => {
     t.ok(api.instrument)
     t.type(api.instrument, 'function')
 
@@ -45,7 +41,7 @@ tap.test('Agent API - instrument', (t) => {
   t.test('should register the instrumentation with shimmer', (t) => {
     const opts = {
       moduleName: 'foobar',
-      onRequire: function() {}
+      onRequire: function () {}
     }
     api.instrument(opts)
 

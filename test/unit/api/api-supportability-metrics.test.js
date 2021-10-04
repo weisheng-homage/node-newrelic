@@ -5,7 +5,6 @@
 
 'use strict'
 
-
 const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 const API = require('../../../api')
@@ -19,36 +18,29 @@ tap.test('The API supportability metrics', (t) => {
 
   const apiCalls = Object.keys(API.prototype)
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
-  for (var i = 0; i < apiCalls.length; i++) {
+  for (let i = 0; i < apiCalls.length; i++) {
     testMetricCalls(apiCalls[i])
   }
 
   function testMetricCalls(name) {
     const testName = 'should create a metric for API#' + name
     t.test(testName, (t) => {
-      const beforeMetric = agent.metrics.getOrCreateMetric(
-        NAMES.SUPPORTABILITY.API + '/' + name
-      )
+      const beforeMetric = agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/' + name)
       t.equal(beforeMetric.callCount, 0)
 
       // Some api calls required a name to be given rather than just an empty string
       api[name]('test')
 
-      const afterMetric = agent.metrics.getOrCreateMetric(
-        NAMES.SUPPORTABILITY.API + '/' + name
-      )
+      const afterMetric = agent.metrics.getOrCreateMetric(NAMES.SUPPORTABILITY.API + '/' + name)
       t.equal(afterMetric.callCount, 1)
 
       t.end()

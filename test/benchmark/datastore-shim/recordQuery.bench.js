@@ -9,7 +9,7 @@ const shared = require('./shared')
 
 const suite = shared.makeSuite('recordQuery')
 
-var testDatastore = null
+let testDatastore = null
 
 function makeInit(instrumented) {
   return function setDatastore(agent) {
@@ -23,7 +23,7 @@ suite.add({
   agent: {},
   initialize: makeInit(true),
   runInTransaction: true,
-  fn: function(agent, done) {
+  fn: function (agent, done) {
     testDatastore.testQuery('test', done)
   }
 })
@@ -33,7 +33,7 @@ suite.add({
   async: true,
   initialize: makeInit(true),
   agent: {},
-  fn: function(agent, done) {
+  fn: function (agent, done) {
     testDatastore.testQuery('test', done)
   }
 })
@@ -42,7 +42,7 @@ suite.add({
   name: 'uninstrumented operation',
   initialize: makeInit(false),
   async: true,
-  fn: function(agent, done) {
+  fn: function (agent, done) {
     testDatastore.testQuery('test', done)
   }
 })

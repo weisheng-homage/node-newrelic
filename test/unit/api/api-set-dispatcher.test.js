@@ -15,30 +15,26 @@ tap.test('Agent API - dispatch setter', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     agent.environment.clearDispatcher()
 
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
-  t.test("exports a dispatcher setter", (t) => {
+  t.test('exports a dispatcher setter', (t) => {
     t.ok(api.setDispatcher)
     t.type(api.setDispatcher, 'function')
 
     t.end()
   })
 
-  t.test("sets the dispatcher", (t) => {
+  t.test('sets the dispatcher', (t) => {
     api.setDispatcher('test')
 
     const dispatcher = agent.environment.get('Dispatcher')
@@ -47,7 +43,7 @@ tap.test('Agent API - dispatch setter', (t) => {
     t.end()
   })
 
-  t.test("sets the dispatcher and version", (t) => {
+  t.test('sets the dispatcher and version', (t) => {
     api.setDispatcher('test', 2)
 
     t.ok(dispatcherIncludes(agent, 'test'))
@@ -56,7 +52,7 @@ tap.test('Agent API - dispatch setter', (t) => {
     t.end()
   })
 
-  t.test("does not allow internal calls to setDispatcher to override", (t) => {
+  t.test('does not allow internal calls to setDispatcher to override', (t) => {
     agent.environment.setDispatcher('internal', '3')
     t.ok(dispatcherIncludes(agent, 'internal'))
     t.ok(dispatcherVersionIncludes(agent, '3'))

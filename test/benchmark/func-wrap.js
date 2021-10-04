@@ -5,14 +5,14 @@
 
 'use strict'
 
-var benchmark = require('../lib/benchmark')
-var helper = require('../lib/agent_helper')
-var Shim = require('../../lib/shim/shim')
-var shimmer = require('../../lib/shimmer')
+const benchmark = require('../lib/benchmark')
+const helper = require('../lib/agent_helper')
+const Shim = require('../../lib/shim/shim')
+const shimmer = require('../../lib/shimmer')
 
-var agent = helper.loadMockedAgent()
-var shim = new Shim(agent, 'test-module')
-var suite = benchmark.createBenchmark({
+const agent = helper.loadMockedAgent()
+const shim = new Shim(agent, 'test-module')
+const suite = benchmark.createBenchmark({
   name: 'function wrapping'
 })
 
@@ -26,10 +26,12 @@ function getTest() {
 
 suite.add({
   name: 'shim.wrap',
-  fn: function() {
-    var test = getTest()
-    shim.wrap(test, 'func', function(shim, fn) {
-      return function() { return fn.apply(this, arguments) }
+  fn: function () {
+    const test = getTest()
+    shim.wrap(test, 'func', function (shim, fn) {
+      return function () {
+        return fn.apply(this, arguments)
+      }
     })
     return test
   }
@@ -37,10 +39,12 @@ suite.add({
 
 suite.add({
   name: 'shimmer.wrapMethod',
-  fn: function() {
-    var test = getTest()
-    shimmer.wrapMethod(test, 'test', 'func', function(fn) {
-      return function() { return fn.apply(this, arguments) }
+  fn: function () {
+    const test = getTest()
+    shimmer.wrapMethod(test, 'test', 'func', function (fn) {
+      return function () {
+        return fn.apply(this, arguments)
+      }
     })
     return test
   }
@@ -48,11 +52,13 @@ suite.add({
 
 suite.add({
   name: 'IIFE',
-  fn: function() {
-    var test = getTest()
-    test.func = (function(fn) {
-      return function() { return fn.apply(this, arguments) }
-    }(test.func))
+  fn: function () {
+    const test = getTest()
+    test.func = (function (fn) {
+      return function () {
+        return fn.apply(this, arguments)
+      }
+    }(test.func)) // eslint-disable-line prettier/prettier
     return test
   }
 })

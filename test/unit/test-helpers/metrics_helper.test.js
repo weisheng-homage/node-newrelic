@@ -9,12 +9,11 @@
 // Below allows use of mocha DSL with tap runner.
 require('tap').mochaGlobals()
 
-const chai   = require('chai')
+const chai = require('chai')
 const expect = chai.expect
 const AssertionError = chai.AssertionError
 
 const metricsHelper = require('../../lib/metrics_helper.js')
-
 
 function MockSegment(name, children) {
   this.name = name
@@ -24,129 +23,83 @@ function MockSegment(name, children) {
   }
 }
 
-describe("assertSegments", function() {
-  it('finds missing segment', function() {
-    var parent = new MockSegment('a')
-    var expected = [
-      'b'
-    ]
+describe('assertSegments', function () {
+  it('finds missing segment', function () {
+    const parent = new MockSegment('a')
+    const expected = ['b']
 
-    var bound = metricsHelper.assertSegments.bind(null, parent, expected)
+    const bound = metricsHelper.assertSegments.bind(null, parent, expected)
 
-    expect(bound)
-      .to.throw(AssertionError, 'segment "a" should have child "b" in position 1')
+    expect(bound).to.throw(AssertionError, 'segment "a" should have child "b" in position 1')
   })
 
-  it('finds missing segment among many', function() {
-    var parent = new MockSegment('a', [
-      new MockSegment('b')
-    ])
-    var expected = [
-      'b',
-      'c'
-    ]
+  it('finds missing segment among many', function () {
+    const parent = new MockSegment('a', [new MockSegment('b')])
+    const expected = ['b', 'c']
 
-    var bound = metricsHelper.assertSegments.bind(null, parent, expected)
-    expect(bound)
-      .to.throw(AssertionError, 'segment "a" should have child "c" in position 2')
+    const bound = metricsHelper.assertSegments.bind(null, parent, expected)
+    expect(bound).to.throw(AssertionError, 'segment "a" should have child "c" in position 2')
   })
 
-  it('finds missing segment deep', function() {
-    var parent = new MockSegment('a', [
-      new MockSegment('b')
-    ])
-    var expected = [
-      'b',
-      [
-        'c'
-      ]
-    ]
+  it('finds missing segment deep', function () {
+    const parent = new MockSegment('a', [new MockSegment('b')])
+    const expected = ['b', ['c']]
 
-    var bound = metricsHelper.assertSegments.bind(null, parent, expected)
-    expect(bound)
-      .to.throw(AssertionError, 'segment "b" should have child "c" in position 1')
+    const bound = metricsHelper.assertSegments.bind(null, parent, expected)
+    expect(bound).to.throw(AssertionError, 'segment "b" should have child "c" in position 1')
   })
 
-  it('finds extra segment', function() {
-    var parent = new MockSegment('a', [
-      new MockSegment('b')
-    ])
-    var expected = []
+  it('finds extra segment', function () {
+    const parent = new MockSegment('a', [new MockSegment('b')])
+    const expected = []
 
-    var bound = metricsHelper.assertSegments.bind(null, parent, expected)
+    const bound = metricsHelper.assertSegments.bind(null, parent, expected)
     expect(bound).to.throw(AssertionError, 'segment "a" expected to have 0 children')
   })
 
-  it('finds extra segment deep', function() {
-    var parent = new MockSegment('a', [
-      new MockSegment('b', [
-        new MockSegment('c'),
-        new MockSegment('d')
-      ])
+  it('finds extra segment deep', function () {
+    const parent = new MockSegment('a', [
+      new MockSegment('b', [new MockSegment('c'), new MockSegment('d')])
     ])
-    var expected = [
-      'b',
-      [
-        'c'
-      ]
-    ]
+    const expected = ['b', ['c']]
 
-    var bound = metricsHelper.assertSegments.bind(null, parent, expected)
+    const bound = metricsHelper.assertSegments.bind(null, parent, expected)
     expect(bound).to.throw(AssertionError, 'segment "b" expected to have 1 children')
   })
 
-  it('finds when segment has no children', function() {
-    var parent = new MockSegment('a', [
-      new MockSegment('b', [
-        new MockSegment('c')
-      ])
-    ])
-    var expected = [
-      'b'
-    ]
+  it('finds when segment has no children', function () {
+    const parent = new MockSegment('a', [new MockSegment('b', [new MockSegment('c')])])
+    const expected = ['b']
 
-    var bound = metricsHelper.assertSegments.bind(null, parent, expected)
+    const bound = metricsHelper.assertSegments.bind(null, parent, expected)
     expect(bound).to.throw(AssertionError, 'segment "b" should not have any children')
   })
 
-  it('ignores excluded segments', function() {
-    var parent = new MockSegment('a', [
-      new MockSegment('b'),
-      new MockSegment('c')
-    ])
-    var expected = [
-      'b',
-    ]
+  it('ignores excluded segments', function () {
+    const parent = new MockSegment('a', [new MockSegment('b'), new MockSegment('c')])
+    const expected = ['b']
 
-    var options = {
+    const options = {
       exact: true,
-      exclude: [ 'c' ]
+      exclude: ['c']
     }
 
-    var bound = metricsHelper.assertSegments.bind(null, parent, expected, options)
+    const bound = metricsHelper.assertSegments.bind(null, parent, expected, options)
     expect(bound).to.not.throw()
   })
 
-  it('ignores excluded segments deep', function() {
-    var parent = new MockSegment('a', [
-      new MockSegment('b', [
-        new MockSegment('c'),
-        new MockSegment('d', [
-          new MockSegment('c')
-        ])
-      ])
+  it('ignores excluded segments deep', function () {
+    const parent = new MockSegment('a', [
+      new MockSegment('b', [new MockSegment('c'), new MockSegment('d', [new MockSegment('c')])])
     ])
-    var expected = [
-      'b',
-      [ 'd' ]
-    ]
+    const expected = ['b', ['d']]
 
-    var options = {
+    const options = {
       exact: true,
-      exclude: [ 'c' ]
+      exclude: ['c']
     }
 
-    var bound = metricsHelper.assertSegments.bind(null, parent, expected, options)
+    const bound = metricsHelper.assertSegments.bind(null, parent, expected, options)
     expect(bound).to.not.throw()
   })
 })

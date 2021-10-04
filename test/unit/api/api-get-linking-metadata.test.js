@@ -15,35 +15,20 @@ tap.test('Agent API - getLinkingMetadata', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
-    agent = helper.loadMockedAgent()
+  t.beforeEach(() => {
+    agent = helper.instrumentMockedAgent()
     api = new API(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
-  })
-
-  t.test('should return available fields, no DT data, when DT disabled - no transaction', (t) => {
-    const metadata = api.getLinkingMetadata()
-
-    t.notOk(metadata['trace.id'])
-    t.notOk(metadata['span.id'])
-    t.equal(metadata['entity.name'], 'New Relic for Node.js tests')
-    t.equal(metadata['entity.type'], 'SERVICE')
-    t.notOk(metadata['entity.guid'])
-    t.equal(metadata.hostname, agent.config.getHostnameSafe())
-
-    t.end()
   })
 
   t.test('should return available fields, no DT data, when DT disabled in transaction', (t) => {
-    helper.runInTransaction(agent, function() {
+    agent.config.distributed_tracing.enabled = false
+
+    helper.runInTransaction(agent, function () {
       const metadata = api.getLinkingMetadata()
 
       // trace and span id are omitted when dt is disabled
@@ -75,9 +60,7 @@ tap.test('Agent API - getLinkingMetadata', (t) => {
   })
 
   t.test('should return all data, when DT enabled in transaction', (t) => {
-    agent.config.distributed_tracing.enabled = true
-
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       const metadata = api.getLinkingMetadata()
 
       t.ok(metadata['trace.id'])
@@ -96,12 +79,10 @@ tap.test('Agent API - getLinkingMetadata', (t) => {
   })
 
   t.test('should include entity_guid when set and DT enabled in transaction', (t) => {
-    agent.config.distributed_tracing.enabled = true
-
     const expectedEntityGuid = 'test'
     agent.config.entity_guid = expectedEntityGuid
 
-    helper.runInTransaction(agent, function() {
+    helper.runInTransaction(agent, function () {
       const metadata = api.getLinkingMetadata()
 
       t.ok(metadata['trace.id'])

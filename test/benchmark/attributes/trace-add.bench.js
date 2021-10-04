@@ -5,11 +5,10 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
-var helper = require('../../lib/agent_helper')
+const benchmark = require('../../lib/benchmark')
+const helper = require('../../lib/agent_helper')
 
-
-var suite = benchmark.createBenchmark({
+const suite = benchmark.createBenchmark({
   name: 'config.filter',
   agent: {
     config: {
@@ -50,7 +49,7 @@ var suite = benchmark.createBenchmark({
   }
 })
 
-var attributes = [
+const attributes = [
   'request.headers.global-include-exact',
   'request.headers.global-include-wildcard',
 
@@ -66,11 +65,11 @@ var attributes = [
   'request.headers.no-rules-match'
 ]
 
-attributes.forEach(function(attr) {
+attributes.forEach(function (attr) {
   suite.add({
     name: attr,
-    fn: function(agent) {
-      helper.runInTransaction(agent, function(tx) {
+    fn: function (agent) {
+      helper.runInTransaction(agent, function (tx) {
         tx.trace.attributes.addAttribute(0xffff, attr, 'value')
       })
     }

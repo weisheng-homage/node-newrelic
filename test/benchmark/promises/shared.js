@@ -5,27 +5,25 @@
 
 'use strict'
 
-var benchmark = require('../../lib/benchmark')
+const benchmark = require('../../lib/benchmark')
 
 function makeSuite(name) {
-  return benchmark.createBenchmark({async: true, name: name, delay: 0.01})
+  return benchmark.createBenchmark({ async: true, name: name, delay: 0.01 })
 }
 
-var NUM_PROMISES = 300
+const NUM_PROMISES = 300
 
-var tests = [
+const tests = [
   function forkedTest(Promise) {
     return function runTest(agent, cb) {
-      var prom = Promise.resolve()
-
       // number of internal nodes on the binary tree of promises
       // this will produce a binary tree with NUM_PROMISES / 2 internal
       // nodes, and NUM_PROMIES / 2 + 1 leaves
-      var internalPromises = NUM_PROMISES / 2
-      var promises = [prom]
+      const internalPromises = NUM_PROMISES / 2
+      const promises = [Promise.resolve()]
 
-      for (var i = 0; i < internalPromises; ++i) {
-        var prom = promises[i]
+      for (let i = 0; i < internalPromises; ++i) {
+        const prom = promises[i]
         promises.push(prom.then(function first() {}))
         promises.push(prom.then(function second() {}))
       }
@@ -35,9 +33,9 @@ var tests = [
 
   function longTest(Promise) {
     return function runTest(agent, cb) {
-      var prom = Promise.resolve()
-      for (var i = 0; i < NUM_PROMISES; ++i) {
-        prom = prom.then(function() {})
+      let prom = Promise.resolve()
+      for (let i = 0; i < NUM_PROMISES; ++i) {
+        prom = prom.then(function () {})
       }
       prom.then(cb)
     }
@@ -45,9 +43,9 @@ var tests = [
 
   function longTestWithCatches(Promise) {
     return function runTest(agent, cb) {
-      var prom = Promise.resolve()
-      for (var i = 0; i < NUM_PROMISES / 2; ++i) {
-        prom = prom.then(function() {}).catch(function() {})
+      let prom = Promise.resolve()
+      for (let i = 0; i < NUM_PROMISES / 2; ++i) {
+        prom = prom.then(function () {}).catch(function () {})
       }
       prom.then(cb)
     }
@@ -55,19 +53,21 @@ var tests = [
 
   function longThrowToEnd(Promise) {
     return function runTest(agent, cb) {
-      var prom = Promise.reject()
-      for (var i = 0; i < NUM_PROMISES - 1; ++i) {
-        prom = prom.then(function() {})
+      let prom = Promise.reject()
+      for (let i = 0; i < NUM_PROMISES - 1; ++i) {
+        prom = prom.then(function () {})
       }
-      prom.catch(function() {}).then(cb)
+      prom.catch(function () {}).then(cb)
     }
   },
 
   function promiseConstructor(Promise) {
     return function runTest(agent, cb) {
-      for (var i = 0; i < NUM_PROMISES; ++i) {
+      for (let i = 0; i < NUM_PROMISES; ++i) {
         /* eslint-disable no-new */
-        new Promise(function(res) {res()})
+        new Promise(function (res) {
+          res()
+        })
       }
       cb()
     }
@@ -75,13 +75,15 @@ var tests = [
 
   function promiseReturningPromise(Promise) {
     return function runTest(agent, cb) {
-      var promises = []
-      for (var i = 0; i < NUM_PROMISES / 2; ++i) {
+      const promises = []
+      for (let i = 0; i < NUM_PROMISES / 2; ++i) {
         promises.push(
-          new Promise(function(resolve) {
-            resolve(new Promise(function(res) {
-              setImmediate(res)
-            }))
+          new Promise(function (resolve) {
+            resolve(
+              new Promise(function (res) {
+                setImmediate(res)
+              })
+            )
           })
         )
       }
@@ -91,10 +93,10 @@ var tests = [
 
   function thenReturningPromise(Promise) {
     return function runTest(agent, cb) {
-      var prom = Promise.resolve()
-      for (var i = 0; i < NUM_PROMISES / 2; ++i) {
-        var prom = prom.then(function() {
-          return new Promise(function(res) {
+      let prom = Promise.resolve()
+      for (let i = 0; i < NUM_PROMISES / 2; ++i) {
+        prom = prom.then(function () {
+          return new Promise(function (res) {
             setImmediate(res)
           })
         })
@@ -105,7 +107,9 @@ var tests = [
 
   function promiseConstructorThrow(Promise) {
     return function runTest(agent, cb) {
-      (new Promise(function() {throw new Error('Whoops!')})).catch(() => {})
+      new Promise(function () {
+        throw new Error('Whoops!')
+      }).catch(() => {})
       cb()
     }
   }

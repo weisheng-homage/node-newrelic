@@ -47,18 +47,16 @@ tap.test('fromSegment()', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
       distributed_tracing: {
         enabled: true
       }
     })
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should create a generic span with a random segment', (t) => {
@@ -189,7 +187,7 @@ tap.test('fromSegment()', (t) => {
 
     const shim = new DatastoreShim(agent, 'test-data-store', '', 'TestStore')
 
-    const dsConn = {myDbOp: (query, cb) => setTimeout(cb, 50)}
+    const dsConn = { myDbOp: (query, cb) => setTimeout(cb, 50) }
     let longQuery = ''
     while (Buffer.byteLength(longQuery, 'utf8') < 2001) {
       longQuery += 'a'
@@ -322,6 +320,43 @@ tap.test('fromSegment()', (t) => {
 
         t.end()
       }, 10)
+    })
+  })
+
+  t.test('should handle truncated http spans', (t) => {
+    helper.runInTransaction(agent, (transaction) => {
+      https.get('https://example.com?foo=bar', (res) => {
+        transaction.end() // prematurely end to truncate
+
+        res.resume()
+        res.on('end', () => {
+          const segment = transaction.trace.root.children[0]
+          t.ok(segment.name.startsWith('Truncated'))
+
+          const span = SpanEvent.fromSegment(segment)
+          t.ok(span)
+          t.ok(span instanceof SpanEvent)
+          t.ok(span instanceof SpanEvent.HttpSpanEvent)
+
+          t.end()
+        })
+      })
+    })
+  })
+
+  t.test('should handle truncated datastore spans', (t) => {
+    helper.runInTransaction(agent, (transaction) => {
+      const segment = transaction.trace.root.add('Datastore/operation/something')
+      transaction.end() // end before segment to trigger truncate
+
+      t.ok(segment.name.startsWith('Truncated'))
+
+      const span = SpanEvent.fromSegment(segment)
+      t.ok(span)
+      t.ok(span instanceof SpanEvent)
+      t.ok(span instanceof SpanEvent.DatastoreSpanEvent)
+
+      t.end()
     })
   })
 })

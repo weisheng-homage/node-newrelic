@@ -5,42 +5,43 @@
 
 'use strict'
 
-var helper = require('../../lib/agent_helper')
-var shared = require('./shared')
+const helper = require('../../lib/agent_helper')
+const shared = require('./shared')
 
-
-var s = shared.makeSuite('Tracer segments')
-var suite = s.suite
-var tracer = s.agent.tracer
-var tx = helper.runInTransaction(s.agent, function(_tx) { return _tx })
-var bound = tracer.bindFunction(shared.getTest(), tx.root, true)
+const s = shared.makeSuite('Tracer segments')
+const suite = s.suite
+const tracer = s.agent.tracer
+const tx = helper.runInTransaction(s.agent, function (_tx) {
+  return _tx
+})
+const bound = tracer.bindFunction(shared.getTest(), tx.root, true)
 tracer.segment = tx.root
 
 suite.add({
   name: 'tracer.getSegment',
-  fn: function() {
+  fn: function () {
     return tracer.getSegment()
   }
 })
 
 suite.add({
   name: 'tracer.createSegment',
-  fn: function() {
+  fn: function () {
     tracer.segment = tracer.createSegment('test', null, null)
   }
 })
 
 suite.add({
   name: 'tracer.addSegment',
-  fn: function() {
-    var test = shared.getTest()
+  fn: function () {
+    const test = shared.getTest()
     return tracer.addSegment('test', null, null, true, test.func)
   }
 })
 
 suite.add({
   name: 'tracer.getSegmentFromWrapped',
-  fn: function() {
+  fn: function () {
     return tracer.getSegmentFromWrapped(bound)
   }
 })

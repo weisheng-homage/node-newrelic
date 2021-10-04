@@ -18,21 +18,17 @@ tap.test('Agent API - addNamingRule', (t) => {
   const TEST_URL = '/test/path/31337'
   const NAME = 'WebTransaction/Uri/test/path/31337'
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
-  t.test("exports a function for adding naming rules", (t) => {
+  t.test('exports a function for adding naming rules', (t) => {
     t.ok(api.addNamingRule)
     t.type(api.addNamingRule, 'function')
 
@@ -56,45 +52,45 @@ tap.test('Agent API - addNamingRule', (t) => {
     })
   })
 
-  t.test("should leave the passed-in pattern alone", (t) => {
+  t.test('should leave the passed-in pattern alone', (t) => {
     addNamingRuleGoldenPath(agent, api, (mine) => {
       t.equal(mine.pattern.source, '^\\/test\\/.*')
       t.end()
     })
   })
 
-  t.test("should have the correct replacement", (t) => {
+  t.test('should have the correct replacement', (t) => {
     addNamingRuleGoldenPath(agent, api, (mine) => {
       t.equal(mine.replacement, '/Test')
       t.end()
     })
   })
 
-  t.test("should set it to highest precedence", (t) => {
+  t.test('should set it to highest precedence', (t) => {
     addNamingRuleGoldenPath(agent, api, (mine) => {
       t.equal(mine.precedence, 0)
       t.end()
     })
   })
 
-  t.test("should end further normalization", (t) => {
+  t.test('should end further normalization', (t) => {
     addNamingRuleGoldenPath(agent, api, (mine) => {
       t.equal(mine.isTerminal, true)
       t.end()
     })
   })
 
-  t.test("should only apply it to the whole URL", (t) => {
+  t.test('should only apply it to the whole URL', (t) => {
     addNamingRuleGoldenPath(agent, api, (mine) => {
       t.equal(mine.eachSegment, false)
       t.end()
     })
   })
 
-  t.test("applies a string pattern correctly", (t) => {
+  t.test('applies a string pattern correctly', (t) => {
     api.addNamingRule('^/test/.*', 'Test')
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       transaction.finalizeNameFromUri(TEST_URL, 200)
 
       t.equal(transaction.name, 'WebTransaction/NormalizedUri/Test')
@@ -102,7 +98,7 @@ tap.test('Agent API - addNamingRule', (t) => {
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       agent.tracer.createSegment(NAME)
       transaction.url = TEST_URL
       transaction.verb = 'GET'
@@ -111,10 +107,10 @@ tap.test('Agent API - addNamingRule', (t) => {
     })
   })
 
-  t.test("applies a regex pattern with capture groups correctly", (t) => {
+  t.test('applies a regex pattern with capture groups correctly', (t) => {
     api.addNamingRule(/^\/test\/(.*)\/(.*)/, 'Test/$2')
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       transaction.finalizeNameFromUri('/test/31337/related', 200)
 
       t.equal(transaction.name, 'WebTransaction/NormalizedUri/Test/related')
@@ -122,7 +118,7 @@ tap.test('Agent API - addNamingRule', (t) => {
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       agent.tracer.createSegment(NAME)
       transaction.url = '/test/31337/related'
       transaction.verb = 'GET'

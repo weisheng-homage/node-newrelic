@@ -17,38 +17,36 @@ tap.test('TraceSegment', (t) => {
   t.autoend()
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     if (agent === null) {
       agent = helper.loadMockedAgent()
     }
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (agent) {
       helper.unloadAgent(agent)
       agent = null
     }
-    done()
   })
 
   t.test('should be bound to a Trace', (t) => {
     let segment = null
-    let trans = new Transaction(agent)
+    const trans = new Transaction(agent)
     t.throws(function noTrace() {
       segment = new TraceSegment(null, 'UnitTest')
     })
     t.equal(segment, null)
 
-    let success = new TraceSegment(trans, 'UnitTest')
+    const success = new TraceSegment(trans, 'UnitTest')
     t.equal(success.transaction, trans)
     trans.end()
     t.end()
   })
 
   t.test('should not add new children when marked as opaque', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'UnitTest')
     t.notOk(segment.opaque)
     segment.opaque = true
     segment.add('child')
@@ -61,46 +59,46 @@ tap.test('TraceSegment', (t) => {
   })
 
   t.test('should call an optional callback function', (t) => {
-    let trans = new Transaction(agent)
+    const trans = new Transaction(agent)
     t.doesNotThrow(function noCallback() {
       new TraceSegment(trans, 'UnitTest') // eslint-disable-line no-new
     })
-    let working = new TraceSegment(trans, 'UnitTest', t.end)
+    const working = new TraceSegment(trans, 'UnitTest', t.end)
     working.end()
     trans.end()
   })
 
   t.test('has a name', (t) => {
-    let trans = new Transaction(agent)
-    let success = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const success = new TraceSegment(trans, 'UnitTest')
     t.equal(success.name, 'UnitTest')
     t.end()
   })
 
   t.test('is created with no children', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'UnitTest')
     t.equal(segment.children.length, 0)
     t.end()
   })
 
   t.test('has a timer', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'UnitTest')
     t.ok(segment.timer)
     t.end()
   })
 
   t.test('does not start its timer on creation', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'UnitTest')
     t.equal(segment.timer.isRunning(), false)
     t.end()
   })
 
   t.test('allows the timer to be updated without ending it', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'UnitTest')
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'UnitTest')
     segment.start()
     segment.touch()
     t.equal(segment.timer.isRunning(), true)
@@ -109,8 +107,8 @@ tap.test('TraceSegment', (t) => {
   })
 
   t.test('accepts a callback that records metrics for this segment', (t) => {
-    let trans = new Transaction(agent)
-    let segment = new TraceSegment(trans, 'Test', (insider) => {
+    const trans = new Transaction(agent)
+    const segment = new TraceSegment(trans, 'Test', (insider) => {
       t.equal(insider, segment)
       return t.end()
     })
@@ -150,17 +148,16 @@ tap.test('TraceSegment', (t) => {
   })
 
   t.test('updates root segment timer when end() is called', (t) => {
-    let trans = new Transaction(agent)
-    let trace = trans.trace
-    let segment = new TraceSegment(trans, 'Test')
+    const trans = new Transaction(agent)
+    const trace = trans.trace
+    const segment = new TraceSegment(trans, 'Test')
 
     segment.setDurationInMillis(10, 0)
 
     setTimeout(() => {
       t.equal(trace.root.timer.hrDuration, null)
       segment.end()
-      t.ok(trace.root.timer.getDurationInMillis() >
-        segment.timer.getDurationInMillis() - 1) // alow for slop
+      t.ok(trace.root.timer.getDurationInMillis() > segment.timer.getDurationInMillis() - 1) // alow for slop
       t.end()
     }, 10)
   })
@@ -184,7 +181,7 @@ tap.test('TraceSegment', (t) => {
 
     t.equal(agent.activeTransactions, 0)
 
-    setTimeout(function() {
+    setTimeout(function () {
       t.equal(agent.totalActiveSegments, 0)
       t.equal(agent.segmentsClearedInHarvest, 2)
 
@@ -201,7 +198,7 @@ tap.test('TraceSegment', (t) => {
     const transaction = new Transaction(agent)
     const segment = new TraceSegment(transaction, 'TestSegment')
     segment.toJSON()
-    t.deepEqual(segment.getAttributes(), {})
+    t.same(segment.getAttributes(), {})
     t.end()
   })
 
@@ -209,7 +206,7 @@ tap.test('TraceSegment', (t) => {
     t.autoend()
     let webChild
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent.config.attributes.enabled = true
       agent.config.attributes.include.push('request.parameters.*')
       agent.config.emit('attributes.include')
@@ -228,8 +225,6 @@ tap.test('TraceSegment', (t) => {
       webChild.setDurationInMillis(1, 0)
 
       trace.end()
-
-      done()
     })
 
     t.test('should return the URL minus any query parameters', (t) => {
@@ -260,10 +255,11 @@ tap.test('TraceSegment', (t) => {
     })
 
     t.test('should serialize the segment with the parameters', (t) => {
-      t.deepEqual(webChild.toJSON(), [
+      t.same(webChild.toJSON(), [
         0,
         1,
-        'WebTransaction/NormalizedUri/*', {
+        'WebTransaction/NormalizedUri/*',
+        {
           'nr_exclusive_duration_millis': 1,
           'request.parameters.test1': 'value1',
           'request.parameters.test2': true,
@@ -278,9 +274,10 @@ tap.test('TraceSegment', (t) => {
 
   t.test('with parameters parsed out by framework', (t) => {
     t.autoend()
-    let webChild, trace
+    let webChild
+    let trace
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent.config.attributes.enabled = true
 
       const transaction = new Transaction(agent)
@@ -290,7 +287,7 @@ tap.test('TraceSegment', (t) => {
       const segment = trace.add('UnitTest')
 
       const url = '/test'
-      let params = {}
+      const params = {}
 
       // Express uses positional parameters sometimes
       params[0] = 'first'
@@ -298,10 +295,7 @@ tap.test('TraceSegment', (t) => {
       params.test3 = '50'
 
       webChild = segment.add(url)
-      transaction.trace.attributes.addAttributes(
-        DESTINATIONS.TRANS_SCOPE,
-        params
-      )
+      transaction.trace.attributes.addAttributes(DESTINATIONS.TRANS_SCOPE, params)
       transaction.baseSegment = webChild
       transaction.finalizeNameFromUri(url, 200)
 
@@ -309,7 +303,6 @@ tap.test('TraceSegment', (t) => {
       webChild.setDurationInMillis(1, 0)
 
       trace.end()
-      done()
     })
 
     t.test('should return the URL minus any query parameters', (t) => {
@@ -323,7 +316,7 @@ tap.test('TraceSegment', (t) => {
     })
 
     t.test('should have the positional parameters from the params array', (t) => {
-      let attributes = trace.attributes.get(DESTINATIONS.TRANS_TRACE)
+      const attributes = trace.attributes.get(DESTINATIONS.TRANS_TRACE)
       t.equal(attributes[0], 'first')
       t.equal(attributes[1], 'another')
       t.end()
@@ -335,19 +328,19 @@ tap.test('TraceSegment', (t) => {
     })
 
     t.test('should serialize the segment with the parameters', (t) => {
-      let expected = [
+      const expected = [
         0,
         1,
         'WebTransaction/NormalizedUri/*',
         {
-          nr_exclusive_duration_millis : 1,
-          0     : 'first',
-          1     : 'another',
-          test3 : '50',
+          nr_exclusive_duration_millis: 1,
+          0: 'first',
+          1: 'another',
+          test3: '50'
         },
         []
       ]
-      t.deepEqual(webChild.toJSON(), expected)
+      t.same(webChild.toJSON(), expected)
       t.end()
     })
   })
@@ -356,7 +349,7 @@ tap.test('TraceSegment', (t) => {
     t.autoend()
     let webChild
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent.config.attributes.enabled = false
 
       const transaction = new Transaction(agent)
@@ -371,7 +364,6 @@ tap.test('TraceSegment', (t) => {
 
       trace.setDurationInMillis(1, 0)
       webChild.setDurationInMillis(1, 0)
-      done()
     })
 
     t.test('should return the URL minus any query parameters', (t) => {
@@ -380,19 +372,13 @@ tap.test('TraceSegment', (t) => {
     })
 
     t.test('should have no attributes on the child segment', (t) => {
-      t.deepEqual(webChild.getAttributes(), {})
+      t.same(webChild.getAttributes(), {})
       t.end()
     })
 
     t.test('should serialize the segment without the parameters', (t) => {
-      const expected = [
-        0,
-        1,
-        'WebTransaction/NormalizedUri/*',
-        {},
-        []
-      ]
-      t.deepEqual(webChild.toJSON(), expected)
+      const expected = [0, 1, 'WebTransaction/NormalizedUri/*', {}, []]
+      t.same(webChild.toJSON(), expected)
       t.end()
     })
   })
@@ -402,13 +388,10 @@ tap.test('TraceSegment', (t) => {
     let webChild
     let attributes = null
 
-    t.beforeEach((done) => {
+    t.beforeEach(() => {
       agent.config.attributes.enabled = true
       agent.config.attributes.include = ['request.parameters.*']
-      agent.config.attributes.exclude = [
-        'request.parameters.test1',
-        'request.parameters.test4'
-      ]
+      agent.config.attributes.exclude = ['request.parameters.test1', 'request.parameters.test4']
       agent.config.emit('attributes.exclude')
 
       const transaction = new Transaction(agent)
@@ -427,7 +410,6 @@ tap.test('TraceSegment', (t) => {
       attributes = webChild.getAttributes()
 
       trace.end()
-      done()
     })
 
     t.test('should return the URL minus any query parameters', (t) => {
@@ -459,10 +441,11 @@ tap.test('TraceSegment', (t) => {
     })
 
     t.test('should serialize the segment with the parameters', (t) => {
-      t.deepEqual(webChild.toJSON(), [
+      t.same(webChild.toJSON(), [
         0,
         1,
-        'WebTransaction/NormalizedUri/*', {
+        'WebTransaction/NormalizedUri/*',
+        {
           'nr_exclusive_duration_millis': 1,
           'request.parameters.test2': true,
           'request.parameters.test3': '50'
@@ -495,11 +478,11 @@ tap.test('TraceSegment', (t) => {
       trace.end()
 
       // See documentation on TraceSegment.toJSON for what goes in which field.
-      t.deepEqual(segment.toJSON(), [
+      t.same(segment.toJSON(), [
         3,
         17,
         'DB/select/getSome',
-        {nr_exclusive_duration_millis : 14},
+        { nr_exclusive_duration_millis: 14 },
         []
       ])
       t.end()
@@ -515,7 +498,7 @@ tap.test('TraceSegment', (t) => {
 
       segment._setExclusiveDurationInMillis(1)
 
-      t.deepEqual(segment.getAttributes(), {})
+      t.same(segment.getAttributes(), {})
 
       segment.finalize()
 
@@ -536,7 +519,7 @@ tap.test('TraceSegment', (t) => {
       const root = transaction.trace.root
 
       // Make root duration calculation predictable
-      root.timer.start  = 1000
+      root.timer.start = 1000
       segment.timer.start = 1001
       segment.overwriteDurationInMillis(3)
 
@@ -549,7 +532,6 @@ tap.test('TraceSegment', (t) => {
   })
 })
 
-
 tap.test('when serialized', (t) => {
   t.autoend()
 
@@ -557,21 +539,17 @@ tap.test('when serialized', (t) => {
   let trans = null
   let segment = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     trans = new Transaction(agent)
     segment = new TraceSegment(trans, 'UnitTest')
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
     trans = null
     segment = null
-
-    done()
   })
 
   t.test('should create a plain JS array', (t) => {
@@ -592,15 +570,15 @@ tap.test('when serialized', (t) => {
     t.end()
   })
 
-  t.test('should not cause a stack overflow', {timeout: 30000}, (t) => {
+  t.test('should not cause a stack overflow', { timeout: 30000 }, (t) => {
     let parent = segment
-    for (var i = 0; i < 9000; ++i) {
+    for (let i = 0; i < 9000; ++i) {
       const child = new TraceSegment(trans, 'Child ' + i)
       parent.children.push(child)
       parent = child
     }
 
-    t.doesNotThrow(function() {
+    t.doesNotThrow(function () {
       segment.toJSON()
     })
 
@@ -615,7 +593,7 @@ tap.test('getSpanContext', (t) => {
   let transaction = null
   let segment = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       distributed_tracing: {
         enabled: true
@@ -623,15 +601,13 @@ tap.test('getSpanContext', (t) => {
     })
     transaction = new Transaction(agent)
     segment = new TraceSegment(transaction, 'UnitTest')
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
     transaction = null
     segment = null
-    done()
   })
 
   t.test('should not initialize with a span context', (t) => {

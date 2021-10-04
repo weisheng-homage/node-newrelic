@@ -5,36 +5,36 @@
 
 'use strict'
 
-var helper = require('../../lib/agent_helper')
-var shared = require('./shared')
+const helper = require('../../lib/agent_helper')
+const shared = require('./shared')
 
-
-var s = shared.makeSuite('Tracer transactions')
-var suite = s.suite
-var tracer = s.agent.tracer
-var tx = helper.runInTransaction(s.agent, function(_tx) { return _tx })
+const s = shared.makeSuite('Tracer transactions')
+const suite = s.suite
+const tracer = s.agent.tracer
+const tx = helper.runInTransaction(s.agent, function (_tx) {
+  return _tx
+})
 tracer.segment = tx.root
-
 
 suite.add({
   name: 'tracer.getTransaction',
-  fn: function() {
+  fn: function () {
     return tracer.getTransaction()
   }
 })
 
 suite.add({
   name: 'tracer.transactionProxy',
-  fn: function() {
-    var test = shared.getTest()
+  fn: function () {
+    const test = shared.getTest()
     return tracer.transactionProxy(test.func)
   }
 })
 
 suite.add({
   name: 'tracer.transactionNestProxy',
-  fn: function() {
-    var test = shared.getTest()
+  fn: function () {
+    const test = shared.getTest()
     return tracer.transactionNestProxy('web', test.func)
   }
 })

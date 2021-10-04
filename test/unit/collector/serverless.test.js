@@ -5,26 +5,29 @@
 
 'use strict'
 
-// TODO: convert to normal tap style.
-// Below allows use of mocha DSL with tap runner.
-require('tap').mochaGlobals()
+const tap = require('tap')
 
+const util = require('util')
 const zlib = require('zlib')
 const nock = require('nock')
 const chai = require('chai')
 const expect = chai.expect
 const sinon = require('sinon')
 const fs = require('fs')
+const fsOpenAsync = util.promisify(fs.open)
+const fsUnlinkAsync = util.promisify(fs.unlink)
 const helper = require('../../lib/agent_helper')
 const API = require('../../../lib/collector/serverless')
 const serverfulAPI = require('../../../lib/collector/api')
 const path = require('path')
 
-describe('ServerlessCollector API', () => {
+tap.test('ServerlessCollector API', (t) => {
+  t.autoend()
+
   let api = null
   let agent = null
 
-  beforeEach(() => {
+  function beforeTest() {
     nock.disableNetConnect()
     agent = helper.loadMockedAgent({
       serverless_mode: {
@@ -36,162 +39,223 @@ describe('ServerlessCollector API', () => {
     agent.reconfigure = () => {}
     agent.setState = () => {}
     api = new API(agent)
-  })
+  }
 
-  afterEach(() => {
+  function afterTest() {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-  })
+  }
 
-  it('has all expected methods shared with the serverful API', () => {
-    const serverfulSpecificPublicMethods = new Set([
-      'connect',
-      'reportSettings'
-    ])
+  t.test('has all expected methods shared with the serverful API', (t) => {
+    const serverfulSpecificPublicMethods = new Set(['connect', 'reportSettings'])
 
     const sharedMethods = Object.keys(serverfulAPI.prototype).filter((key) => {
       return !key.startsWith('_') && !serverfulSpecificPublicMethods.has(key)
     })
 
     sharedMethods.forEach((method) => {
-      expect(API.prototype[method]).to.be.a('function')
+      t.type(API.prototype[method], 'function')
+    })
+
+    t.end()
+  })
+
+  t.test('#isConnected', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('returns true', (t) => {
+      t.equal(api.isConnected(), true)
+      t.end()
     })
   })
 
-  describe('#isConnected', () => {
-    it('returns true', () => {
-      expect(api.isConnected()).to.equal(true) // tada
-    })
-  })
+  t.test('#shutdown', (t) => {
+    t.autoend()
 
-  describe('#shutdown', () => {
-    it('sets enabled to false', (done) => {
-      expect(api.enabled).to.equal(true)
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('enabled to false', (t) => {
+      t.equal(api.enabled, true)
       api.shutdown(() => {
-        expect(api.enabled).to.equal(false)
-        done()
+        t.equal(api.enabled, false)
+        t.end()
       })
     })
   })
 
-  describe('#metricData', () => {
-    it('adds metric_data to the payload object', (done) => {
-      const metricData = {type: 'metric_data'}
+  t.test('#metricData', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('adds metric_data to the payload object', (t) => {
+      const metricData = { type: 'metric_data' }
       api.metric_data(metricData, () => {
-        expect(api.payload.metric_data).to.deep.equal(metricData)
-        done()
+        t.same(api.payload.metric_data, metricData)
+        t.end()
       })
     })
   })
 
-  describe('#error_data', () => {
-    it('adds error_data to the payload object', (done) => {
-      const errorData = {type: 'error_data'}
+  t.test('#error_data', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('adds error_data to the payload object', (t) => {
+      const errorData = { type: 'error_data' }
       api.error_data(errorData, () => {
-        expect(api.payload.error_data).to.deep.equal(errorData)
-        done()
+        t.same(api.payload.error_data, errorData)
+        t.end()
       })
     })
   })
 
-  describe('#transaction_sample_data', () => {
-    it('adds transaction_sample_data to the payload object', (done) => {
-      const transactionSampleData = {type: 'transaction_sample_data'}
+  t.test('#transaction_sample_data', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('adds transaction_sample_data to the payload object', (t) => {
+      const transactionSampleData = { type: 'transaction_sample_data' }
       api.transaction_sample_data(transactionSampleData, () => {
-        expect(api.payload.transaction_sample_data).to.deep.equal(transactionSampleData)
-        done()
+        t.same(api.payload.transaction_sample_data, transactionSampleData)
+        t.end()
       })
     })
   })
 
-  describe('#flushPayloadSync', () => {
-    it('should base64 encode the gzipped payload synchronously', () => {
+  t.test('#analyticsEvents', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('adds analytic_event_data to the payload object', (t) => {
+      const analyticsEvents = { type: 'analytic_event_data' }
+      api.analytic_event_data(analyticsEvents, () => {
+        t.same(api.payload.analytic_event_data, analyticsEvents)
+
+        t.end()
+      })
+    })
+  })
+
+  t.test('#customEvents', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('adds custom_event_data to the payload object', (t) => {
+      const customEvents = { type: 'custom_event_data' }
+      api.custom_event_data(customEvents, () => {
+        t.same(api.payload.custom_event_data, customEvents)
+        t.end()
+      })
+    })
+  })
+
+  t.test('#error_event_data', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('adds error_event_data to the payload object', (t) => {
+      const errorEvents = { type: 'error_event_data' }
+      api.error_event_data(errorEvents, () => {
+        t.same(api.payload.error_event_data, errorEvents)
+        t.end()
+      })
+    })
+  })
+
+  t.test('#spanEvents', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('adds span_event_data to the payload object', (t) => {
+      const spanEvents = { type: 'span_event_data' }
+      api.span_event_data(spanEvents, () => {
+        t.same(api.payload.span_event_data, spanEvents)
+        t.end()
+      })
+    })
+  })
+
+  t.test('#flushPayloadSync', (t) => {
+    t.autoend()
+
+    t.beforeEach(beforeTest)
+    t.afterEach(afterTest)
+
+    t.test('should base64 encode the gzipped payload synchronously', (t) => {
       const testPayload = {
-        someKey: "someValue",
-        buyOne: "getOne"
+        someKey: 'someValue',
+        buyOne: 'getOne'
       }
-      api.constructor.prototype.payload = testPayload
+      api.payload = testPayload
       const oldDoFlush = api.constructor.prototype._doFlush
       api._doFlush = function testFlush(data) {
         const decoded = JSON.parse(zlib.gunzipSync(Buffer.from(data, 'base64')))
-        expect(decoded).to.deep.equal(testPayload)
+        t.ok(decoded.metadata)
+        t.ok(decoded.data)
+        t.same(decoded.data, testPayload)
       }
       api.flushPayloadSync()
-      expect(Object.keys(api.payload).length).to.equal(0)
+      t.equal(Object.keys(api.payload).length, 0)
       api.constructor.prototype._doFlush = oldDoFlush
+
+      t.end()
     })
   })
 
-  describe('#analyticsEvents', () => {
-    it('adds analytic_event_data to the payload object', (done) => {
-      const analyticsEvents = {type: 'analytic_event_data'}
-      api.analytic_event_data(analyticsEvents, () => {
-        expect(api.payload.analytic_event_data).to.deep.equal(analyticsEvents)
-        done()
-      })
-    })
-  })
+  t.test('#flushPayload', (t) => {
+    t.autoend()
 
-  describe('#customEvents', () => {
-    it('adds custom_event_data to the payload object', (done) => {
-      const customEvents = {type: 'custom_event_data'}
-      api.custom_event_data(customEvents, () => {
-        expect(api.payload.custom_event_data).to.deep.equal(customEvents)
-        done()
-      })
-    })
-  })
+    let stdOutSpy = null
 
-  describe('#error_event_data', () => {
-    it('adds error_event_data to the payload object', (done) => {
-      const errorEvents = {type: 'error_event_data'}
-      api.error_event_data(errorEvents, () => {
-        expect(api.payload.error_event_data).to.deep.equal(errorEvents)
-        done()
-      })
-    })
-  })
+    t.beforeEach(() => {
+      // Need to allow output for tap to function correctly
+      stdOutSpy = sinon.spy(process.stdout, 'write')
 
-  describe('#spanEvents', () => {
-    it('adds span_event_data to the payload object', (done) => {
-      const spanEvents = {type: 'span_event_data'}
-      api.span_event_data(spanEvents, () => {
-        expect(api.payload.span_event_data).to.deep.equal(spanEvents)
-        done()
-      })
-    })
-  })
-
-  describe('#flushPayload', () => {
-    let logStub = null
-
-    beforeEach(() => {
-      logStub = sinon.stub(process.stdout, 'write').callsFake(() => {
-      })
+      beforeTest()
     })
 
-    afterEach(() => {
-      logStub.restore()
+    t.afterEach(() => {
+      stdOutSpy.restore()
+
+      afterTest()
     })
 
-    it('compresses full payload and writes formatted to stdout', (done) => {
-      api.payload = {type: 'test payload'}
+    t.test('compresses full payload and writes formatted to stdout', (t) => {
+      api.payload = { type: 'test payload' }
+
       api.flushPayload(() => {
-        let logPayload = null
+        const logPayload = JSON.parse(stdOutSpy.args[0][0])
 
-        logPayload = JSON.parse(logStub.args[0][0])
+        t.type(logPayload, Array)
+        t.type(logPayload[0], 'number')
 
-        expect(logPayload).to.be.an('array')
-        expect(logPayload[0]).to.be.a('number')
+        t.equal(logPayload[1], 'NR_LAMBDA_MONITORING')
+        t.type(logPayload[2], 'string')
 
-        expect(logPayload[1]).to.equal('NR_LAMBDA_MONITORING')
-        expect(logPayload[2]).to.be.a('string')
-
-        done()
+        t.end()
       })
     })
-    it('handles very large payload and writes formatted to stdout', done => {
-      api.payload = {type: 'test payload'}
+
+    t.test('handles very large payload and writes formatted to stdout', (t) => {
+      api.payload = { type: 'test payload' }
       for (let i = 0; i < 4096; i++) {
         api.payload[`customMetric${i}`] = Math.floor(Math.random() * 100000)
       }
@@ -199,48 +263,40 @@ describe('ServerlessCollector API', () => {
       api.flushPayload(() => {
         let logPayload = null
 
-        logPayload = JSON.parse(logStub.getCall(0).args[0])
+        logPayload = JSON.parse(stdOutSpy.getCall(0).args[0])
 
         const buf = Buffer.from(logPayload[2], 'base64')
 
         zlib.gunzip(buf, (err, unpack) => {
-          expect(err).to.be.null
+          t.error(err)
           const payload = JSON.parse(unpack)
-          expect(payload.data).to.be.ok
-          expect(Object.keys(payload.data)).to.have.lengthOf.above(4000)
-          done()
+          t.ok(payload.data)
+          t.ok(Object.keys(payload.data).length > 4000)
+          t.end()
         })
       })
     })
   })
 })
 
+tap.test('ServerlessCollector with output to custom pipe', (t) => {
+  t.autoend()
 
-describe('ServerlessCollector with output to custom pipe', () => {
-  let api = null
-  let agent = null
   const customPath = path.resolve('/tmp', 'custom-output')
 
-  before(async function() {
-    // create a placeholder file so we can test custom paths
-    process.env.NEWRELIC_PIPE_PATH = customPath
-    await fs.open(customPath, 'w', (err, fd) => {
-      expect(err).to.be.null
-      expect(fd).to.be.ok
-      return fd
-    })
-  })
+  let api = null
+  let agent = null
+  let writeFileSyncStub = null
 
-  after(async function() {
-    // remove the placeholder file
-    await fs.unlink(customPath, (err ) => {
-      expect(err).to.be.null
-      return
-    })
-  })
-
-  beforeEach(() => {
+  t.beforeEach(async () => {
     nock.disableNetConnect()
+
+    process.env.NEWRELIC_PIPE_PATH = customPath
+    const fd = await fsOpenAsync(customPath, 'w')
+    if (!fd) {
+      throw new Error('fd is null')
+    }
+
     agent = helper.loadMockedAgent({
       serverless_mode: {
         enabled: true
@@ -252,53 +308,49 @@ describe('ServerlessCollector with output to custom pipe', () => {
     agent.reconfigure = () => {}
     agent.setState = () => {}
     api = new API(agent)
+
+    writeFileSyncStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
   })
 
-  afterEach(() => {
+  t.afterEach(async () => {
     nock.enableNetConnect()
     helper.unloadAgent(agent)
+
+    writeFileSyncStub.restore()
+
+    await fsUnlinkAsync(customPath)
   })
 
-  describe('#flushPayloadToPipe', () => {
-    let writeFileSyncStub = null
+  t.test('compresses full payload and writes formatted to stdout', (t) => {
+    api.payload = { type: 'test payload' }
+    api.flushPayload(() => {
+      const writtenPayload = JSON.parse(writeFileSyncStub.args[0][1])
 
-    beforeEach(() => {
-      writeFileSyncStub = sinon.stub(fs, 'writeFileSync').callsFake(() => {})
+      t.type(writtenPayload, Array)
+      t.type(writtenPayload[0], 'number')
+      t.equal(writtenPayload[1], 'NR_LAMBDA_MONITORING')
+      t.type(writtenPayload[2], 'string')
+
+      t.end()
     })
+  })
 
-    afterEach(() => {
-      writeFileSyncStub.restore()
-    })
+  t.test('handles very large payload and writes formatted to stdout', (t) => {
+    api.payload = { type: 'test payload' }
+    for (let i = 0; i < 4096; i++) {
+      api.payload[`customMetric${i}`] = Math.floor(Math.random() * 100000)
+    }
 
-    it('compresses full payload and writes formatted to stdout', (done) => {
-      api.payload = {type: 'test payload'}
-      api.flushPayload(() => {
-        const writtenPayload = JSON.parse(writeFileSyncStub.args[0][1])
-        expect(writtenPayload).to.be.an('array')
-        expect(writtenPayload[0]).to.be.a('number')
-        expect(writtenPayload[1]).to.equal('NR_LAMBDA_MONITORING')
-        expect(writtenPayload[2]).to.be.a('string')
+    api.flushPayload(() => {
+      const writtenPayload = JSON.parse(writeFileSyncStub.getCall(0).args[1])
+      const buf = Buffer.from(writtenPayload[2], 'base64')
 
-        done()
-      })
-    })
-    it('handles very large payload and writes formatted to stdout', done => {
-      api.payload = {type: 'test payload'}
-      for (let i = 0; i < 4096; i++) {
-        api.payload[`customMetric${i}`] = Math.floor(Math.random() * 100000)
-      }
-
-      api.flushPayload(() => {
-        const writtenPayload = JSON.parse(writeFileSyncStub.getCall(0).args[1])
-        const buf = Buffer.from(writtenPayload[2], 'base64')
-
-        zlib.gunzip(buf, (err, unpack) => {
-          expect(err).to.be.null
-          const payload = JSON.parse(unpack)
-          expect(payload.data).to.be.ok
-          expect(Object.keys(payload.data)).to.have.lengthOf.above(4000)
-          done()
-        })
+      zlib.gunzip(buf, (err, unpack) => {
+        expect(err).to.be.null
+        const payload = JSON.parse(unpack)
+        t.ok(payload.data)
+        t.ok(Object.keys(payload.data).length > 4000, `expected to be > 4000`)
+        t.end()
       })
     })
   })

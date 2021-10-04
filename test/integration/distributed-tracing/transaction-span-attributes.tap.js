@@ -10,13 +10,13 @@ const tap = require('tap')
 const helper = require('../../lib/agent_helper')
 
 tap.test('should apply transaction name as active span intrinsic on transaction end', (t) => {
-  let agent = helper.instrumentMockedAgent({
+  const agent = helper.instrumentMockedAgent({
     distributed_tracing: {
       enabled: true
     }
   })
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 

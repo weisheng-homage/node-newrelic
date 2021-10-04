@@ -7,6 +7,8 @@
 
 const tap = require('tap')
 const nock = require('nock')
+const sinon = require('sinon')
+const proxyquire = require('proxyquire')
 
 const helper = require('../../lib/agent_helper')
 const CollectorApi = require('../../../lib/collector/api')
@@ -14,8 +16,10 @@ const CollectorResponse = require('../../../lib/collector/response')
 const securityPolicies = require('../../lib/fixtures').securityPolicies
 
 const HOST = 'collector.newrelic.com'
+const REDIRECT_HOST = 'unique.newrelic.com'
 const PORT = 443
 const URL = 'https://' + HOST
+const CONNECT_URL = `https://${REDIRECT_HOST}`
 const RUN_ID = 1337
 
 const timeout = global.setTimeout
@@ -24,11 +28,13 @@ tap.test('requires a callback', (t) => {
   const agent = setupMockedAgent()
   const collectorApi = new CollectorApi(agent)
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
-  t.throws(() => { collectorApi.connect(null) }, 'callback is required')
+  t.throws(() => {
+    collectorApi.connect(null)
+  }, 'callback is required')
 
   t.end()
 })
@@ -46,25 +52,24 @@ tap.test('receiving 200 response, with valid data', (t) => {
     agent_run_id: RUN_ID
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
 
     nock.disableNetConnect()
 
-    const response = {return_value: validSsc}
+    const response = { return_value: validSsc }
 
     redirection = nock(URL + ':443')
       .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {return_value: {redirect_host: HOST, security_policies: {}}})
-    connection = nock(URL)
+      .reply(200, { return_value: { redirect_host: REDIRECT_HOST, security_policies: {} } })
+
+    connection = nock(CONNECT_URL)
       .post(helper.generateCollectorPath('connect'))
       .reply(200, response)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -77,8 +82,6 @@ tap.test('receiving 200 response, with valid data', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should not error out', (t) => {
@@ -95,7 +98,7 @@ tap.test('receiving 200 response, with valid data', (t) => {
   t.test('should pass through server-side configuration untouched', (t) => {
     collectorApi.connect((error, res) => {
       const ssc = res.payload
-      t.deepEqual(ssc, validSsc)
+      t.same(ssc, validSsc)
 
       redirection.done()
       connection.done()
@@ -118,26 +121,26 @@ tap.test('succeeds when given a different port number for redirect', (t) => {
     agent_run_id: RUN_ID
   }
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     collectorApi = new CollectorApi(agent)
 
     nock.disableNetConnect()
 
-    const response = {return_value: validSsc}
+    const response = { return_value: validSsc }
 
     redirection = nock(URL + ':443')
       .post(helper.generateCollectorPath('preconnect'))
-      .reply(200, {return_value: {redirect_host: HOST + ':8089', security_policies: {}}})
+      .reply(200, {
+        return_value: { redirect_host: REDIRECT_HOST + ':8089', security_policies: {} }
+      })
 
-    connection = nock(URL + ':8089')
+    connection = nock(CONNECT_URL + ':8089')
       .post(helper.generateCollectorPath('connect'))
       .reply(200, response)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -150,8 +153,6 @@ tap.test('succeeds when given a different port number for redirect', (t) => {
     helper.unloadAgent(agent)
     agent = null
     collectorApi = null
-
-    done()
   })
 
   t.test('should not error out', (t) => {
@@ -164,15 +165,54 @@ tap.test('succeeds when given a different port number for redirect', (t) => {
 
   t.test('should have the correct hostname', (t) => {
     collectorApi.connect(() => {
+      const methods = collectorApi._methods
+      Object.keys(methods)
+        .filter((key) => {
+          return key !== 'preconnect'
+        })
+        .forEach((key) => {
+          t.equal(methods[key].endpoint.host, REDIRECT_HOST)
+        })
+
+      t.end()
+    })
+  })
+
+  t.test('should not change config host', (t) => {
+    collectorApi.connect(() => {
       t.equal(collectorApi._agent.config.host, HOST)
 
       t.end()
     })
   })
 
-  t.test('should have the correct port number', (t) => {
+  t.test('should update endpoints with correct port number', (t) => {
     collectorApi.connect(() => {
-      t.equal(collectorApi._agent.config.port, '8089')
+      const methods = collectorApi._methods
+      Object.keys(methods)
+        .filter((key) => {
+          return key !== 'preconnect'
+        })
+        .forEach((key) => {
+          t.equal(methods[key].endpoint.port, '8089')
+        })
+
+      t.end()
+    })
+  })
+
+  t.test('should not update preconnect endpoint', (t) => {
+    collectorApi.connect(() => {
+      t.equal(collectorApi._methods.preconnect.endpoint.host, HOST)
+      t.equal(collectorApi._methods.preconnect.endpoint.port, 443)
+
+      t.end()
+    })
+  })
+
+  t.test('should not change config port number', (t) => {
+    collectorApi.connect(() => {
+      t.equal(collectorApi._agent.config.port, 443)
 
       t.end()
     })
@@ -193,7 +233,7 @@ tap.test('succeeds when given a different port number for redirect', (t) => {
   t.test('should pass through server-side configuration untouched', (t) => {
     collectorApi.connect(function test(error, res) {
       const ssc = res.payload
-      t.deepEqual(ssc, validSsc)
+      t.same(ssc, validSsc)
 
       redirection.done()
       connection.done()
@@ -213,7 +253,7 @@ tap.test('succeeds after one 503 on preconnect', (t) => {
     agent_run_id: RUN_ID
   }
 
-  const response = {return_value: valid}
+  const response = { return_value: valid }
 
   let failure = null
   let success = null
@@ -222,7 +262,7 @@ tap.test('succeeds after one 503 on preconnect', (t) => {
   let bad = null
   let ssc = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     fastSetTimeoutIncrementRef()
 
     nock.disableNetConnect()
@@ -235,16 +275,12 @@ tap.test('succeeds after one 503 on preconnect', (t) => {
     success = nock(URL)
       .post(redirectURL)
       .reply(200, {
-        return_value: {redirect_host: HOST, security_policies: {}}
+        return_value: { redirect_host: HOST, security_policies: {} }
       })
-    connection = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, response)
-
-    done()
+    connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     restoreSetTimeout()
 
     if (!nock.isDone()) {
@@ -256,8 +292,6 @@ tap.test('succeeds after one 503 on preconnect', (t) => {
 
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-
-    done()
   })
 
   t.test('should not error out', (t) => {
@@ -276,7 +310,7 @@ tap.test('succeeds after one 503 on preconnect', (t) => {
 
   t.test('should pass through server-side configuration untouched', (t) => {
     testConnect(t, () => {
-      t.deepEqual(ssc, valid)
+      t.same(ssc, valid)
       t.end()
     })
   })
@@ -306,7 +340,7 @@ tap.test('succeeds after five 503s on preconnect', (t) => {
     agent_run_id: RUN_ID
   }
 
-  const response = {return_value: valid}
+  const response = { return_value: valid }
 
   let failure = null
   let success = null
@@ -315,7 +349,7 @@ tap.test('succeeds after five 503s on preconnect', (t) => {
   let bad = null
   let ssc = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     fastSetTimeoutIncrementRef()
 
     nock.disableNetConnect()
@@ -328,16 +362,12 @@ tap.test('succeeds after five 503s on preconnect', (t) => {
     success = nock(URL)
       .post(redirectURL)
       .reply(200, {
-        return_value: {redirect_host: HOST, security_policies: {}}
+        return_value: { redirect_host: HOST, security_policies: {} }
       })
-    connection = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, response)
-
-    done()
+    connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     restoreSetTimeout()
 
     if (!nock.isDone()) {
@@ -349,10 +379,7 @@ tap.test('succeeds after five 503s on preconnect', (t) => {
 
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-
-    done()
   })
-
 
   t.test('should not error out', (t) => {
     testConnect(t, () => {
@@ -370,11 +397,10 @@ tap.test('succeeds after five 503s on preconnect', (t) => {
 
   t.test('should pass through server-side configuration untouched', (t) => {
     testConnect(t, () => {
-      t.deepEqual(ssc, valid)
+      t.same(ssc, valid)
       t.end()
     })
   })
-
 
   function testConnect(t, cb) {
     collectorApi.connect((error, res) => {
@@ -404,7 +430,7 @@ tap.test('disconnects on force disconnect (410)', (t) => {
 
   let disconnect = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     fastSetTimeoutIncrementRef()
 
     nock.disableNetConnect()
@@ -414,11 +440,9 @@ tap.test('disconnects on force disconnect (410)', (t) => {
 
     const redirectURL = helper.generateCollectorPath('preconnect')
     disconnect = nock(URL).post(redirectURL).times(1).reply(410, exception)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     restoreSetTimeout()
 
     if (!nock.isDone()) {
@@ -430,8 +454,6 @@ tap.test('disconnects on force disconnect (410)', (t) => {
 
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-
-    done()
   })
 
   t.test('should not have errored', (t) => {
@@ -473,7 +495,7 @@ tap.test('retries preconnect until forced to disconnect (410)', (t) => {
 
   let capturedResponse = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     fastSetTimeoutIncrementRef()
 
     nock.disableNetConnect()
@@ -484,11 +506,9 @@ tap.test('retries preconnect until forced to disconnect (410)', (t) => {
     const redirectURL = helper.generateCollectorPath('preconnect')
     failure = nock(URL).post(redirectURL).times(500).reply(503)
     disconnect = nock(URL).post(redirectURL).times(1).reply(410, exception)
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     restoreSetTimeout()
 
     if (!nock.isDone()) {
@@ -500,8 +520,6 @@ tap.test('retries preconnect until forced to disconnect (410)', (t) => {
 
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-
-    done()
   })
 
   t.test('should have received shutdown response', (t) => {
@@ -526,25 +544,17 @@ tap.test('retries preconnect until forced to disconnect (410)', (t) => {
   }
 })
 
-
 tap.test('retries on receiving invalid license key (401)', (t) => {
   t.autoend()
 
   let collectorApi = null
   let agent = null
 
-  const error = {
-    exception: {
-      message: 'Invalid license key. Please contact support@newrelic.com.',
-      error_type: 'NewRelic::Agent::LicenseException'
-    }
-  }
-
   let failure = null
   let success = null
   let connect = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     fastSetTimeoutIncrementRef()
 
     nock.disableNetConnect()
@@ -553,16 +563,14 @@ tap.test('retries on receiving invalid license key (401)', (t) => {
     collectorApi = new CollectorApi(agent)
 
     const preconnectURL = helper.generateCollectorPath('preconnect')
-    failure = nock(URL).post(preconnectURL).times(5).reply(401, error)
-    success = nock(URL).post(preconnectURL).reply(200, {return_value: {}})
+    failure = nock(URL).post(preconnectURL).times(5).reply(401)
+    success = nock(URL).post(preconnectURL).reply(200, { return_value: {} })
     connect = nock(URL)
       .post(helper.generateCollectorPath('connect'))
-      .reply(200, {return_value: {agent_run_id: 31338}})
-
-    done()
+      .reply(200, { return_value: { agent_run_id: 31338 } })
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     restoreSetTimeout()
 
     if (!nock.isDone()) {
@@ -574,8 +582,6 @@ tap.test('retries on receiving invalid license key (401)', (t) => {
 
     nock.enableNetConnect()
     helper.unloadAgent(agent)
-
-    done()
   })
 
   t.test('should call the expected number of times', (t) => {
@@ -595,6 +601,91 @@ tap.test('retries on receiving invalid license key (401)', (t) => {
   }
 })
 
+tap.test('retries on misconfigured proxy', (t) => {
+  const sandbox = sinon.createSandbox()
+  const loggerMock = require('../mocks/logger')(sandbox)
+  const CollectorApiTest = proxyquire('../../../lib/collector/api', {
+    '../logger': {
+      child: sandbox.stub().callsFake(() => loggerMock)
+    }
+  })
+  t.autoend()
+
+  let collectorApi = null
+  let agent = null
+
+  const error = {
+    code: 'EPROTO'
+  }
+
+  let failure = null
+  let success = null
+  let connect = null
+
+  t.beforeEach(() => {
+    fastSetTimeoutIncrementRef()
+
+    nock.disableNetConnect()
+
+    agent = setupMockedAgent()
+    agent.config.proxy_port = '8080'
+    agent.config.proxy_host = 'test-proxy-server'
+    collectorApi = new CollectorApiTest(agent)
+
+    const preconnectURL = helper.generateCollectorPath('preconnect')
+    failure = nock(URL).post(preconnectURL).times(1).replyWithError(error)
+    success = nock(URL).post(preconnectURL).reply(200, { return_value: {} })
+    connect = nock(URL)
+      .post(helper.generateCollectorPath('connect'))
+      .reply(200, { return_value: { agent_run_id: 31338 } })
+  })
+
+  t.afterEach(() => {
+    sandbox.resetHistory()
+    restoreSetTimeout()
+
+    if (!nock.isDone()) {
+      /* eslint-disable no-console */
+      console.error('Cleaning pending mocks: %j', nock.pendingMocks())
+      /* eslint-enable no-console */
+      nock.cleanAll()
+    }
+
+    nock.enableNetConnect()
+    helper.unloadAgent(agent)
+  })
+
+  t.test('should log warning when proxy is misconfigured', (t) => {
+    testConnect(t, () => {
+      const expectErrorMsg =
+        'Your proxy server appears to be configured to accept connections \
+over http. When setting `proxy_host` and `proxy_port` New Relic attempts to connect over \
+SSL(https). If your proxy is configured to accept connections over http, try setting `proxy` \
+to a fully qualified URL(e.g http://proxy-host:8080).'
+
+      t.same(loggerMock.warn.args, [[error, expectErrorMsg]], 'Proxy misconfigured message correct')
+      t.end()
+    })
+  })
+
+  t.test('should not log warning when proxy is configured properly but still get EPROTO', (t) => {
+    collectorApi._agent.config.proxy = 'http://test-proxy-server:8080'
+    testConnect(t, () => {
+      t.same(loggerMock.warn.args, [], 'Proxy misconfigured message not logged')
+      t.end()
+    })
+  })
+
+  function testConnect(t, cb) {
+    collectorApi.connect(() => {
+      t.ok(failure.isDone())
+      t.ok(success.isDone())
+      t.ok(connect.isDone())
+      cb()
+    })
+  }
+})
+
 tap.test('in a LASP/CSP enabled agent', (t) => {
   const SECURITY_POLICIES_TOKEN = 'TEST-TEST-TEST-TEST'
 
@@ -604,7 +695,7 @@ tap.test('in a LASP/CSP enabled agent', (t) => {
   let collectorApi = null
   let policies = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = setupMockedAgent()
     agent.config.security_policies_token = SECURITY_POLICIES_TOKEN
 
@@ -613,11 +704,9 @@ tap.test('in a LASP/CSP enabled agent', (t) => {
     policies = securityPolicies()
 
     nock.disableNetConnect()
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     if (!nock.isDone()) {
       /* eslint-disable no-console */
       console.error('Cleaning pending mocks: %j', nock.pendingMocks())
@@ -631,8 +720,6 @@ tap.test('in a LASP/CSP enabled agent', (t) => {
     agent = null
     collectorApi = null
     policies = null
-
-    done()
   })
 
   t.test('should include security policies in api callback response', (t) => {
@@ -641,7 +728,7 @@ tap.test('in a LASP/CSP enabled agent', (t) => {
       security_policies: policies
     }
 
-    const response = {return_value: valid}
+    const response = { return_value: valid }
 
     const redirection = nock(URL + ':443')
       .post(helper.generateCollectorPath('preconnect'))
@@ -652,12 +739,10 @@ tap.test('in a LASP/CSP enabled agent', (t) => {
         }
       })
 
-    const connection = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, response)
+    const connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
 
     collectorApi.connect(function test(error, res) {
-      t.deepEqual(res.payload, valid)
+      t.same(res.payload, valid)
 
       redirection.done()
       connection.done()
@@ -677,7 +762,7 @@ tap.test('in a LASP/CSP enabled agent', (t) => {
       security_policies: policies
     }
 
-    const response = {return_value: valid}
+    const response = { return_value: valid }
 
     const redirection = nock(URL + ':443')
       .post(helper.generateCollectorPath('preconnect'))
@@ -688,12 +773,10 @@ tap.test('in a LASP/CSP enabled agent', (t) => {
         }
       })
 
-    const connection = nock(URL)
-      .post(helper.generateCollectorPath('connect'))
-      .reply(200, response)
+    const connection = nock(URL).post(helper.generateCollectorPath('connect')).reply(200, response)
 
     collectorApi.connect(function test(error, res) {
-      t.deepEqual(res.payload, valid)
+      t.same(res.payload, valid)
 
       t.equal(agent.customEventAggregator.length, 0)
 
@@ -706,7 +789,7 @@ tap.test('in a LASP/CSP enabled agent', (t) => {
 })
 
 function fastSetTimeoutIncrementRef() {
-  global.setTimeout = function(cb) {
+  global.setTimeout = function (cb) {
     const nodeTimeout = timeout(cb, 0)
 
     // This is a hack to keep tap from shutting down test early.
@@ -740,8 +823,8 @@ function setupMockedAgent() {
     browser_monitoring: {},
     transaction_tracer: {}
   })
-  agent.reconfigure = function() {}
-  agent.setState = function() {}
+  agent.reconfigure = function () {}
+  agent.setState = function () {}
 
   return agent
 }

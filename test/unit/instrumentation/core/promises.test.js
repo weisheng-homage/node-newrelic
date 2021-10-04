@@ -15,22 +15,18 @@ test('Promise trace', (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.instrumentMockedAgent({
       feature_flag: {
         promise_segments: true,
         await_support: false
       }
     })
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
   t.test('should handle straight chains', (t) => {
@@ -38,8 +34,11 @@ test('Promise trace', (t) => {
     // a[b]; b[c]; c[d]; d[]
     const expected = ['a', ['b', ['c', ['d']]]]
 
-    return helper.runInTransaction(agent, function(tx) {
-      return start('a').then(step('b')).then(step('c')).then(step('d'))
+    return helper.runInTransaction(agent, function (tx) {
+      return start('a')
+        .then(step('b'))
+        .then(step('c'))
+        .then(step('d'))
         .then(checkTrace(t, tx, expected))
         .then(() => {
           t.end()
@@ -55,8 +54,11 @@ test('Promise trace', (t) => {
 
     const expected = ['a', ['c', ['d']]]
 
-    return helper.runInTransaction(agent, function(tx) {
-      return start('a', true).then(step('b')).catch(step('c')).then(step('d'))
+    return helper.runInTransaction(agent, function (tx) {
+      return start('a', true)
+        .then(step('b'))
+        .catch(step('c'))
+        .then(step('d'))
         .then(checkTrace(t, tx, expected))
         .then(() => {
           t.end()
@@ -72,8 +74,11 @@ test('Promise trace', (t) => {
 
     const expected = ['a', ['b', ['d']]]
 
-    return helper.runInTransaction(agent, function(tx) {
-      return start('a').then(step('b')).catch(step('c')).then(step('d'))
+    return helper.runInTransaction(agent, function (tx) {
+      return start('a')
+        .then(step('b'))
+        .catch(step('c'))
+        .then(step('d'))
         .then(checkTrace(t, tx, expected))
         .then(() => {
           t.end()
@@ -87,17 +92,16 @@ test('Promise trace', (t) => {
     // a---b---c---d
     // a[b,e]; b[c]; c[d]; d[]; e[f]; f[]
 
-    const expected = [
-      'a',
-      ['e', ['f']],
-      ['b', ['c', ['d']]]
-    ]
+    const expected = ['a', ['e', ['f']], ['b', ['c', ['d']]]]
 
-    return helper.runInTransaction(agent, function(tx) {
+    return helper.runInTransaction(agent, function (tx) {
       const a = start('a')
       a.then(step('e')).then(step('f'))
 
-      return a.then(step('b')).then(step('c')).then(step('d'))
+      return a
+        .then(step('b'))
+        .then(step('c'))
+        .then(step('d'))
         .then(checkTrace(t, tx, expected))
         .then(() => {
           t.end()
@@ -113,17 +117,16 @@ test('Promise trace', (t) => {
     //  \-----/^-(catch)
     // a[c,f]; c[d]; f[]
 
-    const expected = [
-      'a',
-      ['f'],
-      ['c', ['d']]
-    ]
+    const expected = ['a', ['f'], ['c', ['d']]]
 
-    return helper.runInTransaction(agent, function(tx) {
-      var a = start('a', true)
+    return helper.runInTransaction(agent, function (tx) {
+      const a = start('a', true)
       a.then(step('e')).catch(step('f'))
 
-      return a.then(step('b')).catch(step('c')).then(step('d'))
+      return a
+        .then(step('b'))
+        .catch(step('c'))
+        .then(step('d'))
         .then(checkTrace(t, tx, expected))
         .then(() => {
           t.end()
@@ -137,16 +140,15 @@ test('Promise trace', (t) => {
     // a---b---c---d
     // a[b]; b[c,e]; c[d]; d[]; e[]
 
-    const expected = [
-      'a',
-      ['b', ['e'], ['c', ['d']]]
-    ]
+    const expected = ['a', ['b', ['e'], ['c', ['d']]]]
 
-    return helper.runInTransaction(agent, function(tx) {
-      var b = start('a').then(step('b'))
+    return helper.runInTransaction(agent, function (tx) {
+      const b = start('a').then(step('b'))
       b.then(step('e'))
 
-      return b.then(step('c')).then(step('d'))
+      return b
+        .then(step('c'))
+        .then(step('d'))
         .then(checkTrace(t, tx, expected))
         .then(() => {
           t.end()
@@ -162,17 +164,15 @@ test('Promise trace', (t) => {
     //  \-----/^-(catch)
     // a[e,c]; c[d]; d[]; e[]
 
-    const expected = [
-      'a',
-      ['e'],
-      ['c', ['d']]
-    ]
+    const expected = ['a', ['e'], ['c', ['d']]]
 
-    return helper.runInTransaction(agent, function(tx) {
-      var b = start('a', true).then(step('b'))
+    return helper.runInTransaction(agent, function (tx) {
+      const b = start('a', true).then(step('b'))
       b.catch(step('e'))
 
-      return b.catch(step('c')).then(step('d'))
+      return b
+        .catch(step('c'))
+        .then(step('d'))
         .then(checkTrace(t, tx, expected))
         .then(() => {
           t.end()
@@ -189,17 +189,15 @@ test('Promise trace', (t) => {
     //   \-----------/
     // a[e,c]; c[d]; d[]; e[]
 
-    const expected = [
-      'a',
-      ['e'],
-      ['c', ['d']]
-    ]
+    const expected = ['a', ['e'], ['c', ['d']]]
 
-    return helper.runInTransaction(agent, function(tx) {
-      var b = start('a').catch(step('b'))
+    return helper.runInTransaction(agent, function (tx) {
+      const b = start('a').catch(step('b'))
       b.then(step('e'))
 
-      return b.then(step('c')).then(step('d'))
+      return b
+        .then(step('c'))
+        .then(step('d'))
         .then(checkTrace(t, tx, expected))
         .then(() => {
           t.end()
@@ -221,14 +219,7 @@ test('Promise trace', (t) => {
         'b',
         ['e', ['f', ['!!!ignore!!!']]],
         ['g'],
-        [
-          'Promise.all',
-          [
-            'Promise#then __NR_thenContext',
-            ['!!!ignore!!!'],
-            ['c', ['d']]
-          ]
-        ],
+        ['Promise.all', ['Promise#then __NR_thenContext', ['!!!ignore!!!'], ['c', ['d']]]],
         ['!!!ignore!!!'],
         ['!!!ignore!!!'],
         ['!!!ignore!!!'],
@@ -236,12 +227,14 @@ test('Promise trace', (t) => {
       ]
     ]
 
-    return helper.runInTransaction(agent, function(tx) {
-      return start('a').then(function() {
-        name('b')
-        return Promise.all([start('e').then(step('f')), start('g')])
-      })
-        .then(step('c')).then(step('d'))
+    return helper.runInTransaction(agent, function (tx) {
+      return start('a')
+        .then(function () {
+          name('b')
+          return Promise.all([start('e').then(step('f')), start('g')])
+        })
+        .then(step('c'))
+        .then(step('d'))
         .then(checkTrace(t, tx, expected))
         .then(() => {
           t.end()
@@ -256,19 +249,36 @@ test('Promise trace', (t) => {
     // a---b- - - - - - - - -c---d
     // a[b]; b[e]; c[d]; d[]; e[f]; f[g]; g[c]
 
-    const expected = ['a', ['b', ['e', ['f', ['g',
+    const expected = [
+      'a',
       [
-        'Promise#then __NR_thenContext', // Implementation detail.
-        ['!!!ignore!!!'],
-        ['c', ['d']]
+        'b',
+        [
+          'e',
+          [
+            'f',
+            [
+              'g',
+              [
+                'Promise#then __NR_thenContext', // Implementation detail.
+                ['!!!ignore!!!'],
+                ['c', ['d']]
+              ]
+            ]
+          ]
+        ]
       ]
-    ]]]]]
+    ]
 
-    return helper.runInTransaction(agent, function(tx) {
-      return start('a').then(step('b')).then(function() {
-        name('e')
-        return start('f').then(step('g'))
-      }).then(step('c')).then(step('d'))
+    return helper.runInTransaction(agent, function (tx) {
+      return start('a')
+        .then(step('b'))
+        .then(function () {
+          name('e')
+          return start('f').then(step('g'))
+        })
+        .then(step('c'))
+        .then(step('d'))
         .then(checkTrace(t, tx, expected))
         .then(() => {
           t.end()
@@ -308,10 +318,10 @@ function checkTrace(t, tx, expected) {
   }
 
   function _check(segment, expectedChildren) {
-    var expectedName = expectedChildren.shift() // shift === pop_front
+    const expectedName = expectedChildren.shift() // shift === pop_front
 
     // Remove `checkTrace` from the segment before checking it.
-    var lastChild = segment.children[segment.children.length - 1]
+    const lastChild = segment.children[segment.children.length - 1]
     if (lastChild && lastChild.name === 'checkTrace') {
       segment.children.pop()
     }
@@ -321,7 +331,7 @@ function checkTrace(t, tx, expected) {
     t.equal(segment.children.length, expectedChildren.length)
 
     // Check each child is as expected, passing over any implementation details.
-    segment.children.forEach(function(child, i) {
+    segment.children.forEach(function (child, i) {
       if (expectedChildren[i][0] !== '!!!ignore!!!') {
         _check(child, expectedChildren[i])
       }

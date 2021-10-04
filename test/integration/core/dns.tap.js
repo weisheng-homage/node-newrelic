@@ -5,16 +5,15 @@
 
 'use strict'
 
-var test = require('tap').test
-var dns = require('dns')
-var helper = require('../../lib/agent_helper')
-var semver = require('semver')
-var verifySegments = require('./verify.js')
+const test = require('tap').test
+const dns = require('dns')
+const helper = require('../../lib/agent_helper')
+const verifySegments = require('./verify.js')
 
-test('lookup', function(t) {
-  var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    dns.lookup('localhost', function(err, ip, v) {
+test('lookup', function (t) {
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function () {
+    dns.lookup('localhost', function (err, ip, v) {
       t.notOk(err, 'should not error')
       t.equal(ip, '127.0.0.1')
       t.equal(v, 4)
@@ -23,26 +22,24 @@ test('lookup', function(t) {
   })
 })
 
-test('resolve', function(t) {
-  var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    dns.resolve('example.com', function(err, ips) {
+test('resolve', function (t) {
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function () {
+    dns.resolve('example.com', function (err, ips) {
       t.notOk(err, 'should not error')
       t.equal(ips.length, 1)
       t.ok(ips[0].match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/))
 
-      var children =
-        semver.satisfies(process.version, '>=7.7.2') ? [] : ['dns.resolve4']
-
+      const children = []
       verifySegments(t, agent, 'dns.resolve', children)
     })
   })
 })
 
-test('resolve4', function(t) {
-  var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    dns.resolve4('example.com', function(err, ips) {
+test('resolve4', function (t) {
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function () {
+    dns.resolve4('example.com', function (err, ips) {
       t.notOk(err, 'should not error')
       t.equal(ips.length, 1)
       t.ok(ips[0].match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/))
@@ -51,10 +48,10 @@ test('resolve4', function(t) {
   })
 })
 
-test('resolve6', function(t) {
-  var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    dns.resolve6('example.com', function(err, ips) {
+test('resolve6', function (t) {
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function () {
+    dns.resolve6('example.com', function (err, ips) {
       t.notOk(err, 'should not error')
       t.equal(ips.length, 1)
       t.ok(ips[0].match(/^(([0-9a-f]{1,4})(\:|$)){8}/))
@@ -63,32 +60,32 @@ test('resolve6', function(t) {
   })
 })
 
-test('resolveCname', function(t) {
-  var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    dns.resolveCname('example.com', function(err) {
+test('resolveCname', function (t) {
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function () {
+    dns.resolveCname('example.com', function (err) {
       t.equal(err.code, 'ENODATA')
       verifySegments(t, agent, 'dns.resolveCname')
     })
   })
 })
 
-test('resolveMx', function(t) {
-  var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    // If this test breaks, blame Natalie Wolfe for adding a mailing
-    // service to encryptic.io
-    dns.resolveMx('encryptic.io', function(err) {
-      t.equal(err.code, 'ENODATA')
+test('resolveMx', function (t) {
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function () {
+    dns.resolveMx('example.com', function (err, ips) {
+      t.notOk(err)
+      t.equal(ips.length, 1)
+
       verifySegments(t, agent, 'dns.resolveMx')
     })
   })
 })
 
-test('resolveNs', function(t) {
-  var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    dns.resolveNs('example.com', function(err, names) {
+test('resolveNs', function (t) {
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function () {
+    dns.resolveNs('example.com', function (err, names) {
       t.notOk(err, 'should not error')
       t.deepEqual(names.sort(), ['a.iana-servers.net', 'b.iana-servers.net'])
       verifySegments(t, agent, 'dns.resolveNs')
@@ -96,10 +93,10 @@ test('resolveNs', function(t) {
   })
 })
 
-test('resolveTxt', function(t) {
-  var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    dns.resolveTxt('example.com', function(err, data) {
+test('resolveTxt', function (t) {
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function () {
+    dns.resolveTxt('example.com', function (err, data) {
       t.notOk(err)
       t.ok(Array.isArray(data))
       verifySegments(t, agent, 'dns.resolveTxt')
@@ -107,23 +104,23 @@ test('resolveTxt', function(t) {
   })
 })
 
-test('resolveSrv', function(t) {
-  var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    dns.resolveSrv('example.com', function(err) {
+test('resolveSrv', function (t) {
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function () {
+    dns.resolveSrv('example.com', function (err) {
       t.equal(err.code, 'ENODATA')
       verifySegments(t, agent, 'dns.resolveSrv')
     })
   })
 })
 
-test('reverse', function(t) {
-  var agent = setupAgent(t)
-  helper.runInTransaction(agent, function() {
-    dns.reverse('127.0.0.1', function(err, names) {
+test('reverse', function (t) {
+  const agent = setupAgent(t)
+  helper.runInTransaction(agent, function () {
+    dns.reverse('127.0.0.1', function (err, names) {
       t.notOk(err, 'should not error')
-      var expected = []
-      if (process.env.TRAVIS && names.length > 0) {
+      let expected = []
+      if (names.length > 0) {
         if (process.env.DOCKERIZED) {
           if (names.length === 2) {
             expected = ['127.0.0.1', 'localhost']
@@ -144,8 +141,8 @@ test('reverse', function(t) {
 })
 
 function setupAgent(t) {
-  var agent = helper.instrumentMockedAgent()
-  t.tearDown(function() {
+  const agent = helper.instrumentMockedAgent()
+  t.teardown(function () {
     helper.unloadAgent(agent)
   })
 

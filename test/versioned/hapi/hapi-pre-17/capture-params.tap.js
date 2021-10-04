@@ -6,9 +6,9 @@
 'use strict'
 
 // run capture params tests
-var runTests = require('../../../integration/instrumentation/hapi/capture-params')
-var utils = require('./hapi-utils')
+const runTests = require('../../../integration/instrumentation/hapi/capture-params')
+const utils = require('./hapi-utils')
 
-runTests(function() {
+runTests(function () {
   return utils.getServer()
 })

@@ -5,23 +5,22 @@
 
 'use strict'
 
-var genericTestDir = '../../integration/instrumentation/promises/'
+const genericTestDir = '../../integration/instrumentation/promises/'
 
-var tap = require('tap')
-var helper = require('../../lib/agent_helper')
-var util = require('util')
-var testPromiseSegments = require(genericTestDir + 'segments')
-var testTransactionState = require(genericTestDir + 'transaction-state')
+const tap = require('tap')
+const helper = require('../../lib/agent_helper')
+const util = require('util')
+const testPromiseSegments = require(genericTestDir + 'segments')
+const testTransactionState = require(genericTestDir + 'transaction-state')
 
 module.exports = function runTests(flags) {
-  var RealPromise = global.Promise
-  tap.afterEach(function(done) {
+  const RealPromise = global.Promise
+  tap.afterEach(() => {
     Promise = global.Promise = RealPromise
-    done()
   })
 
-  tap.test('transaction state', function(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
+  tap.test('transaction state', function (t) {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
     t.autoend()
     testTransactionState(t, agent, Promise)
   })
@@ -29,15 +28,15 @@ module.exports = function runTests(flags) {
   // XXX Promise segments in native instrumentation are currently less than ideal
   // XXX in structure. Transaction state is correctly maintained, and all segments
   // XXX are created, but the heirarchy is not correct.
-  tap.test('segments', {skip: true}, function(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
+  tap.test('segments', { skip: true }, function (t) {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
     t.autoend()
     testPromiseSegments(t, agent, Promise)
   })
 
   tap.test('then', function testThen(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).then(done, fail)
@@ -53,10 +52,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 15, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -72,8 +68,8 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('multi then', function testThen(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).then(next, fail).then(done, fail)
@@ -87,10 +83,7 @@ module.exports = function runTests(flags) {
       }
 
       function next(val) {
-        t.equal(
-          id(agent.getTransaction()), id(transaction),
-          'transaction should be preserved'
-        )
+        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
         t.equal(val, 15, 'should resolve with the correct value')
         t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
         return val
@@ -99,10 +92,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 15, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -118,8 +108,8 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('multi then async', function testThen(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).then(next, fail).then(done, fail)
@@ -133,10 +123,7 @@ module.exports = function runTests(flags) {
       }
 
       function next(val) {
-        t.equal(
-          id(agent.getTransaction()), id(transaction),
-          'transaction should be preserved'
-        )
+        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
         t.equal(val, 15, 'should resolve with the correct value')
         t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -151,10 +138,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 15, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -169,11 +153,10 @@ module.exports = function runTests(flags) {
     })
   })
 
-
-  var skipChain = !(global.Promise && Promise.prototype.chain)
-  tap.test('chain', {skip: skipChain}, function testChain(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+  const skipChain = !(global.Promise && Promise.prototype.chain)
+  tap.test('chain', { skip: skipChain }, function testChain(t) {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).chain(done, fail)
@@ -189,10 +172,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 15, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -207,9 +187,9 @@ module.exports = function runTests(flags) {
     })
   })
 
-  tap.test('multi chain', {skip: skipChain}, function testThen(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+  tap.test('multi chain', { skip: skipChain }, function testThen(t) {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).chain(next, fail).chain(done, fail)
@@ -223,10 +203,7 @@ module.exports = function runTests(flags) {
       }
 
       function next(val) {
-        t.equal(
-          id(agent.getTransaction()), id(transaction),
-          'transaction should be preserved'
-        )
+        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
         t.equal(val, 15, 'should resolve with the correct value')
         t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
         return val
@@ -235,10 +212,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 15, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -253,9 +227,9 @@ module.exports = function runTests(flags) {
     })
   })
 
-  tap.test('multi chain async', {skip: skipChain}, function testThen(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+  tap.test('multi chain async', { skip: skipChain }, function testThen(t) {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).chain(next, fail).chain(done, fail)
@@ -269,10 +243,7 @@ module.exports = function runTests(flags) {
       }
 
       function next(val) {
-        t.equal(
-          id(agent.getTransaction()), id(transaction),
-          'transaction should be preserved'
-        )
+        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
         t.equal(val, 15, 'should resolve with the correct value')
         t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -287,10 +258,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 15, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -306,8 +274,8 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('then reject', function testThenReject(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).then(fail, done)
@@ -323,10 +291,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -342,8 +307,8 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('multi then reject', function testThen(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).then(fail, next).then(fail, done)
@@ -357,10 +322,7 @@ module.exports = function runTests(flags) {
       }
 
       function next(val) {
-        t.equal(
-          id(agent.getTransaction()), id(transaction),
-          'transaction should be preserved'
-        )
+        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
         t.equal(val, 10, 'should resolve with the correct value')
         t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
         throw val
@@ -369,10 +331,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -388,8 +347,8 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('multi then async reject', function testThen(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).then(fail, next).then(fail, done)
@@ -403,10 +362,7 @@ module.exports = function runTests(flags) {
       }
 
       function next(val) {
-        t.equal(
-          id(agent.getTransaction()), id(transaction),
-          'transaction should be preserved'
-        )
+        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
         t.equal(val, 10, 'should resolve with the correct value')
         t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -421,10 +377,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -439,9 +392,9 @@ module.exports = function runTests(flags) {
     })
   })
 
-  tap.test('chain reject', {skip: skipChain}, function testChainReject(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+  tap.test('chain reject', { skip: skipChain }, function testChainReject(t) {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).chain(fail, done)
@@ -457,10 +410,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -475,9 +425,9 @@ module.exports = function runTests(flags) {
     })
   })
 
-  tap.test('multi chain reject', {skip: skipChain}, function testThen(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+  tap.test('multi chain reject', { skip: skipChain }, function testThen(t) {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).chain(fail, next).chain(fail, done)
@@ -491,10 +441,7 @@ module.exports = function runTests(flags) {
       }
 
       function next(val) {
-        t.equal(
-          id(agent.getTransaction()), id(transaction),
-          'transaction should be preserved'
-        )
+        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
         t.equal(val, 10, 'should resolve with the correct value')
         t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
         throw val
@@ -503,10 +450,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -521,9 +465,9 @@ module.exports = function runTests(flags) {
     })
   })
 
-  tap.test('multi chain async reject', {skip: skipChain}, function testThen(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+  tap.test('multi chain async reject', { skip: skipChain }, function testThen(t) {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).chain(fail, next).chain(fail, done)
@@ -537,10 +481,7 @@ module.exports = function runTests(flags) {
       }
 
       function next(val) {
-        t.equal(
-          id(agent.getTransaction()), id(transaction),
-          'transaction should be preserved'
-        )
+        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
         t.equal(val, 10, 'should resolve with the correct value')
         t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -555,10 +496,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -574,8 +512,8 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('catch', function testCatch(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).catch(done)
@@ -591,10 +529,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -605,8 +540,8 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('multi catch', function testThen(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).catch(next).catch(done)
@@ -620,10 +555,7 @@ module.exports = function runTests(flags) {
       }
 
       function next(val) {
-        t.equal(
-          id(agent.getTransaction()), id(transaction),
-          'transaction should be preserved'
-        )
+        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
         t.equal(val, 10, 'should resolve with the correct value')
         t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
         throw val
@@ -632,10 +564,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -646,8 +575,8 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('multi catch async', function testThen(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       new Promise(executor).catch(next).catch(done)
@@ -661,10 +590,7 @@ module.exports = function runTests(flags) {
       }
 
       function next(val) {
-        t.equal(
-          id(agent.getTransaction()), id(transaction),
-          'transaction should be preserved'
-        )
+        t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
         t.equal(val, 10, 'should resolve with the correct value')
         t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -679,10 +605,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'should resolve with the correct value')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -693,24 +616,23 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('Promise.resolve', function testResolve(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       setTimeout(function resolve() {
-        Promise.resolve(15).then(function(val) {
-          segment = agent.tracer.getSegment()
-          return val
-        }).then(done, fail)
+        Promise.resolve(15)
+          .then(function (val) {
+            segment = agent.tracer.getSegment()
+            return val
+          })
+          .then(done, fail)
       }, 0)
 
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 15, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -725,26 +647,25 @@ module.exports = function runTests(flags) {
     })
   })
 
-  var skipAccept = !(global.Promise && Promise.accept)
-  tap.test('Promise.accept', {skip: skipAccept}, function testAccept(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+  const skipAccept = !(global.Promise && Promise.accept)
+  tap.test('Promise.accept', { skip: skipAccept }, function testAccept(t) {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       setTimeout(function accept() {
-        Promise.accept(15).then(function(val) {
-          segment = agent.tracer.getSegment()
-          return val
-        }).then(done, fail)
+        Promise.accept(15)
+          .then(function (val) {
+            segment = agent.tracer.getSegment()
+            return val
+          })
+          .then(done, fail)
       }, 0)
 
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 15, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -760,24 +681,23 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('Promise.reject', function testReject(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       setTimeout(function reject() {
-        Promise.reject(10).then(null, function(error) {
-          segment = agent.tracer.getSegment()
-          throw error
-        }).then(fail, done)
+        Promise.reject(10)
+          .then(null, function (error) {
+            segment = agent.tracer.getSegment()
+            throw error
+          })
+          .then(fail, done)
       }, 0)
 
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.equal(val, 10, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -793,26 +713,25 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('Promise.all', function testAll(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       setTimeout(function resolve() {
-        var a = Promise.resolve(15)
-        var b = Promise.resolve(25)
-        Promise.all([a, b]).then(function(val) {
-          segment = agent.tracer.getSegment()
-          return val
-        }).then(done, fail)
+        const a = Promise.resolve(15)
+        const b = Promise.resolve(25)
+        Promise.all([a, b])
+          .then(function (val) {
+            segment = agent.tracer.getSegment()
+            return val
+          })
+          .then(done, fail)
       }, 0)
 
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.deepEqual(val, [15, 25], 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -828,26 +747,25 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('Promise.all reject', function testAllReject(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       setTimeout(function reject() {
-        var a = Promise.resolve(15)
-        var b = Promise.reject(10)
-        Promise.all([a, b]).then(null, function(err) {
-          segment = agent.tracer.getSegment()
-          throw err
-        }).then(fail, done)
+        const a = Promise.resolve(15)
+        const b = Promise.reject(10)
+        Promise.all([a, b])
+          .then(null, function (err) {
+            segment = agent.tracer.getSegment()
+            throw err
+          })
+          .then(fail, done)
       }, 0)
 
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.deepEqual(val, 10, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -863,26 +781,27 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('Promise.race', function testRace(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      setTimeout(function() {
-        var a = Promise.resolve(15)
-        var b = new Promise(function(resolve) {setTimeout(resolve, 100)})
-        Promise.race([a, b]).then(function(val) {
-          segment = agent.tracer.getSegment()
-          return val
-        }).then(done, fail)
+      setTimeout(function () {
+        const a = Promise.resolve(15)
+        const b = new Promise(function (resolve) {
+          setTimeout(resolve, 100)
+        })
+        Promise.race([a, b])
+          .then(function (val) {
+            segment = agent.tracer.getSegment()
+            return val
+          })
+          .then(done, fail)
       }, 0)
 
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.deepEqual(val, 15, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -898,26 +817,27 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('Promise.race reject', function testRaceReject(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
       setTimeout(function reject() {
-        var a = new Promise(function(resolve) {setTimeout(resolve, 100)})
-        var b = Promise.reject(10)
-        Promise.race([a, b]).then(null, function(err) {
-          segment = agent.tracer.getSegment()
-          throw err
-        }).then(fail, done)
+        const a = new Promise(function (resolve) {
+          setTimeout(resolve, 100)
+        })
+        const b = Promise.reject(10)
+        Promise.race([a, b])
+          .then(null, function (err) {
+            segment = agent.tracer.getSegment()
+            throw err
+          })
+          .then(fail, done)
       }, 0)
 
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.deepEqual(val, 10, 'value should be preserved')
           t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
 
@@ -932,12 +852,12 @@ module.exports = function runTests(flags) {
     })
   })
 
-  var skipDefer = !(global.Promise && Promise.defer)
-  tap.test('Promise.defer', {skip: skipDefer}, function testDefer(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
+  const skipDefer = !(global.Promise && Promise.defer)
+  tap.test('Promise.defer', { skip: skipDefer }, function testDefer(t) {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      var p = Promise.defer()
+      const p = Promise.defer()
       p.promise.then(done, fail)
 
       setTimeout(function resolve() {
@@ -948,10 +868,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.deepEqual(val, 15, 'value should be preserved')
 
           t.end()
@@ -965,11 +882,11 @@ module.exports = function runTests(flags) {
     })
   })
 
-  tap.test('Promise.defer reject', {skip: skipDefer}, function testDeferReject(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
+  tap.test('Promise.defer reject', { skip: skipDefer }, function testDeferReject(t) {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      var p = Promise.defer()
+      const p = Promise.defer()
       p.promise.then(fail, done)
 
       setTimeout(function reject() {
@@ -980,10 +897,7 @@ module.exports = function runTests(flags) {
       function done(val) {
         t.equal(this, void 0, 'context should be undefined')
         process.nextTick(function finish() {
-          t.equal(
-            id(agent.getTransaction()), id(transaction),
-            'transaction should be preserved'
-          )
+          t.equal(id(agent.getTransaction()), id(transaction), 'transaction should be preserved')
           t.deepEqual(val, 10, 'value should be preserved')
 
           t.end()
@@ -998,15 +912,15 @@ module.exports = function runTests(flags) {
   })
 
   // skip this in the hook case, since we don't wrap
-  var skipInstanceOf = flags && flags.await_support
-  tap.test('instanceof Promise should not break', {skip: skipInstanceOf}, function(t) {
-    var OriginalPromise = Promise
+  const skipInstanceOf = flags && flags.await_support
+  tap.test('instanceof Promise should not break', { skip: skipInstanceOf }, function (t) {
+    const OriginalPromise = Promise
     t.equal(OriginalPromise.__NR_original, void 0, 'should not be wrapped')
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
     t.equal(Promise.__NR_original, OriginalPromise, 'should be wrapped')
 
     helper.runInTransaction(agent, function inTransaction() {
-      var p = new Promise(function acceptIt(accept) {
+      const p = new Promise(function acceptIt(accept) {
         accept()
       })
 
@@ -1017,10 +931,12 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('should throw when called without executor', function testNoExecutor(t) {
-    var OriginalPromise = Promise
-    var unwrappedError, wrappedError
-    var wrapped, unwrapped
-    helper.loadTestAgent(t, {feature_flag: flags})
+    const OriginalPromise = Promise
+    let unwrappedError
+    let wrappedError
+    let wrapped
+    let unwrapped
+    helper.loadTestAgent(t, { feature_flag: flags })
 
     try {
       unwrapped = new OriginalPromise(null)
@@ -1044,24 +960,24 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('should work if something wraps promises first', function testWrapSecond(t) {
-    var OriginalPromise = Promise
+    const OriginalPromise = Promise
 
     util.inherits(WrappedPromise, Promise)
     global.Promise = WrappedPromise
 
     function WrappedPromise(executor) {
-      var promise = new OriginalPromise(executor)
+      const promise = new OriginalPromise(executor)
       promise.__proto__ = WrappedPromise.prototype
       return promise
     }
 
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    t.tearDown(function() {
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    t.teardown(function () {
       global.Promise = OriginalPromise
     })
 
-    helper.runInTransaction(agent, function() {
-      var p = new Promise(function noop() {})
+    helper.runInTransaction(agent, function () {
+      const p = new Promise(function noop() {})
 
       t.ok(p instanceof Promise, 'instanceof should work on nr wrapped Promise')
       t.ok(p instanceof WrappedPromise, 'instanceof should work on wrapped Promise')
@@ -1072,23 +988,23 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('should work if something wraps promises after', function testWrapFirst(t) {
-    var OriginalPromise = Promise
+    const OriginalPromise = Promise
 
-    helper.loadTestAgent(t, {feature_flag: flags})
+    helper.loadTestAgent(t, { feature_flag: flags })
     util.inherits(WrappedPromise, Promise)
     global.Promise = WrappedPromise
 
-    t.tearDown(function() {
+    t.teardown(function () {
       global.Promise = OriginalPromise
     })
 
     function WrappedPromise(executor) {
-      var promise = new OriginalPromise(executor)
+      const promise = new OriginalPromise(executor)
       promise.__proto__ = WrappedPromise.prototype
       return promise
     }
 
-    var p = new Promise(function noop() {})
+    const p = new Promise(function noop() {})
 
     t.ok(p instanceof Promise, 'instanceof should work on nr wrapped Promise')
     t.ok(p instanceof WrappedPromise, 'instanceof should work on wrapped Promise')
@@ -1098,32 +1014,35 @@ module.exports = function runTests(flags) {
   })
 
   tap.test('throw in executor', function testCatch(t) {
-    var agent = helper.loadTestAgent(t, {feature_flag: flags})
-    var segment = null
-    var exception = {}
+    const agent = helper.loadTestAgent(t, { feature_flag: flags })
+    let segment = null
+    const exception = {}
 
     helper.runInTransaction(agent, function inTransaction(transaction) {
-      new Promise(function() {
+      new Promise(function () {
         segment = agent.tracer.getSegment()
         throw exception
-      }).then(function() {
-        t.fail('should have rejected promise')
-        t.end()
-      }, function(val) {
-        t.equal(this, undefined, 'context should be undefined')
-
-        process.nextTick(function() {
-          var keptTx = agent.tracer.getTransaction()
-          t.equal(keptTx && keptTx.id, transaction.id, 'transaction should be preserved')
-          t.equal(val, exception, 'should pass through error')
-
-          // Using `.ok` intead of `.equal` to avoid giant test message that is
-          // not useful in this case.
-          t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
-
+      }).then(
+        function () {
+          t.fail('should have rejected promise')
           t.end()
-        })
-      })
+        },
+        function (val) {
+          t.equal(this, undefined, 'context should be undefined')
+
+          process.nextTick(function () {
+            const keptTx = agent.tracer.getTransaction()
+            t.equal(keptTx && keptTx.id, transaction.id, 'transaction should be preserved')
+            t.equal(val, exception, 'should pass through error')
+
+            // Using `.ok` intead of `.equal` to avoid giant test message that is
+            // not useful in this case.
+            t.ok(agent.tracer.getSegment() === segment, 'segment should be preserved')
+
+            t.end()
+          })
+        }
+      )
     })
   })
 }

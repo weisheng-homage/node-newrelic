@@ -8,20 +8,17 @@
 const tap = require('tap')
 const test = tap.test
 
-const helper  = require('../../../lib/agent_helper')
+const helper = require('../../../lib/agent_helper')
 
 test('Domains', (t) => {
   t.autoend()
 
   let agent = null
   let d = null
-  let tasks = []
+  const tasks = []
   let interval = null
 
-  t.beforeEach((done, t) => {
-    // Once on node 10+ only, may be able to replace with below.
-    // t.expectUncaughtException(fn, [expectedError], message, extra)
-    // https://node-tap.org/docs/api/asserts/#texpectuncaughtexceptionfn-expectederror-message-extra
+  t.beforeEach((t) => {
     helper.temporarilyOverrideTapUncaughtBehavior(tap, t)
 
     agent = helper.instrumentMockedAgent()
@@ -29,21 +26,17 @@ test('Domains', (t) => {
     // Starting on 9.3.0, calling `domain.exit` does not stop assertions in later
     // tests from being caught in this domain. In order to get around that we
     // are breaking out of the domain via a manual tasks queue.
-    interval = setInterval(function() {
+    interval = setInterval(function () {
       while (tasks.length) {
         tasks.pop()()
       }
-
-      done()
     }, 10)
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     d && d.exit()
     clearInterval(interval)
     helper.unloadAgent(agent)
-
-    done()
   })
 
   t.test('should not be loaded just from loading the agent', (t) => {
@@ -52,11 +45,12 @@ test('Domains', (t) => {
   })
 
   t.test('should retain transaction scope on error events', (t) => {
+    // eslint-disable-next-line node/no-deprecated-api
     const domain = require('domain')
     d = domain.create()
 
     let checkedTransaction = null
-    d.once('error', function(err) {
+    d.once('error', function (err) {
       // Asserting in a try catch because Domain will
       // handle the errors resulting in an infinite loop
       try {
@@ -72,10 +66,10 @@ test('Domains', (t) => {
       tasks.push(t.end)
     })
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       checkedTransaction = transaction
-      d.run(function() {
-        setTimeout(function() {
+      d.run(function () {
+        setTimeout(function () {
           throw new Error('whole new error!')
         }, 50)
       })

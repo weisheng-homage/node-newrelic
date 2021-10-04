@@ -15,23 +15,19 @@ tap.test('Agent API - noticeError', (t) => {
   let agent = null
   let api = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent()
     api = new API(agent)
 
     agent.config.attributes.enabled = true
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
     agent = null
-
-    done()
   })
 
-  t.test("should add the error even without a transaction", (t) => {
+  t.test('should add the error even without a transaction', (t) => {
     t.equal(agent.errors.traceAggregator.errors.length, 0)
     api.noticeError(new TypeError('this test is bogus, man'))
     t.equal(agent.errors.traceAggregator.errors.length, 1)
@@ -39,7 +35,7 @@ tap.test('Agent API - noticeError', (t) => {
     t.end()
   })
 
-  t.test("should still add errors in high security mode", (t) => {
+  t.test('should still add errors in high security mode', (t) => {
     agent.config.high_security = true
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
@@ -55,11 +51,11 @@ tap.test('Agent API - noticeError', (t) => {
     agent.config.api.custom_attributes_enabled = false
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
-    api.noticeError(new TypeError('this test is bogus, man'), {crucial: 'attribute'})
+    api.noticeError(new TypeError('this test is bogus, man'), { crucial: 'attribute' })
 
     t.equal(agent.errors.traceAggregator.errors.length, 1)
     const attributes = agent.errors.traceAggregator.errors[0][4]
-    t.deepEqual(attributes.userAttributes, {})
+    t.same(attributes.userAttributes, {})
     agent.config.api.custom_attributes_enabled = true
 
     t.end()
@@ -69,17 +65,17 @@ tap.test('Agent API - noticeError', (t) => {
     agent.config.high_security = true
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
-    api.noticeError(new TypeError('this test is bogus, man'), {crucial: 'attribute'})
+    api.noticeError(new TypeError('this test is bogus, man'), { crucial: 'attribute' })
 
     t.equal(agent.errors.traceAggregator.errors.length, 1)
     const attributes = agent.errors.traceAggregator.errors[0][4]
-    t.deepEqual(attributes.userAttributes, {})
+    t.same(attributes.userAttributes, {})
     agent.config.high_security = false
 
     t.end()
   })
 
-  t.test("should not add errors when noticeErrors is disabled", (t) => {
+  t.test('should not add errors when noticeErrors is disabled', (t) => {
     agent.config.api.notice_error_enabled = false
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
@@ -91,10 +87,10 @@ tap.test('Agent API - noticeError', (t) => {
     t.end()
   })
 
-  t.test("should track custom parameters on error without a transaction", (t) => {
+  t.test('should track custom parameters on error without a transaction', (t) => {
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
-    api.noticeError(new TypeError('this test is bogus, man'), {present : 'yep'})
+    api.noticeError(new TypeError('this test is bogus, man'), { present: 'yep' })
 
     t.equal(agent.errors.traceAggregator.errors.length, 1)
 
@@ -104,22 +100,19 @@ tap.test('Agent API - noticeError', (t) => {
     t.end()
   })
 
-  t.test("should omit improper types of attributes", (t) => {
+  t.test('should omit improper types of attributes', (t) => {
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
-    api.noticeError(
-      new TypeError('this test is bogus, man'),
-      {
-        string : 'yep',
-        object: {},
-        function: function() {},
-        number: 1234,
-        symbol: Symbol('test'),
-        undef: undefined,
-        array: [],
-        boolean: true
-      }
-    )
+    api.noticeError(new TypeError('this test is bogus, man'), {
+      string: 'yep',
+      object: {},
+      function: function () {},
+      number: 1234,
+      symbol: Symbol('test'),
+      undef: undefined,
+      array: [],
+      boolean: true
+    })
 
     t.equal(agent.errors.traceAggregator.errors.length, 1)
 
@@ -143,10 +136,7 @@ tap.test('Agent API - noticeError', (t) => {
     agent.config.emit('attributes.exclude')
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
-    api.noticeError(
-      new TypeError('this test is bogus, man'),
-      {present: 'yep', unwanted: 'nope'}
-    )
+    api.noticeError(new TypeError('this test is bogus, man'), { present: 'yep', unwanted: 'nope' })
 
     t.equal(agent.errors.traceAggregator.errors.length, 1)
 
@@ -157,10 +147,10 @@ tap.test('Agent API - noticeError', (t) => {
     t.end()
   })
 
-  t.test("should add the error associated to a transaction", (t) => {
+  t.test('should add the error associated to a transaction', (t) => {
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       t.equal(agent.errors.traceAggregator.errors.length, 1)
 
       const caught = agent.errors.traceAggregator.errors[0]
@@ -174,7 +164,7 @@ tap.test('Agent API - noticeError', (t) => {
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       api.noticeError(new TypeError('test error'))
       transaction.end()
     })
@@ -186,7 +176,7 @@ tap.test('Agent API - noticeError', (t) => {
     agent.config.attributes.exclude = ['ignored']
     agent.config.emit('attributes.exclude')
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       t.equal(agent.errors.traceAggregator.errors.length, 1)
       const caught = agent.errors.traceAggregator.errors[0]
 
@@ -202,16 +192,16 @@ tap.test('Agent API - noticeError', (t) => {
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
-      api.noticeError(new TypeError('test error'), {hi: 'yo', ignored: 'yup'})
+    helper.runInTransaction(agent, function (transaction) {
+      api.noticeError(new TypeError('test error'), { hi: 'yo', ignored: 'yup' })
       transaction.end()
     })
   })
 
-  t.test("should add an error-alike with a message but no stack", (t) => {
+  t.test('should add an error-alike with a message but no stack', (t) => {
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       t.equal(agent.errors.traceAggregator.errors.length, 1)
       const caught = agent.errors.traceAggregator.errors[0]
       t.equal(caught[1], 'Unknown')
@@ -223,16 +213,16 @@ tap.test('Agent API - noticeError', (t) => {
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
-      api.noticeError({message : 'not an Error'})
+    helper.runInTransaction(agent, function (transaction) {
+      api.noticeError({ message: 'not an Error' })
       transaction.end()
     })
   })
 
-  t.test("should add an error-alike with a stack but no message", (t) => {
+  t.test('should add an error-alike with a stack but no message', (t) => {
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       t.equal(agent.errors.traceAggregator.errors.length, 1)
       const caught = agent.errors.traceAggregator.errors[0]
       t.equal(caught[1], 'Unknown')
@@ -244,8 +234,8 @@ tap.test('Agent API - noticeError', (t) => {
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
-      api.noticeError({stack : new Error().stack})
+    helper.runInTransaction(agent, function (transaction) {
+      api.noticeError({ stack: new Error().stack })
       transaction.end()
     })
   })
@@ -253,23 +243,23 @@ tap.test('Agent API - noticeError', (t) => {
   t.test("shouldn't throw on (or capture) a useless error object", (t) => {
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       t.equal(agent.errors.traceAggregator.errors.length, 0)
       t.equal(transaction.ignore, false)
 
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       t.doesNotThrow(() => api.noticeError({}))
       transaction.end()
     })
   })
 
-  t.test("should add a string error associated to a transaction", (t) => {
+  t.test('should add a string error associated to a transaction', (t) => {
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       t.equal(agent.errors.traceAggregator.errors.length, 1)
       const caught = agent.errors.traceAggregator.errors[0]
       t.equal(caught[1], 'Unknown')
@@ -281,16 +271,16 @@ tap.test('Agent API - noticeError', (t) => {
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
+    helper.runInTransaction(agent, function (transaction) {
       api.noticeError('busted, bro')
       transaction.end()
     })
   })
 
-  t.test("should allow custom parameters to be added to string errors", (t) => {
+  t.test('should allow custom parameters to be added to string errors', (t) => {
     t.equal(agent.errors.traceAggregator.errors.length, 0)
 
-    agent.on('transactionFinished', function(transaction) {
+    agent.on('transactionFinished', function (transaction) {
       t.equal(agent.errors.traceAggregator.errors.length, 1)
       const caught = agent.errors.traceAggregator.errors[0]
       t.equal(caught[2], 'busted, bro')
@@ -302,8 +292,8 @@ tap.test('Agent API - noticeError', (t) => {
       t.end()
     })
 
-    helper.runInTransaction(agent, function(transaction) {
-      api.noticeError('busted, bro', {a : 1, steak : 'sauce'})
+    helper.runInTransaction(agent, function (transaction) {
+      api.noticeError('busted, bro', { a: 1, steak: 'sauce' })
       transaction.end()
     })
   })

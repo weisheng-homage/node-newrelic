@@ -10,13 +10,15 @@ const tap = require('tap')
 // Below allows use of mocha DSL with tap runner.
 tap.mochaGlobals()
 
+const util = require('util')
 const sinon = require('sinon')
 const chai = require('chai')
-const semver = require('semver')
 const DESTINATIONS = require('../../lib/config/attribute-filter').DESTINATIONS
 const expect = chai.expect
 const helper = require('../lib/agent_helper')
 const codec = require('../../lib/util/codec')
+const codecEncodeAsync = util.promisify(codec.encode)
+const codecDecodeAsync = util.promisify(codec.decode)
 const Segment = require('../../lib/transaction/trace/segment')
 const DTPayload = require('../../lib/transaction/dt-payload')
 const Trace = require('../../lib/transaction/trace')
@@ -24,70 +26,60 @@ const Transaction = require('../../lib/transaction')
 
 const NEWRELIC_TRACE_HEADER = 'newrelic'
 
-describe('Trace', function() {
-  var agent = null
+describe('Trace', function () {
+  let agent = null
 
-  beforeEach(function() {
+  beforeEach(function () {
     agent = helper.loadMockedAgent()
   })
 
-  afterEach(function() {
+  afterEach(function () {
     helper.unloadAgent(agent)
   })
 
-  it('should always be bound to a transaction', function() {
+  it('should always be bound to a transaction', function () {
     // fail
-    expect(function() {
+    expect(function () {
       return new Trace()
     }).throws(/must be associated with a transaction/)
 
     // succeed
-    var transaction = new Transaction(agent)
-    var tt = new Trace(transaction)
+    const transaction = new Transaction(agent)
+    const tt = new Trace(transaction)
     expect(tt.transaction).to.be.an.instanceof(Transaction)
   })
 
-  it('should have the root of a Segment tree', function() {
-    var tt = new Trace(new Transaction(agent))
+  it('should have the root of a Segment tree', function () {
+    const tt = new Trace(new Transaction(agent))
     expect(tt.root).to.be.an.instanceof(Segment)
   })
 
-  it('should be the primary interface for adding segments to a trace', function() {
-    var transaction = new Transaction(agent)
-    var trace = transaction.trace
+  it('should be the primary interface for adding segments to a trace', function () {
+    const transaction = new Transaction(agent)
+    const trace = transaction.trace
 
-    expect(function() { trace.add('Custom/Test17/Child1') }).to.not.throw()
+    expect(function () {
+      trace.add('Custom/Test17/Child1')
+    }).to.not.throw()
   })
 
   describe('when serializing synchronously', () => {
-    var details
+    let details
 
-    beforeEach(function(done) {
-      makeTrace(agent, function(err, _details) {
-        details = _details
-        done(err)
-      })
+    beforeEach(async () => {
+      details = await makeTrace(agent)
     })
 
-    it('should produce a transaction trace in the expected format', function(done) {
+    it('should produce a transaction trace in the expected format', async function () {
       const traceJSON = details.trace.generateJSONSync()
-      codec.decode(traceJSON[4], function(derr, reconstituted) {
-        if (derr) {
-          return done(derr)
-        }
+      const reconstituted = await codecDecodeAsync(traceJSON[4])
+      expect(traceJSON, 'full trace JSON').to.deep.equal(details.expectedEncoding)
 
-        expect(traceJSON, 'full trace JSON')
-          .to.deep.equal(details.expectedEncoding)
-
-        expect(reconstituted, 'reconstituted trace segments')
-          .to.deep.equal(details.rootNode)
-
-        return done()
-      })
+      expect(reconstituted, 'reconstituted trace segments').to.deep.equal(details.rootNode)
     })
 
-    it('should send response time', function() {
-      details.transaction.getResponseTimeInMillis = function() {
+    it('should send response time', function () {
+      details.transaction.getResponseTimeInMillis = function () {
         return 1234
       }
 
@@ -95,30 +87,23 @@ describe('Trace', function() {
       expect(json[1]).to.equal(1234)
     })
 
-    describe('when `simple_compression` is `false`', function() {
-      it('should compress the segment arrays', function(done) {
+    describe('when `simple_compression` is `false`', function () {
+      it('should compress the segment arrays', async function () {
         const json = details.trace.generateJSONSync()
 
-        expect(json[4])
-          .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+        expect(json[4]).to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
 
-        codec.decode(json[4], function(err, data) {
-          if (err) {
-            return done(err)
-          }
-
-          expect(data).to.deep.equal(details.rootNode)
-          done()
-        })
+        const data = await codecDecodeAsync(json[4])
+        expect(data).to.deep.equal(details.rootNode)
       })
     })
 
-    describe('when `simple_compression` is `true`', function() {
-      beforeEach(function() {
+    describe('when `simple_compression` is `true`', function () {
+      beforeEach(function () {
         agent.config.simple_compression = true
       })
 
-      it('should not compress the segment arrays', function() {
+      it('should not compress the segment arrays', function () {
         const json = details.trace.generateJSONSync()
         expect(json[4]).to.deep.equal(details.rootNode)
       })
@@ -126,95 +111,69 @@ describe('Trace', function() {
   })
 
   describe('when serializing asynchronously', () => {
-    var details
+    let details
 
-    beforeEach(function(done) {
-      makeTrace(agent, function(err, _details) {
-        details = _details
-        done(err)
-      })
+    beforeEach(async () => {
+      details = await makeTrace(agent)
     })
 
-    it('should produce a transaction trace in the expected format', function(done) {
-      details.trace.generateJSON(function(err, traceJSON) {
-        if (err) {
-          return done(err)
-        }
+    it('should produce a transaction trace in the expected format', async function () {
+      const traceJSON = await details.trace.generateJSONAsync()
+      const reconstituted = await codecDecodeAsync(traceJSON[4])
 
-        codec.decode(traceJSON[4], function(derr, reconstituted) {
-          if (derr) {
-            return done(derr)
-          }
+      expect(traceJSON, 'full trace JSON').to.deep.equal(details.expectedEncoding)
 
-          expect(traceJSON, 'full trace JSON')
-            .to.deep.equal(details.expectedEncoding)
-
-          expect(reconstituted, 'reconstituted trace segments')
-            .to.deep.equal(details.rootNode)
-
-          return done()
-        })
-      })
+      expect(reconstituted, 'reconstituted trace segments').to.deep.equal(details.rootNode)
     })
 
-    it('should send response time', function(done) {
-      details.transaction.getResponseTimeInMillis = function() {
+    it('should send response time', function () {
+      details.transaction.getResponseTimeInMillis = function () {
         return 1234
       }
 
-      details.trace.generateJSON(function(err, json, trace) {
-        expect(err).to.not.exist
-        expect(json[1]).to.equal(1234)
-        expect(trace).to.equal(details.trace)
-        done()
-      })
-    })
-
-    describe('when `simple_compression` is `false`', function() {
-      it('should compress the segment arrays', function(done) {
-        details.trace.generateJSON(function(err, json) {
+      // not using `trace.generateJSONAsync` because
+      // util.promisify only returns 1st arg in callback
+      // see: https://github.com/nodejs/node/blob/master/lib/internal/util.js#L332
+      return new Promise((resolve, reject) => {
+        details.trace.generateJSON((err, json, trace) => {
           if (err) {
-            return done(err)
+            reject(err)
           }
 
-          expect(json[4])
-            .to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
-
-          codec.decode(json[4], function(err, data) {
-            if (err) {
-              return done(err)
-            }
-
-            expect(data).to.deep.equal(details.rootNode)
-            done()
-          })
+          expect(json[1]).to.equal(1234)
+          expect(trace).to.equal(details.trace)
+          resolve()
         })
       })
     })
 
-    describe('when `simple_compression` is `true`', function() {
-      beforeEach(function() {
+    describe('when `simple_compression` is `false`', function () {
+      it('should compress the segment arrays', async function () {
+        const json = await details.trace.generateJSONAsync()
+        expect(json[4]).to.match(/^[a-zA-Z0-9\+\/]+={0,2}$/, 'should be base64 encoded')
+
+        const data = await codecDecodeAsync(json[4])
+        expect(data).to.deep.equal(details.rootNode)
+      })
+    })
+
+    describe('when `simple_compression` is `true`', function () {
+      beforeEach(function () {
         agent.config.simple_compression = true
       })
 
-      it('should not compress the segment arrays', function(done) {
-        details.trace.generateJSON(function(err, json) {
-          if (err) {
-            return done(err)
-          }
-
-          expect(json[4]).to.deep.equal(details.rootNode)
-          done()
-        })
+      it('should not compress the segment arrays', async function () {
+        const json = await details.trace.generateJSONAsync()
+        expect(json[4]).to.deep.equal(details.rootNode)
       })
     })
   })
 
-  it('should have DT attributes on transaction end', function(done) {
+  it('should have DT attributes on transaction end', function (done) {
     agent.config.distributed_tracing.enabled = true
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       tx.end()
       const attributes = tx.trace.intrinsics
       expect(attributes.traceId).to.equal(tx.traceId)
@@ -229,11 +188,11 @@ describe('Trace', function() {
     })
   })
 
-  it('should have DT parent attributes on payload accept', function() {
+  it('should have DT parent attributes on payload accept', function () {
     agent.config.distributed_tracing.enabled = true
     agent.config.primary_application_id = 'test'
     agent.config.account_id = 1
-    helper.runInTransaction(agent, function(tx) {
+    helper.runInTransaction(agent, function (tx) {
       const payload = tx._createDistributedTracePayload().text()
       tx.isDistributedTrace = null
       tx._acceptDistributedTracePayload(payload)
@@ -253,16 +212,16 @@ describe('Trace', function() {
     })
   })
 
-  it('should generate span events', function() {
+  it('should generate span events', function () {
     agent.config.span_events.enabled = true
     agent.config.distributed_tracing.enabled = true
 
-    var transaction = new Transaction(agent)
+    const transaction = new Transaction(agent)
 
-    var trace = transaction.trace
-    var child1 = transaction.baseSegment = trace.add('test')
+    const trace = transaction.trace
+    const child1 = (transaction.baseSegment = trace.add('test'))
     child1.start()
-    var child2 = child1.add('nested')
+    const child2 = child1.add('nested')
     child2.start()
     child1.end()
     child2.end()
@@ -270,9 +229,9 @@ describe('Trace', function() {
     transaction.end()
     trace.generateSpanEvents()
 
-    var events = agent.spanEventAggregator.getEvents()
-    var nested = events[0]
-    var testSpan = events[1]
+    const events = agent.spanEventAggregator.getEvents()
+    const nested = events[0]
+    const testSpan = events[1]
     expect(nested).to.have.property('intrinsics')
     expect(testSpan).to.have.property('intrinsics')
 
@@ -296,56 +255,56 @@ describe('Trace', function() {
     expect(testSpan.intrinsics).to.have.property('timestamp')
   })
 
-  it('should not generate span events on end if span_events is disabled', function() {
+  it('should not generate span events on end if span_events is disabled', function () {
     agent.config.span_events.enabled = false
     agent.config.distributed_tracing.enabled = true
 
-    var transaction = new Transaction(agent)
+    const transaction = new Transaction(agent)
 
-    var trace = transaction.trace
-    var child1 = trace.add('test')
+    const trace = transaction.trace
+    const child1 = trace.add('test')
     child1.start()
-    var child2 = child1.add('nested')
+    const child2 = child1.add('nested')
     child2.start()
     child1.end()
     child2.end()
     trace.root.end()
     transaction.end()
 
-    var events = agent.spanEventAggregator.getEvents()
+    const events = agent.spanEventAggregator.getEvents()
     expect(events.length).to.equal(0)
   })
 
-  it('should not generate span events on end if distributed_tracing is off', function() {
+  it('should not generate span events on end if distributed_tracing is off', function () {
     agent.config.span_events.enabled = true
     agent.config.distributed_tracing.enabled = false
 
-    var transaction = new Transaction(agent)
+    const transaction = new Transaction(agent)
 
-    var trace = transaction.trace
-    var child1 = trace.add('test')
+    const trace = transaction.trace
+    const child1 = trace.add('test')
     child1.start()
-    var child2 = child1.add('nested')
+    const child2 = child1.add('nested')
     child2.start()
     child1.end()
     child2.end()
     trace.root.end()
     transaction.end()
 
-    var events = agent.spanEventAggregator.getEvents()
+    const events = agent.spanEventAggregator.getEvents()
     expect(events.length).to.equal(0)
   })
 
-  it('should not generate span events on end if transaction is not sampled', function() {
+  it('should not generate span events on end if transaction is not sampled', function () {
     agent.config.span_events.enabled = true
     agent.config.distributed_tracing.enabled = false
 
-    var transaction = new Transaction(agent)
+    const transaction = new Transaction(agent)
 
-    var trace = transaction.trace
-    var child1 = trace.add('test')
+    const trace = transaction.trace
+    const child1 = trace.add('test')
     child1.start()
-    var child2 = child1.add('nested')
+    const child2 = child1.add('nested')
     child2.start()
     child1.end()
     child2.end()
@@ -355,11 +314,11 @@ describe('Trace', function() {
     transaction.sampled = false
     transaction.end()
 
-    var events = agent.spanEventAggregator.getEvents()
+    const events = agent.spanEventAggregator.getEvents()
     expect(events.length).to.equal(0)
   })
 
-  it('parent.* attributes should be present on generated spans', function() {
+  it('parent.* attributes should be present on generated spans', function () {
     // Setup DT
     const encKey = 'gringletoes'
     agent.config.encoding_key = encKey
@@ -368,13 +327,13 @@ describe('Trace', function() {
     agent.config.trusted_account_key = 111
 
     const dtInfo = {
-      ty: 'App',       // type
-      ac: 111,         // accountId
-      ap: 222,         // appId
-      tx: 333,         // transactionId
-      tr: 444,         // traceId
-      pr: 1,           // priority
-      sa: true,        // sampled
+      ty: 'App', // type
+      ac: 111, // accountId
+      ap: 222, // appId
+      tx: 333, // transactionId
+      tr: 444, // traceId
+      pr: 1, // priority
+      sa: true, // sampled
       // timestamp, if in the future, duration will always be 0
       ti: Date.now() + 10000
     }
@@ -388,7 +347,7 @@ describe('Trace', function() {
 
     // Create at least one segment
     const trace = new Trace(transaction)
-    const child = transaction.baseSegment = trace.add('test')
+    const child = (transaction.baseSegment = trace.add('test'))
     child.start()
     child.end()
 
@@ -406,17 +365,18 @@ describe('Trace', function() {
     })
   })
 
-  it('should send host display name on transaction when set by user', function() {
+  it('should send host display name on transaction when set by user', function () {
     agent.config.attributes.enabled = true
     agent.config.process_host.display_name = 'test-value'
 
-    var trace = new Trace(new Transaction(agent))
+    const trace = new Trace(new Transaction(agent))
 
-    expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE))
-      .deep.equal({'host.displayName': 'test-value'})
+    expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE)).deep.equal({
+      'host.displayName': 'test-value'
+    })
   })
 
-  it('should send host display name attribute on span', function() {
+  it('should send host display name attribute on span', function () {
     agent.config.attributes.enabled = true
     agent.config.distributed_tracing.enabled = true
     agent.config.process_host.display_name = 'test-value'
@@ -426,43 +386,48 @@ describe('Trace', function() {
     const trace = new Trace(transaction)
 
     // add a child segment
-    const child = transaction.baseSegment = trace.add('test')
+    const child = (transaction.baseSegment = trace.add('test'))
     child.start()
     child.end()
 
     trace.generateSpanEvents()
 
-    expect(child.attributes.get(DESTINATIONS.SPAN_EVENT))
-      .deep.equal({'host.displayName': 'test-value'})
+    expect(child.attributes.get(DESTINATIONS.SPAN_EVENT)).deep.equal({
+      'host.displayName': 'test-value'
+    })
   })
 
-  it('should not send host display name when not set by user', function() {
-    var trace = new Trace(new Transaction(agent))
+  it('should not send host display name when not set by user', function () {
+    const trace = new Trace(new Transaction(agent))
 
     expect(trace.attributes.get(DESTINATIONS.TRANS_TRACE)).deep.equal({})
   })
 
-  describe('when inserting segments', function() {
-    var trace = null
-    var transaction = null
+  describe('when inserting segments', function () {
+    let trace = null
+    let transaction = null
 
-    beforeEach(function() {
+    beforeEach(function () {
       transaction = new Transaction(agent)
       trace = transaction.trace
     })
 
-    it('should allow child segments on a trace', function() {
-      expect(function() { trace.add('Custom/Test17/Child1') }).not.throws()
+    it('should allow child segments on a trace', function () {
+      expect(function () {
+        trace.add('Custom/Test17/Child1')
+      }).not.throws()
     })
 
-    it('should return the segment', function() {
-      var segment
-      expect(function() { segment = trace.add('Custom/Test18/Child1') }).not.throws()
+    it('should return the segment', function () {
+      let segment
+      expect(function () {
+        segment = trace.add('Custom/Test18/Child1')
+      }).not.throws()
       expect(segment).instanceof(Segment)
     })
 
-    it('should call a function associated with the segment', function(done) {
-      var segment = trace.add('Custom/Test18/Child1', function() {
+    it('should call a function associated with the segment', function (done) {
+      const segment = trace.add('Custom/Test18/Child1', function () {
         return done()
       })
 
@@ -470,28 +435,28 @@ describe('Trace', function() {
       transaction.end()
     })
 
-    it('should report total time', function() {
+    it('should report total time', function () {
       trace.setDurationInMillis(40, 0)
-      var child = trace.add('Custom/Test18/Child1')
+      const child = trace.add('Custom/Test18/Child1')
       child.setDurationInMillis(27, 0)
-      var seg = child.add('UnitTest')
+      let seg = child.add('UnitTest')
       seg.setDurationInMillis(9, 1)
-      var seg = child.add('UnitTest1')
+      seg = child.add('UnitTest1')
       seg.setDurationInMillis(13, 1)
-      var seg = child.add('UnitTest2')
+      seg = child.add('UnitTest2')
       seg.setDurationInMillis(9, 16)
-      var seg = child.add('UnitTest2')
+      seg = child.add('UnitTest2')
       seg.setDurationInMillis(14, 16)
       expect(trace.getTotalTimeDurationInMillis()).equal(48)
     })
 
-    it('should report total time on branched traces', function() {
+    it('should report total time on branched traces', function () {
       trace.setDurationInMillis(40, 0)
-      var child = trace.add('Custom/Test18/Child1')
+      const child = trace.add('Custom/Test18/Child1')
       child.setDurationInMillis(27, 0)
-      var seg1 = child.add('UnitTest')
+      const seg1 = child.add('UnitTest')
       seg1.setDurationInMillis(9, 1)
-      var seg = child.add('UnitTest1')
+      let seg = child.add('UnitTest1')
       seg.setDurationInMillis(13, 1)
       seg = seg1.add('UnitTest2')
       seg.setDurationInMillis(9, 16)
@@ -504,39 +469,37 @@ describe('Trace', function() {
       const expectedTrace = [
         0,
         27,
-        "Root",
-        {"nr_exclusive_duration_millis": 3},
+        'Root',
+        { nr_exclusive_duration_millis: 3 },
         [
           [
             1,
             10,
-            "first",
-            {"nr_exclusive_duration_millis": 9},
-            [
-              [16, 25, "first-first", {"nr_exclusive_duration_millis": 9},[]]
-            ]
+            'first',
+            { nr_exclusive_duration_millis: 9 },
+            [[16, 25, 'first-first', { nr_exclusive_duration_millis: 9 }, []]]
           ],
           [
             1,
             14,
-            "second",
-            {"nr_exclusive_duration_millis": 13},
+            'second',
+            { nr_exclusive_duration_millis: 13 },
             [
-              [16, 25, "second-first", {"nr_exclusive_duration_millis": 9}, []],
-              [16, 25, "second-second", {"nr_exclusive_duration_millis": 9}, []]
+              [16, 25, 'second-first', { nr_exclusive_duration_millis: 9 }, []],
+              [16, 25, 'second-second', { nr_exclusive_duration_millis: 9 }, []]
             ]
           ]
         ]
       ]
 
       trace.setDurationInMillis(40, 0)
-      var child = trace.add('Root')
+      const child = trace.add('Root')
       child.setDurationInMillis(27, 0)
-      var seg1 = child.add('first')
+      const seg1 = child.add('first')
       seg1.setDurationInMillis(9, 1)
-      var seg2 = child.add('second')
+      const seg2 = child.add('second')
       seg2.setDurationInMillis(13, 1)
-      var seg = seg1.add('first-first')
+      let seg = seg1.add('first-first')
       seg.setDurationInMillis(9, 16)
       seg = seg1.add('first-second')
       seg.setDurationInMillis(14, 16)
@@ -551,43 +514,43 @@ describe('Trace', function() {
       expect(child.toJSON()).deep.equal(expectedTrace)
     })
 
-    it('should report the expected trees for branched trees', function() {
+    it('should report the expected trees for branched trees', function () {
       const expectedTrace = [
         0,
         27,
-        "Root",
-        {"nr_exclusive_duration_millis": 3},
+        'Root',
+        { nr_exclusive_duration_millis: 3 },
         [
           [
             1,
             10,
-            "first",
-            {"nr_exclusive_duration_millis": 9},
+            'first',
+            { nr_exclusive_duration_millis: 9 },
             [
-              [16, 25, "first-first", {"nr_exclusive_duration_millis": 9},[]],
-              [16, 30, "first-second", {"nr_exclusive_duration_millis": 14}, []]
+              [16, 25, 'first-first', { nr_exclusive_duration_millis: 9 }, []],
+              [16, 30, 'first-second', { nr_exclusive_duration_millis: 14 }, []]
             ]
           ],
           [
             1,
             14,
-            "second",
-            {"nr_exclusive_duration_millis": 13},
+            'second',
+            { nr_exclusive_duration_millis: 13 },
             [
-              [16, 25, "second-first", {"nr_exclusive_duration_millis": 9}, []],
-              [16, 25, "second-second", {"nr_exclusive_duration_millis": 9},[]]
+              [16, 25, 'second-first', { nr_exclusive_duration_millis: 9 }, []],
+              [16, 25, 'second-second', { nr_exclusive_duration_millis: 9 }, []]
             ]
           ]
         ]
       ]
       trace.setDurationInMillis(40, 0)
-      var child = trace.add('Root')
+      const child = trace.add('Root')
       child.setDurationInMillis(27, 0)
-      var seg1 = child.add('first')
+      const seg1 = child.add('first')
       seg1.setDurationInMillis(9, 1)
-      var seg2 = child.add('second')
+      const seg2 = child.add('second')
       seg2.setDurationInMillis(13, 1)
-      var seg = seg1.add('first-first')
+      let seg = seg1.add('first-first')
       seg.setDurationInMillis(9, 16)
       seg = seg1.add('first-second')
       seg.setDurationInMillis(14, 16)
@@ -602,7 +565,7 @@ describe('Trace', function() {
     })
 
     it('should measure exclusive time vs total time at each level of the graph', () => {
-      var child = trace.add('Custom/Test18/Child1')
+      const child = trace.add('Custom/Test18/Child1')
 
       trace.setDurationInMillis(42)
       child.setDurationInMillis(22, 0)
@@ -610,47 +573,47 @@ describe('Trace', function() {
       expect(trace.getExclusiveDurationInMillis()).equal(20)
     })
 
-    it('should accurately sum overlapping segments', function() {
+    it('should accurately sum overlapping segments', function () {
       trace.setDurationInMillis(42)
 
-      var now = Date.now()
+      const now = Date.now()
 
-      var child1 = trace.add('Custom/Test19/Child1')
+      const child1 = trace.add('Custom/Test19/Child1')
       child1.setDurationInMillis(22, now)
 
       // add another child trace completely encompassed by the first
-      var child2 = trace.add('Custom/Test19/Child2')
+      const child2 = trace.add('Custom/Test19/Child2')
       child2.setDurationInMillis(5, now + 5)
 
       // add another that starts within the first range but that extends beyond
-      var child3 = trace.add('Custom/Test19/Child3')
+      const child3 = trace.add('Custom/Test19/Child3')
       child3.setDurationInMillis(22, now + 11)
 
       // add a final child that's entirely disjoint
-      var child4 = trace.add('Custom/Test19/Child4')
+      const child4 = trace.add('Custom/Test19/Child4')
       child4.setDurationInMillis(4, now + 35)
 
       expect(trace.getExclusiveDurationInMillis()).equal(5)
     })
 
-    it('should accurately sum overlapping subtrees', function() {
+    it('should accurately sum overlapping subtrees', function () {
       trace.setDurationInMillis(42)
 
-      var now = Date.now()
+      const now = Date.now()
 
       // create a long child on its own
-      var child1 = trace.add('Custom/Test20/Child1')
+      const child1 = trace.add('Custom/Test20/Child1')
       child1.setDurationInMillis(33, now)
 
       // add another, short child as a sibling
-      var child2 = child1.add('Custom/Test20/Child2')
+      const child2 = child1.add('Custom/Test20/Child2')
       child2.setDurationInMillis(5, now)
 
       // add two disjoint children of the second segment encompassed by the first segment
-      var child3 = child2.add('Custom/Test20/Child3')
+      const child3 = child2.add('Custom/Test20/Child3')
       child3.setDurationInMillis(11, now)
 
-      var child4 = child2.add('Custom/Test20/Child3')
+      const child4 = child2.add('Custom/Test20/Child3')
       child4.setDurationInMillis(11, now + 16)
 
       expect(trace.getExclusiveDurationInMillis()).equal(9)
@@ -660,46 +623,46 @@ describe('Trace', function() {
       expect(child1.getExclusiveDurationInMillis()).equal(11)
     })
 
-    it('should accurately sum partially overlapping segments', function() {
+    it('should accurately sum partially overlapping segments', function () {
       trace.setDurationInMillis(42)
 
-      var now = Date.now()
+      const now = Date.now()
 
-      var child1 = trace.add('Custom/Test20/Child1')
+      const child1 = trace.add('Custom/Test20/Child1')
       child1.setDurationInMillis(22, now)
 
       // add another child trace completely encompassed by the first
-      var child2 = trace.add('Custom/Test20/Child2')
+      const child2 = trace.add('Custom/Test20/Child2')
       child2.setDurationInMillis(5, now + 5)
 
       /* add another that starts simultaneously with the first range but
        * that extends beyond
        */
-      var child3 = trace.add('Custom/Test20/Child3')
+      const child3 = trace.add('Custom/Test20/Child3')
       child3.setDurationInMillis(33, now)
 
       expect(trace.getExclusiveDurationInMillis()).equal(9)
     })
 
-    it('should accurately sum partially overlapping, open-ranged segments', function() {
+    it('should accurately sum partially overlapping, open-ranged segments', function () {
       trace.setDurationInMillis(42)
 
-      var now = Date.now()
+      const now = Date.now()
 
-      var child1 = trace.add('Custom/Test21/Child1')
+      const child1 = trace.add('Custom/Test21/Child1')
       child1.setDurationInMillis(22, now)
 
       // add a range that starts at the exact end of the first
-      var child2 = trace.add('Custom/Test21/Child2')
+      const child2 = trace.add('Custom/Test21/Child2')
       child2.setDurationInMillis(11, now + 22)
 
       expect(trace.getExclusiveDurationInMillis()).equal(9)
     })
 
-    it('should be limited to 900 children', function() {
+    it('should be limited to 900 children', function () {
       // They will be tagged as _collect = false after the limit runs out.
-      for (var i = 0; i < 950; ++i) {
-        var segment = trace.add(i.toString(), noop)
+      for (let i = 0; i < 950; ++i) {
+        const segment = trace.add(i.toString(), noop)
         if (i < 900) {
           expect(segment._collect).equal(true)
         } else {
@@ -718,7 +681,7 @@ describe('Trace', function() {
   })
 })
 
-tap.test('should set URI to null when request.uri attribute is excluded globally', (t) => {
+tap.test('should set URI to null when request.uri attribute is excluded globally', async (t) => {
   const URL = '/test'
 
   const agent = helper.loadMockedAgent({
@@ -727,31 +690,26 @@ tap.test('should set URI to null when request.uri attribute is excluded globally
     }
   })
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
   const transaction = new Transaction(agent)
-  transaction.url  = URL
+  transaction.url = URL
   transaction.verb = 'GET'
 
   const trace = transaction.trace
+  trace.generateJSON = util.promisify(trace.generateJSON)
 
   trace.end()
 
-  trace.generateJSON(function(err, traceJSON) {
-    if (err) {
-      t.error(err)
-    }
-
-    const {3: requestUri} = traceJSON
-    t.notOk(requestUri)
-
-    t.end()
-  })
+  const traceJSON = await trace.generateJSON()
+  const { 3: requestUri } = traceJSON
+  t.notOk(requestUri)
+  t.end()
 })
 
-tap.test('should set URI to null when request.uri attribute is exluded from traces', (t) => {
+tap.test('should set URI to null when request.uri attribute is exluded from traces', async (t) => {
   const URL = '/test'
 
   const agent = helper.loadMockedAgent({
@@ -762,87 +720,77 @@ tap.test('should set URI to null when request.uri attribute is exluded from trac
     }
   })
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
   const transaction = new Transaction(agent)
-  transaction.url  = URL
+  transaction.url = URL
   transaction.verb = 'GET'
 
   const trace = transaction.trace
+  trace.generateJSON = util.promisify(trace.generateJSON)
 
   trace.end()
 
-  trace.generateJSON(function(err, traceJSON) {
-    if (err) {
-      t.error(err)
-    }
-
-    const {3: requestUri} = traceJSON
-    t.notOk(requestUri)
-
-    t.end()
-  })
+  const traceJSON = await trace.generateJSON()
+  const { 3: requestUri } = traceJSON
+  t.notOk(requestUri)
+  t.end()
 })
 
-tap.test('should set URI to /Unknown when URL is not known/set on transaction', (t) => {
+tap.test('should set URI to /Unknown when URL is not known/set on transaction', async (t) => {
   const agent = helper.loadMockedAgent()
 
-  t.tearDown(() => {
+  t.teardown(() => {
     helper.unloadAgent(agent)
   })
 
   const transaction = new Transaction(agent)
   const trace = transaction.trace
+  trace.generateJSON = util.promisify(trace.generateJSON)
 
   trace.end()
 
-  trace.generateJSON(function(err, traceJSON) {
-    if (err) {
-      t.error(err)
-    }
-
-    const {3: requestUri} = traceJSON
-    t.equal(requestUri, '/Unknown')
-
-    t.end()
-  })
+  const traceJSON = await trace.generateJSON()
+  const { 3: requestUri } = traceJSON
+  t.equal(requestUri, '/Unknown')
+  t.end()
 })
 
-function makeTrace(agent, callback) {
-  var DURATION = 33
-  var URL = '/test?test=value'
+async function makeTrace(agent) {
+  const DURATION = 33
+  const URL = '/test?test=value'
   agent.config.attributes.enabled = true
   agent.config.attributes.include = ['request.parameters.*']
   agent.config.emit('attributes.include')
 
-  var transaction = new Transaction(agent)
-  transaction.trace.attributes.addAttribute(
-    DESTINATIONS.TRANS_COMMON,
-    'request.uri',
-    URL
-  )
-  transaction.url  = URL
+  const transaction = new Transaction(agent)
+  transaction.trace.attributes.addAttribute(DESTINATIONS.TRANS_COMMON, 'request.uri', URL)
+  transaction.url = URL
   transaction.verb = 'GET'
 
   transaction.timer.setDurationInMillis(DURATION)
 
-  var trace = transaction.trace
-  var start = trace.root.timer.start
-  expect(start, 'root segment\'s start time').above(0)
+  const trace = transaction.trace
+
+  // promisifying `trace.generateJSON` so tests do not have to call done
+  // and instead use async/await
+  trace.generateJSONAsync = util.promisify(trace.generateJSON)
+  const start = trace.root.timer.start
+  expect(start, "root segment's start time").above(0)
   trace.setDurationInMillis(DURATION, 0)
 
-  var web = trace.root.add(URL)
+  const web = trace.root.add(URL)
   transaction.baseSegment = web
   transaction.finalizeNameFromUri(URL, 200)
   // top-level element will share a duration with the quasi-ROOT node
   web.setDurationInMillis(DURATION, 0)
 
-  var db = web.add('Database/statement/AntiSQL/select/getSome')
+  const db = web.add('Database/statement/AntiSQL/select/getSome')
   db.setDurationInMillis(14, 3)
 
-  var memcache = web.add('Datastore/operation/Memcache/lookup')
+  const memcache = web.add('Datastore/operation/Memcache/lookup')
   memcache.setDurationInMillis(20, 8)
 
   trace.end()
@@ -852,11 +800,11 @@ function makeTrace(agent, callback) {
    * outermost version having its scope always set to 'ROOT'. The null bits
    * are parameters, which are optional, and so far, unimplemented for Node.
    */
-  var rootSegment = [
+  const rootSegment = [
     0,
     DURATION,
     'ROOT',
-    {nr_exclusive_duration_millis : 0},
+    { nr_exclusive_duration_millis: 0 },
     [
       [
         0,
@@ -876,10 +824,10 @@ function makeTrace(agent, callback) {
     ]
   ]
 
-  var rootNode = [
+  const rootNode = [
     trace.root.timer.start / 1000,
     {},
-    {nr_flatten_leading: false},
+    { nr_flatten_leading: false },
     rootSegment,
     {
       agentAttributes: {
@@ -889,9 +837,29 @@ function makeTrace(agent, callback) {
       userAttributes: {},
       intrinsics: {}
     },
-    []  // FIXME: parameter groups
+    [] // FIXME: parameter groups
   ]
 
+  const encoded = await codecEncodeAsync(rootNode)
+  return {
+    transaction,
+    trace,
+    rootSegment,
+    rootNode,
+    expectedEncoding: [
+      0,
+      DURATION,
+      'WebTransaction/NormalizedUri/*', // scope
+      '/test', // URI path
+      encoded, // compressed segment / segment data
+      transaction.id, // guid
+      null, // reserved, always NULL
+      false, // FIXME: RUM2 session persistence, not worrying about it for now
+      null, // FIXME: xraysessionid
+      null // syntheticsResourceId
+    ]
+  }
+  /*
   codec.encode(rootNode, function(err, encoded) {
     if (err) {
       return callback(err)
@@ -915,11 +883,10 @@ function makeTrace(agent, callback) {
         null      // syntheticsResourceId
       ]
     })
-  })
+  })*/
 }
 
-const isGrpcSupportedVersion = semver.satisfies(process.version, '>=10.10.0')
-tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
+tap.test('infinite tracing', (t) => {
   t.autoend()
 
   const VALID_HOST = 'infinite-tracing.test'
@@ -927,7 +894,7 @@ tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
 
   let agent = null
 
-  t.beforeEach((done) => {
+  t.beforeEach(() => {
     agent = helper.loadMockedAgent({
       distributed_tracing: {
         enabled: true
@@ -942,13 +909,10 @@ tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
         }
       }
     })
-
-    done()
   })
 
-  t.afterEach((done) => {
+  t.afterEach(() => {
     helper.unloadAgent(agent)
-    done()
   })
 
   t.test('should generate spans if infinite configured, transaction not sampled', (t) => {
@@ -988,7 +952,7 @@ tap.test('infinite tracing', {skip: !isGrpcSupportedVersion}, (t) => {
 
 function addTwoSegments(transaction) {
   const trace = transaction.trace
-  const child1 = transaction.baseSegment = trace.add('test')
+  const child1 = (transaction.baseSegment = trace.add('test'))
   child1.start()
   const child2 = child1.add('nested')
   child2.start()
