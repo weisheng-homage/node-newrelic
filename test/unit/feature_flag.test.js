@@ -39,7 +39,8 @@ const used = [
   'new_promise_tracking',
   'unresolved_promise_cleanup',
   'undici_instrumentation',
-  'undici_async_tracking'
+  'undici_async_tracking',
+  'new_async_context'
 ]
 
 describe('feature flags', function () {

@@ -25,7 +25,10 @@ test('bind in transaction', function testBind(t) {
     t.equal(tracer.getSegment(), root, 'should start at root segment')
     let bound = tracer.bindFunction(compare)
 
-    tracer.segment = null
+    // tracer.segment = null
+
+    agent._contextManager.setContext({ segment: null })
+
     bound.call(context, root)
     t.equal(tracer.getSegment(), null, 'should reset segment after being called')
 
@@ -34,7 +37,9 @@ test('bind in transaction', function testBind(t) {
     bound.call(context, other)
 
     t.comment('null segment bind')
-    tracer.segment = root
+    // tracer.segment = root
+    agent._contextManager.setContext({ segment: root })
+
     bound = tracer.bindFunction(compare, null)
 
     t.equal(tracer.getSegment(), root, 'should be back to root segment')
@@ -88,7 +93,10 @@ test('bind + throw', function testThrows(t) {
     compare(dangerous(null, root), root)
 
     t.comment('null is active')
-    tracer.segment = null
+    // tracer.segment = null
+
+    agent._contextManager.setContext({ segment: null })
+
     compare(dangerous(root, root), null)
     compare(dangerous(null, null), null)
 
@@ -245,10 +253,11 @@ test('getTransaction', function testGetTransaction(t) {
 
   helper.runInTransaction(agent, function inTrans(transaction) {
     t.equal(tracer.getTransaction(), transaction)
-    t.equal(tracer.segment.transaction, transaction)
+
+    t.equal(agent._contextManager.getContext().segment.transaction, transaction)
     transaction.end()
     t.notOk(tracer.getTransaction())
-    t.equal(tracer.segment.transaction, transaction)
+    t.equal(agent._contextManager.getContext().segment.transaction, transaction)
     t.end()
   })
 })
@@ -262,7 +271,7 @@ test('getSegment', function testGetTransaction(t) {
   helper.runInTransaction(agent, function inTrans(transaction) {
     const root = transaction.trace.root
     t.equal(tracer.getSegment(), root)
-    t.equal(tracer.segment, tracer.getSegment())
+    t.equal(agent._contextManager.getContext().segment, tracer.getSegment())
 
     setTimeout(function onTimeout() {
       const segment = root.children[0].children[0]
@@ -582,7 +591,8 @@ test('wrapFunctionNoSegment', function testwrapFunctionNoSegment(t) {
     t.equal(this, outer)
     t.equal(tracer.getSegment(), seg)
     process.nextTick(function next() {
-      tracer.segment = null
+      // tracer.segment = null
+      agent._contextManager.setContext({ segment: null })
       callback.apply(inner, args)
     })
   }

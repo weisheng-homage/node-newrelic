@@ -435,9 +435,9 @@ tap.test('Shim', function (t) {
       t.not(startingSegment, segment, 'test should start in clean condition')
 
       shim.bindSegment(wrappable, 'getActiveSegment', segment)
-      t.equal(agent.tracer.segment, startingSegment)
+      t.equal(agent._contextManager.getContext().segment, startingSegment)
       t.equal(wrappable.getActiveSegment(), segment)
-      t.equal(agent.tracer.segment, startingSegment)
+      t.equal(agent._contextManager.getContext().segment, startingSegment)
       t.end()
     })
 
@@ -448,12 +448,14 @@ tap.test('Shim', function (t) {
       // no segment is passed in.  To get around this we set the
       // active segment to an object known not to be null then do the
       // wrapping.
-      agent.tracer.segment = segment
+      // agent.tracer.segment = segment
+      agent._contextManager.setContext({ segment })
       const wrapped = shim.bindSegment(wrappable.getActiveSegment)
-      agent.tracer.segment = startingSegment
+      // agent.tracer.segment = startingSegment
+      agent._contextManager.setContext({ segment: startingSegment })
 
       t.equal(wrapped(), segment)
-      t.equal(agent.tracer.segment, startingSegment)
+      t.equal(agent._contextManager.getContext().segment, startingSegment)
       t.end()
     })
 
@@ -476,7 +478,8 @@ tap.test('Shim', function (t) {
     })
 
     t.test('should default to the current segment', function (t) {
-      agent.tracer.segment = segment
+      // agent.tracer.segment = segment
+      agent._contextManager.setContext({ segment })
       shim.bindSegment(wrappable, 'getActiveSegment')
       const activeSegment = wrappable.getActiveSegment()
       t.equal(activeSegment, segment)
@@ -1794,7 +1797,8 @@ tap.test('Shim', function (t) {
     })
 
     t.test('should return the current segment if the function is not bound', function (t) {
-      agent.tracer.segment = segment
+      // agent.tracer.segment = segment
+      agent._contextManager.setContext({ segment })
       t.equal(
         shim.getSegment(function () {}),
         segment
@@ -1803,7 +1807,8 @@ tap.test('Shim', function (t) {
     })
 
     t.test('should return the current segment if no object is provided', function (t) {
-      agent.tracer.segment = segment
+      // agent.tracer.segment = segment
+      agent._contextManager.setContext({ segment })
       t.equal(shim.getSegment(), segment)
       t.end()
     })
@@ -1839,7 +1844,8 @@ tap.test('Shim', function (t) {
     t.test(
       'should return the current segment if the function is not bound when transaction is active',
       function (t) {
-        agent.tracer.segment = segment
+        // agent.tracer.segment = segment
+        agent._contextManager.setContext({ segment })
         t.equal(
           shim.getActiveSegment(function () {}),
           segment
@@ -1851,7 +1857,8 @@ tap.test('Shim', function (t) {
     t.test(
       'should return the current segment if no object is provided when transaction is active',
       function (t) {
-        agent.tracer.segment = segment
+        // agent.tracer.segment = segment
+        agent._contextManager.setContext({ segment })
         t.equal(shim.getActiveSegment(), segment)
         t.end()
       }
@@ -1868,7 +1875,8 @@ tap.test('Shim', function (t) {
       'should return null if the function is not bound when transaction is not active',
       function (t) {
         segment.transaction.active = false
-        agent.tracer.segment = segment
+        // agent.tracer.segment = segment
+        agent._contextManager.setContext({ segment })
         t.equal(
           shim.getActiveSegment(function () {}),
           null
@@ -1881,7 +1889,8 @@ tap.test('Shim', function (t) {
       'should return null if no object is provided when transaction is not active',
       function (t) {
         segment.transaction.active = false
-        agent.tracer.segment = segment
+        // agent.tracer.segment = segment
+        agent._contextManager.setContext({ segment })
         t.equal(shim.getActiveSegment(), null)
         t.end()
       }
@@ -1913,7 +1922,8 @@ tap.test('Shim', function (t) {
 
     t.test('should default to the current segment', function (t) {
       const segment = { probe: function () {} }
-      agent.tracer.segment = segment
+      // agent.tracer.segment = segment
+      agent._contextManager.setContext({ segment })
       shim.storeSegment(wrappable)
       t.equal(shim.getSegment(wrappable), segment)
       t.end()
@@ -2102,7 +2112,7 @@ tap.test('Shim', function (t) {
         {},
         [],
         function checkSegment() {
-          t.equal(agent.tracer.segment, segment)
+          t.equal(agent._contextManager.getContext().segment, segment)
           t.end()
         }
       )
@@ -2110,9 +2120,10 @@ tap.test('Shim', function (t) {
 
     t.test('should make the segment active for the duration of execution', function (t) {
       const prevSegment = { name: 'prevSegment', probe: function () {} }
-      agent.tracer.segment = prevSegment
+      // agent.tracer.segment = prevSegment
+      agent._contextManager.setContext({ segment: prevSegment })
       const activeSegment = shim.applySegment(wrappable.getActiveSegment, segment)
-      t.equal(agent.tracer.segment, prevSegment)
+      t.equal(agent._contextManager.getContext().segment, prevSegment)
       t.equal(activeSegment, segment)
       t.notOk(segment.touched)
       t.notOk(segment.started)
@@ -2127,12 +2138,13 @@ tap.test('Shim', function (t) {
     })
 
     t.test('should not change the active segment if `segment` is `null`', function (t) {
-      agent.tracer.segment = segment
+      // agent.tracer.segment = segment
+      agent._contextManager.setContext({ segment })
       let activeSegment = null
       t.doesNotThrow(function () {
         activeSegment = shim.applySegment(wrappable.getActiveSegment, null)
       })
-      t.equal(agent.tracer.segment, segment)
+      t.equal(agent._contextManager.getContext().segment, segment)
       t.equal(activeSegment, segment)
       t.end()
     })
@@ -2171,13 +2183,14 @@ tap.test('Shim', function (t) {
           throw new Error('test error')
         }
         const prevSegment = { name: 'prevSegment', probe: function () {} }
-        agent.tracer.segment = prevSegment
+        // agent.tracer.segment = prevSegment
+        agent._contextManager.setContext({ segment: prevSegment })
 
         t.throws(function () {
           shim.applySegment(func, segment)
         }, 'test error')
 
-        t.equal(agent.tracer.segment, prevSegment)
+        t.equal(agent._contextManager.getContext().segment, prevSegment)
         t.end()
       }
     )

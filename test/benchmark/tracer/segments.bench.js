@@ -15,6 +15,7 @@ const tx = helper.runInTransaction(s.agent, function (_tx) {
   return _tx
 })
 const bound = tracer.bindFunction(shared.getTest(), tx.root, true)
+// TODO: update to context manager
 tracer.segment = tx.root
 
 suite.add({
@@ -27,6 +28,7 @@ suite.add({
 suite.add({
   name: 'tracer.createSegment',
   fn: function () {
+    // TODO: update to context manager
     tracer.segment = tracer.createSegment('test', null, null)
   }
 })

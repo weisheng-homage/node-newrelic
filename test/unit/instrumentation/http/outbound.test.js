@@ -467,7 +467,9 @@ tap.test('when working with http.request', (t) => {
     helper.runInTransaction(agent, (transaction) => {
       const parentSegment = agent.tracer.createSegment('ParentSegment')
       parentSegment.opaque = true
-      agent.tracer.segment = parentSegment // make the current active segment
+
+      // agent.tracer.segment = parentSegment // make the current active segment
+      agent._contextManager.setContext({ segment: parentSegment })
 
       http.get(`${host}${path}`, (res) => {
         const segment = agent.tracer.getSegment()

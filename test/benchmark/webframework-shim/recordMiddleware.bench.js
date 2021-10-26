@@ -56,6 +56,7 @@ function addTests(name, speccer) {
   suite.add({
     name: name + ' - wrapper (no tx)    ',
     fn: function () {
+      // TODO: update to context manager
       agent.tracer.segment = null
       middleware(getReqd(), {}, noop)
     }
@@ -64,6 +65,7 @@ function addTests(name, speccer) {
   suite.add({
     name: name + ' - wrapper (tx)       ',
     fn: function () {
+      // TODO: update to context manager
       agent.tracer.segment = transaction.trace.root
       middleware(getReqd(), {}, noop)
     }

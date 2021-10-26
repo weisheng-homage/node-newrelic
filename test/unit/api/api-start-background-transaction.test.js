@@ -46,7 +46,8 @@ tap.test('Agent API - startBackgroundTransaction', (t) => {
       t.equal(transaction.getFullName(), 'OtherTransaction/Nodejs/test')
       t.ok(transaction.isActive())
 
-      t.equal(agent.tracer.segment.children[0].name, 'Nodejs/nested')
+      const { segment } = agent._contextManager.getContext()
+      t.equal(segment.children[0].name, 'Nodejs/nested')
     })
 
     function nested() {

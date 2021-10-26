@@ -100,7 +100,10 @@ tap.test('setImmediate', function testSetImmediate(t) {
       transaction.end()
 
       setImmediate(() => {
-        t.notOk(agent.tracer.segment, 'should not have segment for ended transaction')
+        t.notOk(
+          agent._contextManager.getContext().segment,
+          'should not have segment for ended transaction'
+        )
         t.end()
       })
     })

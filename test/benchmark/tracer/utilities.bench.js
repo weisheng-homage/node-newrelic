@@ -14,6 +14,7 @@ const tracer = s.agent.tracer
 const tx = helper.runInTransaction(s.agent, function (_tx) {
   return _tx
 })
+// TODO: update to context manager
 tracer.segment = tx.root
 
 suite.add({
