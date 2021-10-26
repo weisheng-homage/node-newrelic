@@ -156,6 +156,7 @@ const helper = (module.exports = {
    */
   unloadAgent: (agent) => {
     agent.emit('unload')
+
     shimmer.unpatchModule()
     shimmer.unwrapAll()
     shimmer.debug = false
@@ -210,6 +211,7 @@ const helper = (module.exports = {
     }
 
     return agent.tracer.transactionNestProxy(type, () => {
+      const context = agent.tracer._contextManager.getContext()
       const transaction = agent.getTransaction()
       return callback(transaction)
     })() // <-- invoke immediately

@@ -600,9 +600,11 @@ test('Promise#timeout', function (t) {
       .delay(100)
       .timeout(50, new Error(name + 'timeout message'))
       .then(function () {
+        let ctx = helper.getAgent()._contextManager.getContext()
         t.fail(name + 'should not have resolved')
       })
       .catch(function (err) {
+        let ctx = helper.getAgent()._contextManager.getContext()
         const end = Date.now()
         t.equal(err.message, name + 'timeout message', name + 'should have correct message')
         t.ok(end - start > 48, name + 'should wait close to correct time')
@@ -614,7 +616,9 @@ test('Promise#timeout', function (t) {
 test('Promise#with', function (t) {
   testPromiseInstanceMethod(t, 2, function (p, name) {
     const obj = {}
+    let ctx = helper.getAgent()._contextManager.getContext()
     return p.with(obj).then(function (x) {
+      let ctx = helper.getAgent()._contextManager.getContext()
       t.same(x, [1, 2, 3, name], name + 'should resolve with correct value')
       t.equal(this, obj, name + 'should have correct context')
     })
@@ -940,7 +944,9 @@ function testPromiseInstanceMethod(t, plan, testFunc) {
   const Promise = require('when').Promise
 
   _testPromiseMethod(t, plan, agent, function (name) {
+    let ctx = agent._contextManager.getContext()
     const p = new Promise(function (resolve) {
+      ctx = agent._contextManager.getContext()
       resolve([1, 2, 3, name])
     })
     return testFunc(p, name, agent)
@@ -973,12 +979,16 @@ function _testPromiseMethod(t, plan, agent, testFunc) {
   t.doesNotThrow(function outTXPromiseThrowTest() {
     const name = '[no tx] '
     let isAsync = false
+
+    const outerctx = agent._contextManager.getContext()
     testFunc(name)
       .finally(function () {
+        const ctx = agent._contextManager.getContext()
         t.ok(isAsync, name + 'should have executed asynchronously')
       })
       .then(
         function () {
+          const ctx = agent._contextManager.getContext()
           t.notOk(agent.getTransaction(), name + 'has no transaction')
           testInTransaction()
         },
@@ -1001,15 +1011,18 @@ function _testPromiseMethod(t, plan, agent, testFunc) {
       COUNT,
       function (i, cb) {
         helper.runInTransaction(agent, function transactionWrapper(transaction) {
+          const outerctx = agent._contextManager.getContext()
           const name = '[tx ' + i + '] '
           t.doesNotThrow(function inTXPromiseThrowTest() {
             let isAsync = false
             testFunc(name)
               .finally(function () {
+                const ctx = agent._contextManager.getContext()
                 t.ok(isAsync, name + 'should have executed asynchronously')
               })
               .then(
                 function () {
+                  const ctx = agent._contextManager.getContext()
                   t.equal(agent.getTransaction(), transaction, name + 'has the right transaction')
                 },
                 function (err) {

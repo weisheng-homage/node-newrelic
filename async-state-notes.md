@@ -10,13 +10,20 @@ Instead of swapping tracer.segment... have it throw to surface up missed locatio
 
 Feature flag to manage?
 
+## Research TODOs / Notes
 
-**TODO**: resolve the direct usages of tracer.segment
+* This new method will result in propagating state regardless of being done. We somewhat do that already but had some checks in timers to reduce extra work. We are probably fine here but could also consider killing state on transaction end going forward.
+
+* stop manual propagation of segment on objects?
 
 
 ## TODOs / Unanswered Questions
 
 * Throughput, CPU, and Memory impact?
+
+* Any negative impacts to our own web code?
+
+* Manually test some apps to ensure no transaction state conflation.
 
 ## Implementation Throughts
 

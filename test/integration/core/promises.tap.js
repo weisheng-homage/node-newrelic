@@ -5,4 +5,7 @@
 
 'use strict'
 
-require('./promises')({ await_support: false })
+require('./promises')({
+  await_support: false,
+  new_async_context: false
+})

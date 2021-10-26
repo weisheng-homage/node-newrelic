@@ -19,7 +19,8 @@ test('Promise trace', (t) => {
     agent = helper.instrumentMockedAgent({
       feature_flag: {
         promise_segments: true,
-        await_support: false
+        await_support: false,
+        new_async_context: false
       }
     })
   })
