@@ -187,6 +187,8 @@ test("the agent's async hook", function (t) {
   })
 
   // TODO: the timer hop screws up the propagation regardless
+  // setinterval was created prior to everything and then schedules bound to
+  // no context. there isn't even a handoff
   t.test('maintains transaction context', function (t) {
     const agent = setupAgent(t)
     const tasks = []
@@ -241,14 +243,17 @@ test("the agent's async hook", function (t) {
       }
 
       function next() {
+        let context = agent._contextManager.getContext()
         return Promise.resolve(wrapperTwo())
       }
 
       function two() {
+        let context = agent._contextManager.getContext()
         return nextTwo()
       }
 
       function nextTwo() {
+        let context = agent._contextManager.getContext()
         return Promise.resolve(wrapperThree())
       }
 

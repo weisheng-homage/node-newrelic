@@ -43,17 +43,15 @@ test('transaction tests', function (t) {
       server.close()
     })
 
-    helper.runInTransaction(agent, function () {
-      const app = connect()
+    const app = connect()
 
-      function middleware(req, res) {
-        t.ok(agent.getTransaction(), 'transaction should be available')
-        res.end('foo')
-      }
+    function middleware(req, res) {
+      t.ok(agent.getTransaction(), 'transaction should be available')
+      res.end('foo')
+    }
 
-      app.use('/foo', middleware)
-      server = createServerAndMakeRequest({ url: '/foo', expectedData: 'foo', t, app, pkgVersion })
-    })
+    app.use('/foo', middleware)
+    server = createServerAndMakeRequest({ url: '/foo', expectedData: 'foo', t, app, pkgVersion })
   })
 
   t.test('should default to `/` when no route is specified', function (t) {
@@ -61,7 +59,14 @@ test('transaction tests', function (t) {
     const connect = require('connect')
     const { version: pkgVersion } = require('connect/package')
     let server
+
+    // let outerTransaction = null
+
+
     agent.once('transactionFinished', function (transaction) {
+      //t.equal(transaction, outerTransaction)
+      console.log(transaction.id)
+
       t.equal(transaction.name, 'WebTransaction/Connect/GET//')
       t.equal(transaction.url, '/foo', 'URL is left alone')
       t.equal(transaction.verb, 'GET', 'HTTP method is GET')
@@ -75,17 +80,24 @@ test('transaction tests', function (t) {
       server.close()
     })
 
-    helper.runInTransaction(agent, function () {
-      const app = connect()
+    // helper.runInTransaction(agent, function (transaction) {
 
-      function middleware(req, res) {
-        t.ok(agent.getTransaction(), 'transaction should be available')
-        res.end('root')
-      }
+    // })
 
-      app.use(middleware)
-      server = createServerAndMakeRequest({ url: '/foo', expectedData: 'root', t, app, pkgVersion })
-    })
+    //outerTransaction = transaction
+     // console.log(outerTransaction.id)
+
+    const app = connect()
+
+    function middleware(req, res) {
+      // outerTransaction = agent.getTransaction()
+      t.ok(agent.getTransaction(), 'transaction should be available')
+      res.end('root')
+    }
+
+    app.use(middleware)
+    t.context.agent = agent
+    server = createServerAndMakeRequest({ url: '/foo', expectedData: 'root', t, app, pkgVersion })
   })
 })
 
@@ -114,6 +126,9 @@ function createServerAndMakeRequest({ url, expectedData, t, app, pkgVersion }) {
   }
 
   const server = http.createServer(requestListener).listen(0, function () {
+    // get context
+    // let context = t.context.agent._contextManager.getContext()
+    // .log(context.segment.transaction.id)
     const req = http.request(
       {
         port: server.address().port,
@@ -127,6 +142,9 @@ function createServerAndMakeRequest({ url, expectedData, t, app, pkgVersion }) {
         })
       }
     )
+
+    // context = t.context.agent._contextManager.getContext()
+    // console.log(context.segment.transaction.id)
     req.end()
   })
   return server
