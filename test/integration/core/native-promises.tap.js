@@ -6,7 +6,7 @@
 'use strict'
 
 const exec = require('child_process').execSync
-exec('NEW_RELIC_FEATURE_FLAG_NEW_ASYNC_CONTEXT=0 node --expose-gc ./async_hooks.js', {
+exec('node --expose-gc ./native-promises.js', {
   stdio: 'inherit',
   cwd: __dirname
 })

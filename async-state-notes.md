@@ -12,6 +12,12 @@ Feature flag to manage?
 
 ## Research TODOs / Notes
 
+* Could the manual propagation of segments screw upt he promise tracking?
+
+
+
+* How do we confirm we don't have a memory leak / segments are clearing up?
+
 * This new method will result in propagating state regardless of being done. We somewhat do that already but had some checks in timers to reduce extra work. We are probably fine here but could also consider killing state on transaction end going forward.
 
 * stop manual propagation of segment on objects?
