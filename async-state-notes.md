@@ -1,10 +1,24 @@
 # Async State Tracking Notes
 
+
 Feature Flag: new_async_context
 
 * createContextManager = factory method
 * AsyncLocalContextManager = State tracking via AsyncLocalStorage
 * LegacyContextManager = manual get/set. Async hooks still initialized externally but should eventually roll in here. Potentially kill off old promise style.
+
+
+## Team TODO
+
+* Schedule introducing legacy context manager
+* Initial perf numbers from prototypes... local numbers to inform how we go forward
+* Schedule implementing initial asynclocalstorage context management behind a feature-flag.
+  * -> find customers to test
+    * every customer using our promise feature flags
+    * any customers complaining about perf in general
+  * Do some proper CPU/Memory/Throughput exploration
+* Review/figure out next steps / things to fix to make easier on customers such as exposing Context Manager
+* Feature flag flipped to true
 
 ## Current State
 
@@ -18,8 +32,6 @@ Feature Flag: new_async_context
 * Nothing sketch in logs thus far.
 
 ## Research TODOs / Notes
-
-* Make sure context isn't flowing through our own requests...
 
 * Problem with the connect test was that the new style of tracking propagates the test created transaction
   to the handling of the web request. That sees there's an active transaction and uses it. Likely because a transaction was active prior to server creation... so the timers involved with the server had an active transaction to start propagating (prob forever?).
@@ -41,13 +53,20 @@ Feature Flag: new_async_context
 
 ## TODOs / Unanswered Questions
 
-* Stop manual propagation of current segment on objects...
+
 
 * Ensure no memory leaks
 
+* Throughput, CPU, and Memory impact?
+
+* Stop manual propagation of current segment on objects...
+  storing segment on the function
+
+
+
 * Current propagation is allocation heavy
 
-* Throughput, CPU, and Memory impact?
+
 
 * Consider how we might expose context management to customers. Thinking via getting handle to instrumentation. Right now this is async and gives you a shim on module load. If we have a sync version (which we already want for koa) we can inject shim + context manager. Top of head thought. We will want things to be easy/straightforward so prob dont' want to start here as we figure out clean patterns for setting context simply.
 
