@@ -22,7 +22,7 @@ test('createServer', function createServerTest(t) {
     server.listen(4123, function listening() {
       // leave transaction
       // agent.tracer.segment = null
-      agent._contextManager.setContext({ segment: null })
+      agent._contextManager.setContext(null)
 
       const socket = net.connect({ port: 4123 })
       socket.write('test123')

@@ -44,7 +44,8 @@ tap.test('Agent API - startWebTransaction', (t) => {
       t.equal(transaction.type, 'web')
       t.equal(transaction.getFullName(), 'WebTransaction/Custom//test')
       t.ok(transaction.isActive())
-      t.equal(agent._contextManager.getContext().segment.children[0].name, 'nested')
+      const segment = agent._contextManager.getContext()
+      t.equal(segment.children[0].name, 'nested')
     })
 
     function nested() {

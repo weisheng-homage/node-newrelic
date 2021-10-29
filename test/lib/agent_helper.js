@@ -211,7 +211,7 @@ const helper = (module.exports = {
     }
 
     return agent.tracer.transactionNestProxy(type, () => {
-      const context = agent.tracer._contextManager.getContext()
+      //const context = agent.tracer._contextManager.getContext()
       const transaction = agent.getTransaction()
       return callback(transaction)
     })() // <-- invoke immediately

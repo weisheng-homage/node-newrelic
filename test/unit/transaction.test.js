@@ -1004,13 +1004,13 @@ describe('Transaction', function () {
     it('adds the current span id as the parent span id', function () {
       agent.config.span_events.enabled = true
       // agent.tracer.segment = tx.trace.root
-      agent._contextManager.setContext({ segment: tx.trace.root })
+      agent._contextManager.setContext(tx.trace.root)
 
       tx.sampled = true
       const payload = JSON.parse(tx._createDistributedTracePayload().text())
       expect(payload.d.id).to.equal(tx.trace.root.id)
 
-      agent._contextManager.setContext({ segment: null })
+      agent._contextManager.setContext(null)
       // agent.tracer.segment = null
 
       agent.config.span_events.enabled = false
@@ -1021,11 +1021,11 @@ describe('Transaction', function () {
       tx._calculatePriority()
       tx.sampled = false
       // agent.tracer.segment = tx.trace.root
-      agent._contextManager.setContext({ segment: tx.trace.root })
+      agent._contextManager.setContext(tx.trace.root)
       const payload = JSON.parse(tx._createDistributedTracePayload().text())
       expect(payload.d.id).to.be.undefined
       // agent.tracer.segment = null
-      agent._contextManager.setContext({ segment: null })
+      agent._contextManager.setContext(null)
       agent.config.span_events.enabled = false
     })
 
@@ -1305,7 +1305,7 @@ describe('Transaction', function () {
       const tx = new Transaction(agent)
 
       // agent.tracer.segment = tx.trace.root
-      agent._contextManager.setContext({ segment: tx.trace.root })
+      agent._contextManager.setContext(tx.trace.root)
 
       const outboundHeaders = createHeadersAndInsertTrace(tx)
       const traceparent = outboundHeaders.traceparent
@@ -1323,7 +1323,7 @@ describe('Transaction', function () {
       expect(traceparentParts[2], 'parentId is lowercase hex').to.match(lowercaseHexRegex)
 
       // agent.tracer.segment = null
-      agent._contextManager.setContext({ segment: null })
+      agent._contextManager.setContext(null)
     })
 
     it('should generate new parentId when spans_events disabled', () => {
@@ -1335,7 +1335,7 @@ describe('Transaction', function () {
       const lowercaseHexRegex = /^[a-f0-9]+/
 
       // agent.tracer.segment = tx.trace.root
-      agent._contextManager.setContext({ segment: tx.trace.root })
+      agent._contextManager.setContext(tx.trace.root)
 
       const outboundHeaders = createHeadersAndInsertTrace(tx)
       const traceparent = outboundHeaders.traceparent
@@ -1354,7 +1354,7 @@ describe('Transaction', function () {
       const tx = new Transaction(agent)
 
       // agent.tracer.segment = tx.trace.root
-      agent._contextManager.setContext({ segment: tx.trace.root })
+      agent._contextManager.setContext(tx.trace.root)
 
       tx.sampled = true
 
@@ -1365,7 +1365,7 @@ describe('Transaction', function () {
       expect(traceparentParts[3], 'flags').to.equal('01')
 
       // agent.tracer.segment = null
-      agent._contextManager.setContext({ segment: null })
+      agent._contextManager.setContext(null)
     })
 
     it('should set traceparent traceid if traceparent exists on transaction', () => {
@@ -1381,7 +1381,7 @@ describe('Transaction', function () {
 
       // this coudl be runincontext
       // agent.tracer.segment = tx.trace.root
-      agent._contextManager.setContext({ segment: tx.trace.root })
+      agent._contextManager.setContext(tx.trace.root)
 
       const outboundHeaders = createHeadersAndInsertTrace(tx)
       const traceparentParts = outboundHeaders.traceparent.split('-')
@@ -1389,7 +1389,7 @@ describe('Transaction', function () {
       expect(traceparentParts[1], 'traceId').to.equal('4bf92f3577b34da6a3ce929d0e0e4736')
 
       // agent.tracer.segment = null
-      agent._contextManager.setContext({ segment: null })
+      agent._contextManager.setContext(null)
     })
 
     it('generates a priority for entry-point transactions', () => {
@@ -1684,7 +1684,7 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
 
     // force a segment in context
     const segment = new Segment(transaction, 'test segment')
-    agent._contextManager.setContext({ segment })
+    agent._contextManager.setContext(segment)
 
     transaction.finalizeNameFromUri('/config', 200)
 
@@ -1729,7 +1729,7 @@ tap.test('when being named with finalizeNameFromUri', (t) => {
       setupNameState(transaction)
       // force a segment in context
       const segment = new Segment(transaction, 'test segment')
-      agent._contextManager.setContext({ segment })
+      agent._contextManager.setContext(segment)
 
       transaction.finalizeNameFromUri('/some/random/path', 200)
 
@@ -1805,7 +1805,7 @@ tap.test('requestd', (t) => {
 
     // force a segment in context
     const newSegment = new Segment(transaction, 'test segment')
-    agent._contextManager.setContext({ segment: newSegment })
+    agent._contextManager.setContext(newSegment)
 
     transaction.finalizeNameFromUri('/some/random/path', 200)
 
@@ -1885,7 +1885,7 @@ tap.test('when being named with finalizeName', (t) => {
   t.test('should add finalized transaction name to active span intrinsics', (t) => {
     // force a segment in context
     const segment = new Segment(transaction, 'test segment')
-    agent._contextManager.setContext({ segment })
+    agent._contextManager.setContext(segment)
 
     transaction.finalizeName('/config')
 

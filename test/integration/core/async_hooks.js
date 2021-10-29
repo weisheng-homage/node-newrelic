@@ -82,14 +82,14 @@ test("the agent's async hook", function (t) {
     const agent = setupAgent(t)
     const res = new TestResource(1)
     helper.runInTransaction(agent, function () {
-      const root = agent._contextManager.getContext().segment
+      const root = agent._contextManager.getContext()
       const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
 
       t.equal(segmentMap.size, 0, 'no segments should be tracked')
       res.doStuff(function () {
-        t.ok(agent._contextManager.getContext().segment, 'should be in a transaction')
+        t.ok(agent._contextManager.getContext(), 'should be in a transaction')
         t.equal(
-          agent._contextManager.getContext().segment.name,
+          agent._contextManager.getContext().name,
           root.name,
           'loses transaction state for resources created outside of a transaction'
         )
@@ -102,11 +102,11 @@ test("the agent's async hook", function (t) {
     const agent = setupAgent(t)
     helper.runInTransaction(agent, function (txn) {
       const res = new TestResource(1)
-      const root = agent._contextManager.getContext().segment
+      const root = agent._contextManager.getContext()
       txn.end()
       res.doStuff(function () {
         t.equal(
-          agent._contextManager.getContext().segment,
+          agent._contextManager.getContext(),
           root,
           'the hooks restore a segment when its transaction has been ended'
         )
@@ -212,13 +212,13 @@ test("the agent's async hook", function (t) {
 
       function one() {
         return new Promise((done) => {
-          const currentSegment = agent._contextManager.getContext().segment
+          const currentSegment = agent._contextManager.getContext()
           t.ok(currentSegment, 'should have propagated a segment')
           txn.end()
 
           done()
         }).then(() => {
-          const currentSegment = agent._contextManager.getContext().segment
+          const currentSegment = agent._contextManager.getContext()
           t.notOk(currentSegment, 'should not have a propagated segment')
           t.end()
         })
@@ -283,34 +283,34 @@ test("the agent's async hook", function (t) {
     const agent = setupAgent(t)
     const segmentMap = require('../../../lib/instrumentation/core/async_hooks').segmentMap
     helper.runInTransaction(agent, function () {
-      const root = agent._contextManager.getContext().segment
+      const root = agent._contextManager.getContext()
 
       const aSeg = agent.tracer.createSegment('A')
       // agent.tracer.segment = aSeg
-      agent._contextManager.setContext({ segment: aSeg })
+      agent._contextManager.setContext(aSeg)
 
       const resA = new TestResource(1)
 
       const bSeg = agent.tracer.createSegment('B')
       // agent.tracer.segment = bSeg
-      agent._contextManager.setContext({ segment: bSeg })
+      agent._contextManager.setContext(bSeg)
       const resB = new TestResource(2)
 
-      agent._contextManager.setContext({ segment: root })
+      agent._contextManager.setContext(root)
       // agent.tracer.segment = root
 
       t.equal(segmentMap.size, 2, 'all resources should create an entry on init')
 
       resA.doStuff(() => {
         t.equal(
-          agent._contextManager.getContext().segment.name,
+          agent._contextManager.getContext().name,
           aSeg.name,
           'runInAsyncScope should restore the segment active when a resource was made'
         )
 
         resB.doStuff(() => {
           t.equal(
-            agent._contextManager.getContext().segment.name,
+            agent._contextManager.getContext().name,
             bSeg.name,
             'runInAsyncScope should restore the segment active when a resource was made'
           )
@@ -318,19 +318,19 @@ test("the agent's async hook", function (t) {
           t.end()
         })
         t.equal(
-          agent._contextManager.getContext().segment.name,
+          agent._contextManager.getContext().name,
           aSeg.name,
           'runInAsyncScope should restore the segment active when a callback was called'
         )
       })
       t.equal(
-        agent._contextManager.getContext().segment.name,
+        agent._contextManager.getContext().name,
         root.name,
         'root should be restored after we are finished'
       )
       resA.doStuff(() => {
         t.equal(
-          agent._contextManager.getContext().segment.name,
+          agent._contextManager.getContext().name,
           aSeg.name,
           'runInAsyncScope should restore the segment active when a resource was made'
         )
