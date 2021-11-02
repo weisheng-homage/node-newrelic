@@ -51,13 +51,14 @@ Feature Flag: new_async_context
 
 * Real implementation will want some different native promise tests that test various scenarios without the contextless timer hop.
 
+
 ## TODOs / Unanswered Questions
 
 
 
 * Ensure no memory leaks
-
-* Throughput, CPU, and Memory impact?
+  * Seemed fine on 1.5 hour run. Overnight run would better prove.
+  * Would capture a steady stream of traffic for a while and then capture a heap snapshot for discovery.
 
 * Stop manual propagation of current segment on objects...
   storing segment on the function
