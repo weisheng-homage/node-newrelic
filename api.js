@@ -1333,53 +1333,21 @@ API.prototype.instrumentLoadedModule = function instrumentLoadedModule(moduleNam
   )
   metric.incrementCallCount()
 
-  // TODO: post load instrumentation has other metadata written...
-  // TODO: also doesn't call error handler given by instrumentation
-
-  // check for if instrumented / write when instrumented.
-
-  if (
-    properties.hasOwn(module, '__NR_instrumented') ||
-    properties.hasOwn(module, '__NR_instrumented_errored')
-  ) {
-    logger.trace(
-      'Already instrumented or failed to instrument %s, skipping redundant instrumentation',
-      moduleName
-    )
-    return false
-  }
 
   try {
-    const instrumentationName = shimmer.getInstrumentationNameFromModuleName(moduleName)
-    if (!shimmer.registeredInstrumentations[instrumentationName]) {
-      logger.warn("No instrumentation registered for '%s'.", instrumentationName)
-      return false
-    }
-
-    const instrumentation = shimmer.registeredInstrumentations[instrumentationName]
-    if (!instrumentation.onRequire) {
-      logger.warn("No onRequire function registered for '%s'.", instrumentationName)
-      return false
-    }
-
     const resolvedName = require.resolve(moduleName)
 
-    const shim = shims.createShimFromType(
-      instrumentation.type,
-      this.agent,
-      moduleName,
-      resolvedName
-    )
+    // TODO: instrumentLoadedModule is always returning true
+    // leverage properties or something else?
+    const result = shimmer.instrumentPostLoad(this.agent, module, moduleName, resolvedName)
 
-    instrumentation.onRequire(shim, module, moduleName)
-
-    module.__NR_instrumented = true
 
     return true
   } catch (error) {
     logger.error('instrumentLoadedModule encountered an error, module not instrumented: %s', error)
-    module.__NR_instrumented_errored = true
   }
+
+  return false
 }
 
 /**
