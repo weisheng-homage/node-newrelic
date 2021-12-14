@@ -1332,6 +1332,23 @@ API.prototype.instrumentLoadedModule = function instrumentLoadedModule(moduleNam
     NAMES.SUPPORTABILITY.API + '/instrumentLoadedModule'
   )
   metric.incrementCallCount()
+
+  // TODO: post load instrumentation has other metadata written...
+  // TODO: also doesn't call error handler given by instrumentation
+
+  // check for if instrumented / write when instrumented.
+
+  if (
+    properties.hasOwn(module, '__NR_instrumented') ||
+    properties.hasOwn(module, '__NR_instrumented_errored')
+  ) {
+    logger.trace(
+      'Already instrumented or failed to instrument %s, skipping redundant instrumentation',
+      moduleName
+    )
+    return false
+  }
+
   try {
     const instrumentationName = shimmer.getInstrumentationNameFromModuleName(moduleName)
     if (!shimmer.registeredInstrumentations[instrumentationName]) {
@@ -1356,9 +1373,12 @@ API.prototype.instrumentLoadedModule = function instrumentLoadedModule(moduleNam
 
     instrumentation.onRequire(shim, module, moduleName)
 
+    module.__NR_instrumented = true
+
     return true
   } catch (error) {
     logger.error('instrumentLoadedModule encountered an error, module not instrumented: %s', error)
+    module.__NR_instrumented_errored = true
   }
 }
 
