@@ -14,7 +14,6 @@ const hashes = require('./lib/util/hashes')
 const properties = require('./lib/util/properties')
 const stringify = require('json-stringify-safe')
 const shimmer = require('./lib/shimmer')
-const shims = require('./lib/shim')
 const isValidType = require('./lib/util/attribute-types')
 const TransactionShim = require('./lib/shim/transaction-shim')
 const TransactionHandle = require('./lib/transaction/handle')
@@ -1333,16 +1332,12 @@ API.prototype.instrumentLoadedModule = function instrumentLoadedModule(moduleNam
   )
   metric.incrementCallCount()
 
-
   try {
     const resolvedName = require.resolve(moduleName)
 
     // TODO: instrumentLoadedModule is always returning true
     // leverage properties or something else?
-    const result = shimmer.instrumentPostLoad(this.agent, module, moduleName, resolvedName)
-
-
-    return true
+    return shimmer.instrumentPostLoad(this.agent, module, moduleName, resolvedName)
   } catch (error) {
     logger.error('instrumentLoadedModule encountered an error, module not instrumented: %s', error)
   }

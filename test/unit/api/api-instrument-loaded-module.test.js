@@ -62,6 +62,9 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
     t.end()
   })
 
+  t.test('should return false when a function errors during instrumentation')
+  t.test('should return false when it cannot resolve module')
+
   t.test('should not instrument/wrap multiple times on multiple invocations', (t) => {
     const originalUse = expressMock.application.use
 
@@ -73,12 +76,6 @@ tap.test('Agent API - instrumentLoadedModule', (t) => {
 
     t.end()
   })
-
-  t.test('should flag module as instrumented on initial instrumentation')
-  t.test('should flag module as instrumented errored when error on initial instrumentation')
-
-  t.test('should not attempt to instrument when already flagged as instrumented')
-  t.test('should not attempt to instrument when already flagged as instrumented error')
 
   t.test('should not throw if supported module is not installed', function (t) {
     // We need a supported module in our test. We need that module _not_ to be
