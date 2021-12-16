@@ -54,7 +54,10 @@ jobs:
       if: github.event_name == 'issues'
       run: |
         ISSUE_ID=${{ github.event.issue.id }}
+        echo "about to run 2nd cmd"
         COLUMN=$(gh api -H "$HEADER" projects/$PROJECT_ID/columns --jq ".[] | select(.name == \"$COLUMN_NAME\").id")
+        echo "Got column $COLUMN"
+        echo "about to run 2nd cmd"
         gh api -H "$HEADER" -X POST projects/columns/$COLUMN/cards -f content_type='Issue' -F content_id=$ISSUE_ID
       env:
         COLUMN_NAME: ${{ inputs.todo_column}}

@@ -8,4 +8,4 @@ on:
 
 jobs:
   add-to-board:
-    uses: newrelic/node-newrelic/.github/workflows/board.yml@main
+    uses: newrelic/node-newrelic/.github/workflows/board.yml@test-add-issues
