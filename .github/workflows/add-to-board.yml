@@ -1,4 +1,4 @@
-name: Auto Assign to Project(s)
+name: Bob Test Auto Assign to Project(s)
 
 on:
   issues:
