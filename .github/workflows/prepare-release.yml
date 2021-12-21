@@ -2,20 +2,20 @@ name: Prepare Release PR
 
 # Manual trigger only
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       release_type:
-        description: 'Type of release. patch or minor (major if breaking)'
+        description: Type of release. patch or minor (major if breaking)
+        type: string
         required: true
-        default: 'patch'
+        default: patch
 
 jobs:
   generate-release-notes:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [lts/*]
 
     steps:
     - uses: actions/checkout@v2
