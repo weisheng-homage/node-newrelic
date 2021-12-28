@@ -157,15 +157,14 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
       const trace = transaction.trace
       const setSegment = trace.root.children[0]
       const attributes = setSegment.getAttributes()
-      return attributes // only to satify linter
-      // t.equal(attributes.host, METRIC_HOST_NAME, 'should have host as attribute')
-      // t.equal(
-      //   attributes.port_path_or_id,
-      //   String(params.redis_port),
-      //   'should have port as attribute'
-      // )
-      // t.equal(attributes.database_name, String(DB_INDEX), 'should have database id as attribute')
-      // t.equal(attributes.product, 'Redis', 'should have product attribute')
+      t.equal(attributes.host, METRIC_HOST_NAME, 'should have host as attribute')
+      t.equal(
+        attributes.port_path_or_id,
+        String(params.redis_port),
+        'should have port as attribute'
+      )
+      t.equal(attributes.database_name, String(DB_INDEX), 'should have database id as attribute')
+      t.equal(attributes.product, 'Redis', 'should have product attribute')
     })
   })
 
@@ -220,23 +219,23 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
       const setSegment2 = transaction.trace.root.children[4]
 
       t.equal(setSegment1.name, 'Datastore/operation/Redis/set', 'should register the first set')
-      // t.equal(
-      //   setSegment1.getAttributes().database_name,
-      //   String(DB_INDEX),
-      //   'should have the starting database id as attribute for the first set'
-      // )
+      t.equal(
+        setSegment1.getAttributes().database_name,
+        String(DB_INDEX),
+        'should have the starting database id as attribute for the first set'
+      )
       t.equal(selectSegment.name, 'Datastore/operation/Redis/select', 'should register the select')
-      // t.equal(
-      //   selectSegment.getAttributes().database_name,
-      //   String(DB_INDEX),
-      //   'should have the starting database id as attribute for the select'
-      // )
+      t.equal(
+        selectSegment.getAttributes().database_name,
+        String(DB_INDEX),
+        'should have the starting database id as attribute for the select'
+      )
       t.equal(setSegment2.name, 'Datastore/operation/Redis/set', 'should register the second set')
-      // t.equal(
-      //   setSegment2.getAttributes().database_name,
-      //   String(SELECTED_DB),
-      //   'should have the selected database id as attribute for the second set'
-      // )
+      t.equal(
+        setSegment2.getAttributes().database_name,
+        String(SELECTED_DB),
+        'should have the selected database id as attribute for the second set'
+      )
     }
   })
 })
