@@ -14,7 +14,7 @@ const urltils = require('../../../lib/util/urltils')
 // Indicates unique database in Redis. 0-15 supported.
 const DB_INDEX = 2
 
-test('Redis instrumentation', { timeout: 20000 }, function (t) {
+test('Redis instrumentation', function (t) {
   t.autoend()
 
   let METRIC_HOST_NAME = null
@@ -24,25 +24,17 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
   let client
 
   t.beforeEach(async function () {
-    await new Promise((resolve, reject) => {
-      helper.flushRedisDb(DB_INDEX, (error) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve()
-        }
-      })
-    })
-
     agent = helper.instrumentMockedAgent()
 
     const redis = require('@node-redis/client')
-    client = redis.createClient(params.redis_port, params.redis_host)
+    client = redis.createClient({ socket: { port: params.redis_port, host: params.redis_host } })
 
     await client.connect()
     await client.ping()
 
     await client.select(DB_INDEX)
+    // eslint-disable-next-line new-cap
+    await client.FLUSHDB()
 
     METRIC_HOST_NAME = urltils.isLocalhost(params.redis_host)
       ? agent.config.getHostnameSafe()
@@ -56,9 +48,9 @@ test('Redis instrumentation', { timeout: 20000 }, function (t) {
     t.notOk(agent.getTransaction(), 'no transaction should be in play')
   })
 
-  t.afterEach(function () {
-    client && client.disconnect()
+  t.afterEach(async function () {
     agent && helper.unloadAgent(agent)
+    client && (await client.quit())
   })
 
   t.test('should find Redis calls in the transaction trace', function (t) {
